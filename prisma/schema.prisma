@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  FROZEN
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  DORMANT
+  RESTRICTED
+  FROZEN
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum TransferStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum KycDocType {
+  ID
+  SELFIE
+  PROOF_OF_ADDRESS
+}
+
+enum CardType {
+  VISA
+  MASTERCARD
+}
+
+enum CardStatus {
+  ACTIVE
+  FROZEN
+  CANCELLED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationType {
+  TRANSFER
+  SECURITY
+  KYC
+  SYSTEM
+  ACCOUNT
+}
+
+// ─── Models ──────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  firstName     String
+  lastName      String
+  password      String
+  role          UserRole   @default(USER)
+  status        UserStatus @default(ACTIVE)
+  emailVerified Boolean    @default(false)
+  kycStatus     KycStatus  @default(NOT_STARTED)
+  phone         String?
+  address       String?
+  city          String?
+  state         String?
+  country       String?
+  zipCode       String?
+  avatarUrl     String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  beneficiaries Beneficiary[]
+  kycDocuments  KycDocument[]
+  notifications Notification[]
+  auditLogs     AuditLog[]     @relation("AdminAuditLogs")
+  tickets       SupportTicket[]
+  ticketMessages TicketMessage[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+model Account {
+  id            String        @id @default(cuid())
+  userId        String
+  accountNumber String        @unique
+  type          AccountType   @default(CHECKING)
+  label         String        @default("Primary Account")
+  balance       Decimal       @default(0) @db.Decimal(15, 2)
+  currency      String        @default("USD")
+  status        AccountStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  cards         Card[]
+  transfersFrom Transfer[]    @relation("TransferFrom")
+  transfersTo   Transfer[]    @relation("TransferTo")
+
+  @@index([userId])
+  @@index([accountNumber])
+  @@index([status])
+}
+
+model Transaction {
+  id           String            @id @default(cuid())
+  accountId    String
+  type         TransactionType
+  amount       Decimal           @db.Decimal(15, 2)
+  status       TransactionStatus @default(COMPLETED)
+  reference    String            @unique
+  description  String
+  category     String?
+  balanceAfter Decimal           @db.Decimal(15, 2)
+  metadata     Json?
+  createdAt    DateTime          @default(now())
+
+  account      Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([reference])
+}
+
+model Transfer {
+  id             String         @id @default(cuid())
+  fromAccountId  String
+  toAccountId    String?
+  beneficiaryId  String?
+  amount         Decimal        @db.Decimal(15, 2)
+  currency       String         @default("USD")
+  status         TransferStatus @default(PENDING)
+  reference      String         @unique
+  description    String?
+  recipientName  String?
+  recipientBank  String?
+  recipientAcct  String?
+  adminNote      String?
+  processedBy    String?
+  processedAt    DateTime?
+  createdAt      DateTime       @default(now())
+
+  fromAccount    Account        @relation("TransferFrom", fields: [fromAccountId], references: [id])
+  toAccount      Account?       @relation("TransferTo", fields: [toAccountId], references: [id])
+  beneficiary    Beneficiary?   @relation(fields: [beneficiaryId], references: [id])
+
+  @@index([fromAccountId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Beneficiary {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  bankName      String
+  accountNumber String
+  routingNumber String?
+  swiftCode     String?
+  country       String   @default("US")
+  createdAt     DateTime @default(now())
+
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transfers     Transfer[]
+
+  @@index([userId])
+}
+
+model KycDocument {
+  id         String     @id @default(cuid())
+  userId     String
+  type       KycDocType
+  fileUrl    String
+  fileName   String
+  status     KycStatus  @default(PENDING)
+  adminNote  String?
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Card {
+  id             String     @id @default(cuid())
+  accountId      String
+  type           CardType   @default(VISA)
+  lastFour       String
+  expiryDate     String
+  cardholderName String
+  status         CardStatus @default(ACTIVE)
+  dailyLimit     Decimal    @default(5000) @db.Decimal(15, 2)
+  createdAt      DateTime   @default(now())
+
+  account        Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String
+  targetId   String
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin      User     @relation("AdminAuditLogs", fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([createdAt])
+  @@index([targetType])
+}
+
+model SupportTicket {
+  id        String       @id @default(cuid())
+  userId    String
+  subject   String
+  message   String
+  status    TicketStatus @default(OPEN)
+  priority  String       @default("medium")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  TicketMessage[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TicketMessage {
+  id        String   @id @default(cuid())
+  ticketId  String
+  senderId  String
+  senderRole UserRole
+  message   String
+  createdAt DateTime @default(now())
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id])
+
+  @@index([ticketId])
+}
