@@ -4,7 +4,7 @@ import { getSession, getClientIP } from "@/lib/auth";
 import { adminTransferActionSchema } from "@/lib/validations";
 import { generateReference, formatCurrency } from "@/lib/utils";
 import { sendTransferAlertEmail } from "@/lib/email";
-import { Prisma } from "@/app/generated/prisma";
+import { Prisma } from "@/app/generated/prisma/client";
 
 // ─── GET — Fetch all transfers with related data ────────────────
 export async function GET(request: Request) {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, getClientIP } from "@/lib/auth";
-import { Prisma } from "@/app/generated/prisma";
+import { Prisma } from "@/app/generated/prisma/client";
 import crypto from "crypto";
 
 // ─── GET — Fetch all cards with account and user info ───────────

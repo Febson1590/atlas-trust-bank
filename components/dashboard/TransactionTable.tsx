@@ -9,7 +9,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import type {
   TransactionType,
   TransactionStatus,
-} from "@/app/generated/prisma";
+} from "@/app/generated/prisma/client";
 
 interface TransactionRow {
   id: string;

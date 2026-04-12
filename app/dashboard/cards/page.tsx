@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, maskCardNumber, cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
-import type { CardType, CardStatus } from "@/app/generated/prisma";
+import type { CardType, CardStatus } from "@/app/generated/prisma/client";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
