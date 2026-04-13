@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : String(error);
     const name = error instanceof Error ? error.constructor.name : "Unknown";
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { step, name, message } },
+      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { step, name, message, hasDbUrl: !!process.env.DATABASE_URL } },
       { status: 500 }
     );
   }
