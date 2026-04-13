@@ -4,124 +4,151 @@
 
 @theme {
   /* Navy palette */
-  --color-navy-950: #050d1a;
-  --color-navy-900: #0A1628;
-  --color-navy-800: #0F1D32;
-  --color-navy-700: #132743;
-  --color-navy-600: #1E3054;
-  --color-navy-500: #2A4270;
+  --color-navy-950: #030811;
+  --color-navy-900: #060e1a;
+  --color-navy-800: #0c1829;
+  --color-navy-700: #122240;
+  --color-navy-600: #1a3058;
+  --color-navy-500: #243d6b;
 
   /* Gold palette */
-  --color-gold-600: #A8893E;
-  --color-gold-500: #C5A55A;
-  --color-gold-400: #D4B96E;
-  --color-gold-300: #E0CA8A;
+  --color-gold-700: #8a6d2b;
+  --color-gold-600: #a88a3e;
+  --color-gold-500: #c5a55a;
+  --color-gold-400: #d4b96e;
+  --color-gold-300: #e0ca8a;
 
   /* Text */
-  --color-text-primary: #F1F1F1;
-  --color-text-secondary: #8A9AB5;
-  --color-text-muted: #5A6B8A;
+  --color-text-primary: #f0f0f2;
+  --color-text-secondary: #8a9ab5;
+  --color-text-muted: #4d5f7e;
 
   /* Border */
-  --color-border-default: #1E3054;
-  --color-border-subtle: #152238;
+  --color-border-default: #1a2e4e;
+  --color-border-subtle: #111d33;
 
   /* Status */
-  --color-success: #22C55E;
-  --color-error: #EF4444;
-  --color-warning: #F59E0B;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
 
   /* Font */
-  --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* ─── Base Styles ─────────────────────────────────────── */
 
 body {
-  background-color: var(--color-navy-900);
+  background-color: var(--color-navy-950);
   color: var(--color-text-primary);
 }
 
 /* ─── Scrollbar ───────────────────────────────────────── */
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--color-navy-950); }
+::-webkit-scrollbar-thumb { background: var(--color-navy-600); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold-600); }
 
-::-webkit-scrollbar-track {
-  background: var(--color-navy-900);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-navy-600);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-navy-500);
-}
-
-/* ─── Utility Classes ─────────────────────────────────── */
+/* ─── Core Utilities ──────────────────────────────────── */
 
 .glass {
-  background: rgba(15, 29, 50, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(8, 16, 30, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .glass-border {
-  border: 1px solid rgba(30, 48, 84, 0.5);
+  border: 1px solid rgba(26, 46, 78, 0.5);
 }
 
 .gold-gradient {
-  background: linear-gradient(135deg, #C5A55A, #D4B96E, #A8893E);
+  background: linear-gradient(135deg, #c5a55a 0%, #d4b96e 50%, #a88a3e 100%);
 }
 
 .gold-text {
-  background: linear-gradient(135deg, #C5A55A, #D4B96E);
+  background: linear-gradient(135deg, #d4b96e, #c5a55a, #e0ca8a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gold-glow {
-  box-shadow: 0 0 20px rgba(197, 165, 90, 0.15);
+  box-shadow: 0 0 30px rgba(197, 165, 90, 0.12), 0 0 60px rgba(197, 165, 90, 0.06);
 }
 
 .navy-gradient {
-  background: linear-gradient(180deg, #0A1628 0%, #0F1D32 100%);
+  background: linear-gradient(180deg, #060e1a 0%, #0c1829 100%);
 }
+
+/* ─── Premium Card ────────────────────────────────────── */
+
+.card-premium {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(26, 46, 78, 0.4);
+  background: linear-gradient(135deg, rgba(12, 24, 41, 0.8) 0%, rgba(6, 14, 26, 0.9) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(197, 165, 90, 0) 0%, rgba(197, 165, 90, 0.04) 50%, rgba(197, 165, 90, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card-premium:hover {
+  border-color: rgba(197, 165, 90, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(197, 165, 90, 0.06);
+}
+
+.card-premium:hover::before {
+  opacity: 1;
+}
+
+/* ─── Card Shine (sweep effect) ───────────────────────── */
 
 .card-shine {
   position: relative;
   overflow: hidden;
 }
 
-.card-shine::before {
+.card-shine::after {
   content: "";
   position: absolute;
   top: 0;
   left: -100%;
-  width: 100%;
+  width: 60%;
   height: 100%;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(197, 165, 90, 0.03),
+    rgba(212, 185, 110, 0.04),
     transparent
   );
-  transition: left 0.6s ease;
+  transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-shine:hover::before {
-  left: 100%;
+.card-shine:hover::after {
+  left: 120%;
 }
 
 /* ─── Animations ──────────────────────────────────────── */
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -131,16 +158,29 @@ body {
 }
 
 @keyframes pulse-gold {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 165, 90, 0.3); }
-  50% { box-shadow: 0 0 0 8px rgba(197, 165, 90, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 165, 90, 0.25); }
+  50% { box-shadow: 0 0 0 10px rgba(197, 165, 90, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s ease-out forwards;
 }
 
 .animate-slide-in {
   animation: slideIn 0.4s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
 /* ─── Input Styles ────────────────────────────────────── */
@@ -148,7 +188,7 @@ body {
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px #0F1D32 inset !important;
-  -webkit-text-fill-color: #F1F1F1 !important;
-  border-color: #1E3054 !important;
+  -webkit-box-shadow: 0 0 0 30px #0c1829 inset !important;
+  -webkit-text-fill-color: #f0f0f2 !important;
+  border-color: #1a2e4e !important;
 }
