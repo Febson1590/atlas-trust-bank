@@ -1,97 +1,69 @@
-import {
-  CreditCard,
-  ArrowLeftRight,
-  ShieldCheck,
-  BarChart3,
-  Smartphone,
-  Landmark,
-} from "lucide-react";
+import { Send, Landmark, Headphones } from "lucide-react";
 
-const services = [
+const features = [
   {
-    icon: CreditCard,
-    title: "Smart Cards",
-    description:
-      "Virtual and physical cards with real-time controls, instant freeze, and cashback on every purchase.",
-  },
-  {
-    icon: ArrowLeftRight,
-    title: "Global Transfers",
-    description:
-      "Send money to 160+ countries with zero hidden fees and real-time exchange rates.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Bank-Grade Security",
-    description:
-      "256-bit encryption, biometric auth, and 24/7 fraud monitoring protect every transaction.",
-  },
-  {
-    icon: BarChart3,
-    title: "Wealth Analytics",
-    description:
-      "AI-powered insights, spending breakdowns, and portfolio tracking in one dashboard.",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile First",
-    description:
-      "Full banking from your phone — deposits, payments, support, and account management.",
+    icon: Send,
+    title: "Fast & Secure Transfers",
+    description: "Move your money globally with ease and confidence",
   },
   {
     icon: Landmark,
-    title: "Business Banking",
-    description:
-      "Multi-currency accounts, payroll, invoicing, and financial tools built for teams.",
+    title: "High-Interest Savings",
+    description: "Grow your wealth with our competitive savings accounts",
+  },
+  {
+    icon: Headphones,
+    title: "24/7 Customer Support",
+    description: "Get professional assistance anytime, anywhere",
   },
 ];
 
 export default function Services() {
   return (
-    <section className="relative py-28 overflow-hidden">
+    <section className="relative py-24 overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-950" />
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border-default to-transparent" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-gold-500/[0.02] blur-[120px]" />
+        <div className="absolute inset-0 bg-navy-950" />
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gold-500/10 to-transparent" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         {/* Heading */}
-        <div className="text-center max-w-2xl mx-auto">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-500 mb-4">
-            What we offer
-          </p>
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything you need,{" "}
-            <span className="gold-text">nothing you don&apos;t</span>
+        <div className="max-w-2xl">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <span className="gold-text">Trusted, Secure, Smart</span> Banking
           </h2>
-          <p className="mt-4 text-text-secondary leading-relaxed">
-            Modern banking tools designed to simplify your financial life.
+          <p className="mt-4 text-sm leading-relaxed text-text-secondary/80 max-w-lg">
+            Experience the highest standards of banking with Atlas Trust Bank. We provide
+            fast, secure, and tailored financial services to meet your needs.
           </p>
         </div>
 
-        {/* Card grid */}
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
+        {/* Feature cards */}
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
             <div
-              key={service.title}
+              key={feature.title}
               className="card-premium card-shine group rounded-2xl p-7"
             >
-              {/* Icon */}
-              <div className="relative flex h-11 w-11 items-center justify-center rounded-xl bg-gold-500/[0.08] text-gold-400 transition-all duration-300 group-hover:bg-gold-500/[0.14] group-hover:shadow-lg group-hover:shadow-gold-500/10">
-                <service.icon className="h-5 w-5" strokeWidth={1.8} />
+              <div className="flex items-start gap-4">
+                {/* Icon */}
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gold-500/[0.08] text-gold-400 transition-all duration-300 group-hover:bg-gold-500/[0.14] group-hover:shadow-lg group-hover:shadow-gold-500/10">
+                  <feature.icon className="h-5 w-5" strokeWidth={1.8} />
+                </div>
+
+                <div>
+                  {/* Title */}
+                  <h3 className="text-base font-semibold text-text-primary group-hover:text-gold-400 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="mt-1.5 text-sm leading-relaxed text-text-secondary">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
-
-              {/* Title */}
-              <h3 className="mt-5 text-base font-semibold text-text-primary group-hover:text-gold-400 transition-colors duration-300">
-                {service.title}
-              </h3>
-
-              {/* Description */}
-              <p className="mt-2.5 text-sm leading-relaxed text-text-secondary">
-                {service.description}
-              </p>
             </div>
           ))}
         </div>

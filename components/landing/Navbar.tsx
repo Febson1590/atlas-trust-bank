@@ -6,9 +6,11 @@ import Image from "next/image";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { label: "About", href: "/about" },
+  { label: "Home", href: "/" },
+  { label: "About Us", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Contact", href: "/contact" },
+  { label: "Wealth Management", href: "/services" },
+  { label: "Resources", href: "/contact" },
 ];
 
 export default function Navbar() {
@@ -46,7 +48,7 @@ export default function Navbar() {
           />
         </Link>
 
-        <ul className="hidden lg:flex items-center gap-10">
+        <ul className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <li key={link.label}>
               <Link
@@ -62,15 +64,15 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-3">
           <Link
             href="/login"
-            className="rounded-lg px-5 py-2.5 text-[13px] font-medium text-text-secondary transition-all duration-200 hover:text-gold-400"
+            className="rounded-lg border border-text-secondary/30 px-6 py-2 text-[13px] font-medium text-text-secondary transition-all duration-200 hover:border-gold-500/40 hover:text-gold-400"
           >
-            Sign In
+            Log In
           </Link>
           <Link
             href="/register"
-            className="gold-gradient rounded-lg px-6 py-2.5 text-[13px] font-semibold text-navy-950 transition-all duration-200 hover:shadow-lg hover:shadow-gold-500/20"
+            className="rounded-lg border border-text-secondary/30 px-6 py-2 text-[13px] font-medium text-text-secondary transition-all duration-200 hover:border-gold-500/40 hover:text-gold-400"
           >
-            Get Started
+            Open Account
           </Link>
         </div>
 
@@ -136,14 +138,14 @@ export default function Navbar() {
             className="rounded-lg border border-border-default py-3 text-center text-sm font-medium text-text-secondary transition-all hover:border-gold-500/30 hover:text-gold-400"
             onClick={() => setMobileOpen(false)}
           >
-            Sign In
+            Log In
           </Link>
           <Link
             href="/register"
-            className="gold-gradient rounded-lg py-3 text-center text-sm font-semibold text-navy-950"
+            className="rounded-lg border border-border-default py-3 text-center text-sm font-medium text-text-secondary transition-all hover:border-gold-500/30 hover:text-gold-400"
             onClick={() => setMobileOpen(false)}
           >
-            Get Started
+            Open Account
           </Link>
         </div>
       </div>

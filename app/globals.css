@@ -34,6 +34,7 @@
 
   /* Font */
   --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: var(--font-display), "Georgia", "Times New Roman", serif;
 }
 
 /* ─── Base Styles ─────────────────────────────────────── */
@@ -79,6 +80,16 @@ body {
 
 .navy-gradient {
   background: linear-gradient(180deg, #060e1a 0%, #0c1829 100%);
+}
+
+/* ─── Credit Card Gradients ───────────────────────────── */
+
+.card-gold {
+  background: linear-gradient(145deg, #c5a55a 0%, #a88a3e 30%, #d4b96e 60%, #8a6d2b 100%);
+}
+
+.card-dark {
+  background: linear-gradient(145deg, #1a1a2e 0%, #0f0f1a 40%, #1a1a2e 100%);
 }
 
 /* ─── Premium Card ────────────────────────────────────── */
