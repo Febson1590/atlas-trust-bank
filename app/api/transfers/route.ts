@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { transferSchema } from "@/lib/validations";
 import { generateReference, formatCurrency } from "@/lib/utils";
 import { sendTransferAlertEmail } from "@/lib/email";
-import { Prisma } from "@/app/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 // ─── GET — Fetch user's transfers ────────────────────────────
 export async function GET() {

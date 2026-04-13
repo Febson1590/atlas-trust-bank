@@ -10,7 +10,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import EmptyState from "@/components/ui/EmptyState";
-import type { NotificationType } from "@/app/generated/prisma";
+import type { NotificationType } from "@/generated/prisma";
 import type { Metadata } from "next";
 import NotificationList from "./NotificationList";
 

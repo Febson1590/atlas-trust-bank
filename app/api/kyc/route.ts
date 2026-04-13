@@ -3,7 +3,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { KycDocType, KycStatus } from "@/app/generated/prisma";
+import { KycDocType, KycStatus } from "@/generated/prisma";
 
 // ─── Allowed file types and size ─────────────────────────
 const ALLOWED_MIME_TYPES = [

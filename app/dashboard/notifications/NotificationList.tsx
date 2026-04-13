@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
-import type { NotificationType } from "@/app/generated/prisma";
+import type { NotificationType } from "@/generated/prisma";
 
 interface Notification {
   id: string;

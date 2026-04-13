@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate, formatDateTime, cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
-import type { TransactionType, TransactionStatus } from "@/app/generated/prisma";
+import type { TransactionType, TransactionStatus } from "@/generated/prisma";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

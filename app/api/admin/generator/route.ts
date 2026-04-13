@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession, getClientIP } from "@/lib/auth";
 import { transactionGeneratorSchema } from "@/lib/validations";
 import { generateReference } from "@/lib/utils";
-import { Prisma } from "@/app/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 // ─── Realistic descriptions based on transaction type ───────────
 const CREDIT_DESCRIPTIONS = [

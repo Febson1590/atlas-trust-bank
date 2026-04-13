@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession, getClientIP } from "@/lib/auth";
 import { adminCreditDebitSchema, adminAccountStatusSchema } from "@/lib/validations";
 import { generateAccountNumber, generateReference } from "@/lib/utils";
-import { Prisma } from "@/app/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 // ─── GET — Fetch all accounts with user info ────────────────────
 export async function GET(request: Request) {

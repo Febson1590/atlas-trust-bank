@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, maskAccountNumber, cn, formatDate } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
-import type { AccountType } from "@/app/generated/prisma";
+import type { AccountType } from "@/generated/prisma";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

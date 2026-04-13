@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Wallet, PiggyBank, TrendingUp } from "lucide-react";
 import { cn, formatCurrency, maskAccountNumber } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
-import type { AccountType, AccountStatus } from "@/app/generated/prisma";
+import type { AccountType, AccountStatus } from "@/generated/prisma";
 
 interface AccountCardProps {
   id: string;
