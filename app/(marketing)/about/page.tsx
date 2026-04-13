@@ -15,14 +15,14 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us — Atlas Trust Bank",
   description:
-    "Discover the story, mission, and leadership behind Atlas Trust Bank. Over 25 years of trusted global financial services.",
+    "Learn about Atlas Trust Bank. Over 25 years of helping people and businesses manage their money worldwide.",
 };
 
 const stats = [
-  { label: "Years of Service", value: "25+" },
+  { label: "Years in Business", value: "25+" },
   { label: "Countries Served", value: "160+" },
-  { label: "Assets Under Management", value: "$84B+" },
-  { label: "Trusted Clients", value: "1.2M+" },
+  { label: "Money We Manage", value: "$84B+" },
+  { label: "Happy Customers", value: "1.2M+" },
 ];
 
 const leadership = [
@@ -30,25 +30,25 @@ const leadership = [
     name: "Richard W. Harrington",
     role: "Chief Executive Officer",
     initials: "RH",
-    bio: "With over 30 years in global finance, Richard has led Atlas Trust Bank through its most transformative era. Previously served as Managing Director at Goldman Sachs and as an advisor to the Federal Reserve Board.",
+    bio: "Richard has led Atlas Trust Bank for over 30 years. Before that, he worked at Goldman Sachs and advised the Federal Reserve. He brought the bank through its biggest growth period.",
   },
   {
     name: "Catherine M. Albright",
     role: "Chief Financial Officer",
     initials: "CA",
-    bio: "Catherine brings two decades of financial leadership experience from JP Morgan Chase and Deutsche Bank. She oversees all fiscal operations, treasury management, and regulatory compliance across our global network.",
+    bio: "Catherine runs all our finances and has 20 years of experience at JP Morgan Chase and Deutsche Bank. She makes sure our money operations work smoothly across the world.",
   },
   {
     name: "James T. Nakamura",
     role: "Chief Operating Officer",
     initials: "JN",
-    bio: "James directs the bank's operational strategy across 160 countries. His previous tenure as SVP of Operations at HSBC and Citigroup provides deep expertise in scaling financial infrastructure globally.",
+    bio: "James manages our day-to-day operations in 160 countries. He used to lead operations at HSBC and Citigroup, so he knows how to run things at a global level.",
   },
   {
     name: "Dr. Sophia L. Voss",
     role: "Chief Risk Officer",
     initials: "SV",
-    bio: "Dr. Voss holds a PhD in Financial Economics from MIT and has spent 15 years developing risk frameworks for major institutions. She leads our enterprise risk management and regulatory strategy teams.",
+    bio: "Dr. Voss has a PhD from MIT and spent 15 years building safety systems for banks. She keeps our risk low and makes sure we follow all the rules.",
   },
 ];
 
@@ -80,9 +80,9 @@ export default function AboutPage() {
               About <span className="gold-text">Atlas Trust Bank</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-text-secondary">
-              For over two decades, Atlas Trust Bank has been a pillar of
-              stability and innovation in global finance, helping individuals and
-              institutions navigate the complexities of modern wealth management.
+              For over 25 years, Atlas Trust Bank has helped people and
+              businesses manage their money. We keep things simple, safe, and
+              global.
             </p>
           </div>
         </div>
@@ -102,23 +102,18 @@ export default function AboutPage() {
                   <Landmark className="h-7 w-7 text-gold-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-text-primary mb-4">
-                  A Legacy of Trust
+                  Built on Trust
                 </h3>
                 <p className="text-text-secondary leading-relaxed mb-6">
-                  Founded in 1998 in Zurich, Switzerland, Atlas Trust Bank began
-                  as a boutique wealth management firm serving a select group of
-                  European families. Our founders, a team of seasoned bankers from
-                  Credit Suisse and UBS, envisioned a financial institution that
-                  combined the discretion of Swiss banking with the ambition of
-                  global finance.
+                  We started in 1998 in Zurich, Switzerland as a small team of
+                  experienced bankers from Credit Suisse and UBS. They wanted to
+                  build a bank that combined Swiss reliability with big
+                  ambitions.
                 </p>
                 <p className="text-text-secondary leading-relaxed">
-                  By 2005, we had expanded into the Middle East and Asia-Pacific
-                  markets. The 2008 financial crisis proved to be a defining
-                  moment -- while many institutions faltered, our conservative
-                  risk approach and transparent client relationships allowed us to
-                  emerge stronger, gaining the trust of a new generation of
-                  investors.
+                  By 2005, we had grown into the Middle East and Asia. When the
+                  2008 financial crisis hit, our careful approach kept us strong
+                  while others struggled. That earned us even more trust.
                 </p>
               </div>
             </div>
@@ -133,26 +128,21 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-5 text-text-secondary leading-relaxed">
                 <p>
-                  Today, Atlas Trust Bank operates across 160 countries with over
-                  $84 billion in assets under management. We serve more than 1.2
-                  million clients, ranging from individuals seeking personal
-                  banking solutions to multinational corporations requiring
-                  complex treasury and trade finance services.
+                  Today, we work in 160 countries and manage over $84 billion.
+                  We serve more than 1.2 million customers, from individuals to
+                  large companies.
                 </p>
                 <p>
-                  Our growth has been deliberate and principled. We entered the
-                  North American market in 2010, launched our digital banking
-                  platform in 2015, and introduced our AI-powered wealth advisory
-                  service in 2022. Throughout every expansion, we have maintained
-                  the same core commitment: to be the most trusted name in
-                  banking.
+                  We grew step by step. We came to North America in 2010,
+                  launched online banking in 2015, and added AI-powered advice
+                  in 2022. Through it all, our goal stayed the same: be the
+                  most trusted name in banking.
                 </p>
                 <p>
-                  We hold banking licenses in all major financial jurisdictions,
-                  maintain Tier 1 capital ratios well above regulatory
-                  requirements, and invest heavily in cybersecurity and regulatory
-                  compliance. Our clients choose us not just for what we offer,
-                  but for the integrity with which we operate.
+                  We have banking licenses everywhere it matters. Our finances
+                  are well above what regulators require. And we invest heavily
+                  in security. People choose us because we do things the right
+                  way.
                 </p>
               </div>
             </div>
@@ -170,8 +160,7 @@ export default function AboutPage() {
               Mission & <span className="gold-text">Vision</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-text-secondary">
-              The guiding principles that shape every decision, every
-              relationship, and every service we provide.
+              The ideas that guide everything we do.
             </p>
           </div>
 
@@ -185,11 +174,9 @@ export default function AboutPage() {
                 Our Mission
               </h3>
               <p className="mt-3 leading-relaxed text-text-secondary">
-                To deliver exceptional financial services that empower our
-                clients to build, protect, and transfer wealth across
-                generations. We combine cutting-edge technology with
-                time-honored banking principles to serve as a true financial
-                partner.
+                To give people great banking tools so they can build, protect,
+                and pass on their wealth. We mix new technology with solid
+                banking to be a real partner for your money.
               </p>
             </div>
 
@@ -202,10 +189,9 @@ export default function AboutPage() {
                 Our Vision
               </h3>
               <p className="mt-3 leading-relaxed text-text-secondary">
-                To be the world's most trusted financial institution -- one that
-                sets the standard for transparency, innovation, and client
-                stewardship. We aspire to a future where every person has access
-                to sophisticated financial tools and guidance.
+                To be the most trusted bank in the world. We want to set the
+                bar for honesty, new ideas, and taking care of our customers.
+                Everyone should have access to good financial tools.
               </p>
             </div>
 
@@ -220,19 +206,19 @@ export default function AboutPage() {
               <ul className="mt-3 space-y-2 text-text-secondary">
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-gold-500 flex-shrink-0" />
-                  Integrity in every transaction and relationship
+                  Honesty in every deal and relationship
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-gold-500 flex-shrink-0" />
-                  Innovation that serves, not complicates
+                  New ideas that help, not confuse
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-gold-500 flex-shrink-0" />
-                  Security as a non-negotiable standard
+                  Security that never takes a day off
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-gold-500 flex-shrink-0" />
-                  Excellence in client service and stewardship
+                  Going above and beyond for our customers
                 </li>
               </ul>
             </div>
@@ -271,8 +257,8 @@ export default function AboutPage() {
               Our <span className="gold-text">Leadership</span>
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-text-secondary">
-              Guided by decades of combined experience in global finance,
-              regulation, and technology.
+              Led by people with decades of experience in global banking and
+              technology.
             </p>
           </div>
 
@@ -317,12 +303,11 @@ export default function AboutPage() {
 
             <div className="relative">
               <h2 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
-                Become Part of the{" "}
+                Join the{" "}
                 <span className="gold-text">Atlas Trust</span> Family
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-lg text-text-secondary">
-                Experience the difference that principled banking and genuine
-                partnership can make for your financial future.
+                See what honest banking and real support can do for you.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link

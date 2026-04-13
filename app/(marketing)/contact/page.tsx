@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Contact Us — Atlas Trust Bank",
   description:
-    "Get in touch with Atlas Trust Bank. Reach our team by phone, email, or visit one of our global offices.",
+    "Get in touch with Atlas Trust Bank. Call us, email us, or visit our office in Zurich.",
 };
 
 const contactInfo = [
@@ -13,14 +13,14 @@ const contactInfo = [
     title: "Email",
     primary: "support@atlastrust.com",
     secondary: "corporate@atlastrust.com",
-    note: "We respond within 24 hours",
+    note: "We usually reply within 24 hours",
   },
   {
     icon: Phone,
     title: "Phone",
     primary: "+1 (800) 482-7878",
     secondary: "+44 20 7946 0958",
-    note: "Available 24/7 for priority clients",
+    note: "Available 24/7 for priority customers",
   },
   {
     icon: MapPin,
@@ -65,9 +65,8 @@ export default function ContactPage() {
               Contact <span className="gold-text">Us</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-text-secondary">
-              Whether you have questions about our services, need support with
-              your account, or want to explore a partnership, our team is ready
-              to assist you.
+              Have a question? Need help with your account? Want to work with
+              us? We're here for you.
             </p>
           </div>
         </div>
@@ -85,8 +84,8 @@ export default function ContactPage() {
                 Send Us a Message
               </h2>
               <p className="text-text-muted mb-8">
-                Fill out the form below and a member of our team will respond
-                within one business day.
+                Fill out the form and someone from our team will get back to
+                you within one business day.
               </p>
 
               <form
@@ -161,7 +160,7 @@ export default function ContactPage() {
                     name="message"
                     required
                     rows={5}
-                    placeholder="Please describe your inquiry in detail..."
+                    placeholder="Tell us how we can help..."
                     className="w-full rounded-lg border border-border-default bg-navy-800 px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-colors resize-none"
                   />
                 </div>
@@ -182,8 +181,8 @@ export default function ContactPage() {
                 Contact Information
               </h2>
               <p className="text-text-muted mb-8">
-                Reach us through any of the channels below, or visit our
-                headquarters in Zurich.
+                You can also reach us through any of these channels, or visit
+                us in Zurich.
               </p>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
@@ -226,11 +225,10 @@ export default function ContactPage() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-10 animate-fade-in">
             <h2 className="text-2xl font-bold text-text-primary">
-              Our Global Presence
+              Where We Are
             </h2>
             <p className="mt-2 text-text-muted">
-              Headquarters in Zurich, with regional offices in major financial
-              centers worldwide.
+              Based in Zurich, with offices in major cities around the world.
             </p>
           </div>
 

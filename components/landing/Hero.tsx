@@ -230,23 +230,22 @@ export default function Hero() {
         <div className="mx-auto w-full max-w-3xl text-center animate-fade-in">
           {/* Badge */}
           <span className="inline-block mb-6 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
-            Trusted by 1.2M+ Clients Worldwide
+            Trusted by 1.2 Million People Worldwide
           </span>
 
           <h1 className="text-3xl font-bold leading-[1.1] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-6xl font-display italic">
             Banking Without Limits.
             <br />
             <span className="gold-text">
-              Built for Speed, Security,
+              Fast, Secure,
               <br className="hidden sm:block" />
-              and Control.
+              and in Your Control.
             </span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-text-secondary/80 sm:text-lg">
-            Elevating your financial experience with secure, innovative banking
-            solutions. Open an account in minutes and take control of your
-            future.
+            A better way to manage your money. Safe, simple, and ready when you
+            are. Open an account in minutes.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-3.5 sm:flex-row">

@@ -14,19 +14,19 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: Globe,
-    title: "Global Reach",
+    title: "Available Worldwide",
     value: "160+",
     unit: "Countries",
     description:
-      "Access your finances anywhere with 24/7 support across every time zone.",
+      "Use your account from anywhere. We support you around the clock, no matter your time zone.",
   },
   {
     icon: Lock,
-    title: "Military-Grade Security",
+    title: "Seriously Secure",
     value: "256",
     unit: "Bit Encryption",
     description:
-      "End-to-end encryption and continuous threat monitoring on every transaction.",
+      "Your data is encrypted from start to finish. We watch for threats on every transaction.",
   },
   {
     icon: Zap,
@@ -34,15 +34,15 @@ const features: Feature[] = [
     value: "<30",
     unit: "Seconds",
     description:
-      "Real-time domestic transfers and same-day international settlements.",
+      "Send money in seconds. Local transfers happen right away. International ones arrive the same day.",
   },
   {
     icon: HeadphonesIcon,
-    title: "Priority Support",
+    title: "Always Here to Help",
     value: "24/7",
     unit: "Availability",
     description:
-      "Dedicated relationship managers and instant chat support around the clock.",
+      "Real people ready to help, anytime. Chat with us or talk to your personal manager.",
   },
 ];
 
@@ -163,11 +163,11 @@ export default function Features() {
             Why Atlas Trust
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for <span className="gold-text">performance</span> and trust
+            Built for <span className="gold-text">speed</span> and trust
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Decades of expertise, global infrastructure, and an unwavering
-            commitment to your financial future.
+            Years of experience, a worldwide network, and a real commitment
+            to helping you with your money.
           </p>
         </div>
 

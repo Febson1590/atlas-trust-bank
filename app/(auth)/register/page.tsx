@@ -62,7 +62,7 @@ export default function RegisterPage() {
           Create Your Account
         </h2>
         <p className="text-text-secondary text-sm mt-2">
-          Join Atlas Trust Bank and start banking globally
+          Sign up and start banking today
         </p>
       </div>
 
@@ -196,8 +196,8 @@ export default function RegisterPage() {
           <div className="mt-2 flex items-start gap-1.5 text-text-muted">
             <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <p className="text-xs leading-relaxed">
-              Min 8 characters with uppercase, lowercase, number, and special
-              character
+              At least 8 characters, with a mix of upper and lowercase letters, a
+              number, and a symbol
             </p>
           </div>
         </div>

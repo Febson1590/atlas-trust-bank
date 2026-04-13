@@ -20,13 +20,13 @@ export default function CTA() {
 
           <div className="relative">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-              Ready to experience{" "}
-              <span className="gold-text">premium banking</span>?
+              Ready to try{" "}
+              <span className="gold-text">better banking</span>?
             </h2>
 
             <p className="mx-auto mt-5 max-w-lg text-base text-text-secondary leading-relaxed">
-              Open your account in minutes. No paperwork, no waiting — just
-              modern banking that works.
+              Sign up in minutes. No paperwork, no waiting — just banking
+              that actually works for you.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

@@ -25,7 +25,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Our Services — Atlas Trust Bank",
   description:
-    "Explore Atlas Trust Bank's comprehensive financial services: Personal Banking, Business Solutions, and Wealth Management across 160 countries.",
+    "See what Atlas Trust Bank offers: personal banking, business tools, and help growing your wealth. Available in 160 countries.",
 };
 
 const personalFeatures = [
@@ -33,25 +33,25 @@ const personalFeatures = [
     icon: Wallet,
     title: "Premium Accounts",
     description:
-      "Multi-currency checking and savings accounts with competitive interest rates, zero-fee international transfers, and 24/7 digital access.",
+      "Bank in multiple currencies with great rates, free international transfers, and full online access anytime.",
   },
   {
     icon: Send,
     title: "Global Transfers",
     description:
-      "Send and receive funds across 160 countries with real-time exchange rates, same-day settlement, and end-to-end encryption.",
+      "Send and receive money in 160 countries with live exchange rates, same-day delivery, and full security.",
   },
   {
     icon: CreditCard,
     title: "Cards & Payments",
     description:
-      "Visa and Mastercard debit and credit cards with contactless payments, customizable spending limits, and worldwide ATM access.",
+      "Visa and Mastercard cards with tap-to-pay, custom spending limits, and ATM access worldwide.",
   },
   {
     icon: PiggyBank,
     title: "Savings & Deposits",
     description:
-      "High-yield savings accounts, fixed-term deposits, and automated savings plans designed to grow your wealth steadily.",
+      "Savings accounts with great returns, fixed deposits, and auto-save plans to help your money grow.",
   },
 ];
 
@@ -60,25 +60,25 @@ const businessFeatures = [
     icon: Building2,
     title: "Corporate Accounts",
     description:
-      "Dedicated business accounts with multi-signatory controls, bulk payment processing, and integrated cash management tools.",
+      "Business accounts with multi-user access, bulk payments, and tools to manage your cash flow.",
   },
   {
     icon: BadgeDollarSign,
     title: "Treasury Services",
     description:
-      "Liquidity management, foreign exchange hedging, and short-term investment solutions tailored for corporate treasury operations.",
+      "Cash management, currency protection, and short-term investments built for business needs.",
   },
   {
     icon: Globe,
     title: "Trade Finance",
     description:
-      "Letters of credit, bank guarantees, documentary collections, and supply chain financing to support international commerce.",
+      "Letters of credit, guarantees, and supply chain financing to support your international trade.",
   },
   {
     icon: ScrollText,
     title: "Payroll & Compliance",
     description:
-      "Automated payroll disbursement, tax withholding integration, and full regulatory compliance across all operating jurisdictions.",
+      "Automatic payroll, tax handling, and full compliance with local rules in every country you operate.",
   },
 ];
 
@@ -87,25 +87,25 @@ const wealthFeatures = [
     icon: LineChart,
     title: "Investment Advisory",
     description:
-      "Personalized investment strategies from our team of Chartered Financial Analysts, covering equities, fixed income, alternatives, and structured products.",
+      "Personal investment plans from expert analysts, covering stocks, bonds, and other options.",
   },
   {
     icon: BarChart3,
     title: "Portfolio Management",
     description:
-      "Discretionary and advisory portfolio management with real-time reporting, risk analytics, and access to exclusive institutional-grade opportunities.",
+      "We manage your investments with live reports, risk analysis, and access to opportunities most people don't get.",
   },
   {
     icon: Scale,
     title: "Estate Planning",
     description:
-      "Comprehensive succession and estate planning, including trust formation, philanthropic advisory, and cross-border inheritance structuring.",
+      "Plan for the future with trust setup, charity guidance, and help with passing wealth across borders.",
   },
   {
     icon: ShieldCheck,
     title: "Private Banking",
     description:
-      "A dedicated relationship manager, bespoke credit facilities, priority access to IPOs, and exclusive banking privileges for high-net-worth clients.",
+      "A personal manager, special credit options, early access to new opportunities, and exclusive perks for top clients.",
   },
 ];
 
@@ -116,7 +116,7 @@ const serviceSections = [
     label: "Personal Banking",
     heading: "Personal Banking",
     description:
-      "Banking that adapts to your life. Whether you are managing day-to-day finances or planning for the future, our personal banking services provide the security, convenience, and flexibility you deserve.",
+      "Banking that fits your life. Whether you handle daily money or plan ahead, we give you the safety, ease, and freedom you deserve.",
     features: personalFeatures,
   },
   {
@@ -125,7 +125,7 @@ const serviceSections = [
     label: "Business Solutions",
     heading: "Business Solutions",
     description:
-      "From startups to multinational enterprises, Atlas Trust Bank provides the financial infrastructure your business needs to operate efficiently, expand confidently, and compete globally.",
+      "From startups to big companies, we give your business the money tools it needs to run well, grow with confidence, and compete worldwide.",
     features: businessFeatures,
   },
   {
@@ -134,7 +134,7 @@ const serviceSections = [
     label: "Wealth Management",
     heading: "Wealth Management",
     description:
-      "Preserve and grow your legacy with our institutional-grade wealth management services. Our team of seasoned advisors crafts strategies aligned with your financial objectives and risk tolerance.",
+      "Protect and grow what you've built. Our experienced team creates plans that match your goals and how much risk you're comfortable with.",
     features: wealthFeatures,
   },
 ];
@@ -161,15 +161,14 @@ export default function ServicesPage() {
         <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center animate-fade-in">
             <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-gold-500">
-              Comprehensive Solutions
+              What We Offer
             </p>
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-text-primary sm:text-5xl lg:text-6xl">
               Financial <span className="gold-text">Services</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-text-secondary">
-              From everyday banking to complex corporate treasury and bespoke
-              wealth management, Atlas Trust Bank offers a full spectrum of
-              financial services designed for a global clientele.
+              From daily banking to business tools and growing your wealth, we
+              have everything you need — wherever you are.
             </p>
           </div>
 
@@ -255,9 +254,9 @@ export default function ServicesPage() {
                 Ready to Get <span className="gold-text">Started</span>?
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-lg text-text-secondary">
-                Open an account in minutes and unlock the full suite of Atlas
-                Trust Bank financial services. Our team is standing by to help
-                you choose the right solutions for your needs.
+                Open an account in minutes and get access to everything Atlas
+                Trust Bank has to offer. Our team is ready to help you pick the
+                right plan.
               </p>
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
@@ -271,7 +270,7 @@ export default function ServicesPage() {
                   href="/contact"
                   className="inline-flex items-center gap-2 rounded-lg border border-gold-500/40 px-10 py-4 text-sm font-medium text-gold-400 transition-all hover:border-gold-400 hover:bg-gold-500/10"
                 >
-                  Speak to an Advisor
+                  Talk to an Expert
                 </Link>
               </div>
             </div>

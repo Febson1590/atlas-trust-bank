@@ -3,21 +3,21 @@ import { Star } from "lucide-react";
 const testimonials = [
   {
     quote:
-      "Atlas Trust completely transformed how I manage my international business finances. The speed and security are unmatched.",
+      "Atlas Trust changed how I handle my business money across countries. It's fast and I always feel safe using it.",
     name: "Sarah Chen",
     country: "Singapore",
     rating: 5,
   },
   {
     quote:
-      "I switched from a traditional bank and the difference is night and day. Real-time transfers and the dashboard are incredibly intuitive.",
+      "I left my old bank and the difference is huge. Transfers happen right away and the dashboard is so easy to use.",
     name: "Marcus Johnson",
     country: "United States",
     rating: 5,
   },
   {
     quote:
-      "The investment tools and personalized advisory service have helped me grow my portfolio significantly in the first year.",
+      "The investment tools and personal advice helped me grow my savings a lot in just the first year.",
     name: "Elena Petrova",
     country: "Switzerland",
     rating: 5,
@@ -41,11 +41,11 @@ export default function Testimonials() {
             Client Testimonials
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Trusted by clients{" "}
-            <span className="gold-text">around the world</span>
+            People love banking{" "}
+            <span className="gold-text">with us</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Hear from the people who bank with us every day.
+            Don&apos;t take our word for it. Here&apos;s what our customers say.
           </p>
         </div>
 

@@ -6,21 +6,21 @@ const products = [
     icon: User,
     title: "Personal Banking",
     description:
-      "Everyday accounts, high-yield savings, and premium debit cards tailored to your lifestyle. Manage your finances effortlessly with real-time insights.",
+      "Checking accounts, savings that earn more, and debit cards that work everywhere. See your money clearly and manage it easily.",
     href: "/services",
   },
   {
     icon: Building2,
     title: "Business Banking",
     description:
-      "Dedicated business accounts, payroll solutions, and multi-currency support. Scale your operations with enterprise-grade financial tools.",
+      "Business accounts, payroll tools, and support for multiple currencies. Everything your company needs to run smoothly and grow.",
     href: "/services",
   },
   {
     icon: TrendingUp,
     title: "Investment Solutions",
     description:
-      "Diversified portfolios, wealth management advisory, and market analytics. Grow your wealth with confidence and expert guidance.",
+      "Smart investment options, expert advice, and easy-to-read market insights. Grow your money with a plan that fits your goals.",
     href: "/services",
   },
 ];
@@ -42,12 +42,12 @@ export default function Products() {
             Our Products
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Financial solutions{" "}
-            <span className="gold-text">built for you</span>
+            Banking that{" "}
+            <span className="gold-text">works for you</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Whether you&apos;re managing personal finances, scaling a business,
-            or building long-term wealth — we have you covered.
+            Whether you&apos;re saving for yourself, running a business, or
+            growing your wealth — we&apos;ve got what you need.
           </p>
         </div>
 

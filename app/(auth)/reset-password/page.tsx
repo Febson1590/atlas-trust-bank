@@ -146,7 +146,7 @@ function ResetPasswordContent() {
           Set New Password
         </h2>
         <p className="text-text-secondary text-sm mt-2">
-          Choose a strong password for your account
+          Pick a new password for your account
         </p>
       </div>
 

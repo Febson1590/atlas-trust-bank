@@ -51,8 +51,8 @@ function baseTemplate(content: string): string {
           <tr>
             <td bgcolor="#F4F6F8" style="background-color:#F4F6F8;padding:28px 32px 32px;border-radius:0 0 12px 12px;">
               <p style="margin:0;color:#8A9AB5;font-size:12px;line-height:1.8;text-align:center;">
-                This is an automated message from ${APP_NAME}.<br>
-                Please do not reply to this email.<br>
+                This email was sent by ${APP_NAME}.<br>
+                You can't reply to this email.<br>
                 &copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.
               </p>
             </td>
@@ -79,18 +79,18 @@ export async function sendOTPEmail(
   purpose: string = "verification"
 ): Promise<boolean> {
   const purposeText =
-    purpose === "login" ? "sign-in" : purpose === "transfer" ? "transfer confirmation" : "email verification";
+    purpose === "login" ? "sign-in" : purpose === "transfer" ? "transfer" : "email verification";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Verification Code</h2>
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Your Code</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      Use the following code for your ${purposeText}. This code expires in 5 minutes.
+      Here's your ${purposeText} code. It's good for 5 minutes.
     </p>
     <div style="background-color:#0A1628;border:2px solid #C5A55A;border-radius:8px;padding:22px 16px;text-align:center;margin:0 0 24px;">
       <span style="color:#C5A55A;font-size:36px;font-weight:700;letter-spacing:8px;">${code}</span>
     </div>
     <p style="color:#718096;font-size:13px;line-height:1.6;margin:0;">
-      If you did not request this code, please ignore this email or contact our support team immediately.
+      Didn't ask for this code? You can ignore this email. If you're worried, reach out to our support team.
     </p>
   `);
 
@@ -98,7 +98,7 @@ export async function sendOTPEmail(
     await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: `${APP_NAME} — Your Verification Code`,
+      subject: `${APP_NAME} — Your Code`,
       html,
     });
     return true;
@@ -115,17 +115,17 @@ export async function sendWelcomeEmail(
   const html = baseTemplate(`
     <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Welcome to ${APP_NAME}</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 16px;">
-      Dear ${firstName},
+      Hi ${firstName},
     </p>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      Your account has been successfully created. You now have access to our premium banking services including secure transfers, account management, and investment tools.
+      Your account is ready! You can now send transfers, manage your accounts, and use our investment tools.
     </p>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      To get started, please complete your KYC verification to unlock all features.
+      To unlock all features, please verify your identity first.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
-        Access Your Dashboard
+        Go to Your Dashboard
       </a>
     </div>
   `);
@@ -149,9 +149,9 @@ export async function sendPasswordResetEmail(
   resetUrl: string
 ): Promise<boolean> {
   const html = baseTemplate(`
-    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Password Reset Request</h2>
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Reset Your Password</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      We received a request to reset your password. Click the button below to create a new password. This link expires in 15 minutes.
+      We got your request to reset your password. Click the button below to pick a new one. This link works for 15 minutes.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
       <a href="${resetUrl}" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
@@ -159,7 +159,7 @@ export async function sendPasswordResetEmail(
       </a>
     </div>
     <p style="color:#718096;font-size:13px;line-height:1.6;margin:0;">
-      If you did not request a password reset, you can safely ignore this email. Your account remains secure.
+      Didn't ask to reset your password? No worries -- just ignore this email. Your account is safe.
     </p>
   `);
 
@@ -195,9 +195,9 @@ export async function sendTransferAlertEmail(
       : "#F59E0B";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Transfer ${details.status === "completed" ? "Completed" : details.status === "failed" ? "Failed" : "Update"}</h2>
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Transfer ${details.status === "completed" ? "Done" : details.status === "failed" ? "Failed" : "Update"}</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      Dear ${firstName}, your transfer has been updated.
+      Hi ${firstName}, here's an update on your transfer.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
       <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">Amount</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${details.amount}</td></tr>
@@ -211,7 +211,7 @@ export async function sendTransferAlertEmail(
     await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: `${APP_NAME} — Transfer ${details.status === "completed" ? "Completed" : "Update"}`,
+      subject: `${APP_NAME} — Transfer ${details.status === "completed" ? "Done" : "Update"}`,
       html,
     });
     return true;
@@ -229,22 +229,22 @@ export async function sendKycUpdateEmail(
 ): Promise<boolean> {
   const statusText =
     status === "VERIFIED"
-      ? "Your identity verification has been approved. You now have full access to all banking features."
+      ? "Good news -- your identity has been verified! You now have full access to all features."
       : status === "REJECTED"
-      ? `Your identity verification has been rejected.${note ? ` Reason: ${note}` : ""} Please re-submit your documents.`
-      : "Your identity verification is being reviewed. We will notify you once the review is complete.";
+      ? `We weren't able to verify your identity.${note ? ` Reason: ${note}` : ""} Please upload your documents again.`
+      : "We're reviewing your identity documents. We'll let you know as soon as we're done.";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">KYC Verification Update</h2>
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Identity Check Update</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      Dear ${firstName},
+      Hi ${firstName},
     </p>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       ${statusText}
     </p>
     <div style="text-align:center;margin:0 0 24px;">
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/kyc" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
-        View Status
+        Check Status
       </a>
     </div>
   `);
@@ -253,7 +253,7 @@ export async function sendKycUpdateEmail(
     await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: `${APP_NAME} — KYC Verification ${status === "VERIFIED" ? "Approved" : "Update"}`,
+      subject: `${APP_NAME} — Identity Check ${status === "VERIFIED" ? "Approved" : "Update"}`,
       html,
     });
     return true;
@@ -271,7 +271,7 @@ export async function sendSecurityAlertEmail(
   const html = baseTemplate(`
     <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Security Alert</h2>
     <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
-      Dear ${firstName}, we detected a new ${details.action} on your account.
+      Hi ${firstName}, we noticed a new ${details.action} on your account.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
       <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">Activity</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${details.action}</td></tr>
@@ -280,7 +280,7 @@ export async function sendSecurityAlertEmail(
       <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Time</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.time}</td></tr>
     </table>
     <p style="color:#EF4444;font-size:13px;line-height:1.6;margin:0;">
-      If this was not you, please secure your account immediately by changing your password.
+      Wasn't you? Change your password right away to keep your account safe.
     </p>
   `);
 

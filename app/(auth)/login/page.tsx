@@ -235,7 +235,7 @@ export default function LoginPage() {
             <ShieldCheck className="w-6 h-6 text-gold-500" />
           </div>
           <h2 className="text-2xl font-semibold text-text-primary">
-            Verify Your Identity
+            Check Your Email
           </h2>
           <p className="text-text-secondary text-sm mt-2">
             We sent a 6-digit code to{" "}
@@ -331,7 +331,7 @@ export default function LoginPage() {
           Welcome Back
         </h2>
         <p className="text-text-secondary text-sm mt-2">
-          Sign in to your account to continue
+          Log in to your account
         </p>
       </div>
 

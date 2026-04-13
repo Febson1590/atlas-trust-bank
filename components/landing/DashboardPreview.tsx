@@ -40,14 +40,14 @@ export default function DashboardPreview() {
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-gold-500">
-            Experience the Platform
+            See It in Action
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Your finances, <span className="gold-text">at a glance</span>
+            Your money, <span className="gold-text">all in one place</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            A powerful dashboard designed for clarity and control. Everything you
-            need, right where you need it.
+            A clean dashboard that shows you everything. Check your balance,
+            track spending, and stay on top of things.
           </p>
         </div>
 
