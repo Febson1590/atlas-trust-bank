@@ -11,6 +11,7 @@ function getResend() {
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "Atlas Trust Bank <noreply@atlastrust.com>";
 const APP_NAME = "Atlas Trust Bank";
+const LOGO_URL = "https://atlas-trust-bank.vercel.app/logo.png";
 
 // ─── Base Email Template ─────────────────────────────────
 // Premium dark + gold branded HTML email shell
@@ -22,19 +23,19 @@ function baseTemplate(content: string): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>${APP_NAME}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0A1628;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A1628;padding:40px 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#0A1628;padding:40px 20px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#0F1D32;border-radius:12px;overflow:hidden;border:1px solid #1E3054;">
-          <!-- Header -->
+        <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#0F1D32;border-radius:12px;overflow:hidden;border:1px solid #1E3054;">
+          <!-- Header with Logo -->
           <tr>
-            <td style="padding:32px 40px;text-align:center;border-bottom:1px solid #1E3054;">
-              <h1 style="margin:0;color:#C5A55A;font-size:24px;font-weight:700;letter-spacing:1px;">
-                Atlas Trust Bank
-              </h1>
+            <td style="padding:36px 40px 28px;text-align:center;border-bottom:1px solid #1E3054;background-color:#0A1628;">
+              <img src="${LOGO_URL}" alt="${APP_NAME}" width="240" height="auto" style="display:block;margin:0 auto;width:240px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />
             </td>
           </tr>
           <!-- Content -->
