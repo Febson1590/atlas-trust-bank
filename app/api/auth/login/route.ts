@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // If email is not verified, send OTP and require verification
+    // If email is not verified, send verification OTP
     if (!user.emailVerified) {
       const otp = await storeOTP(user.email, "verification");
       await sendOTPEmail(user.email, otp, "verification");
@@ -102,27 +102,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create session
-    await createSession(user.id, user.email, user.role);
-
-    // Update last login timestamp
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    // Send login OTP for 2FA
+    const otp = await storeOTP(user.email, "login");
+    await sendOTPEmail(user.email, otp, "login");
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          message: "Login successful",
-          user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-          },
+          requiresOTP: true,
+          email: user.email,
+          message: "A sign-in verification code has been sent to your email.",
         },
       },
       { status: 200 }
