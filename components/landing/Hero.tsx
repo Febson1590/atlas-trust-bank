@@ -1,97 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Search, CreditCard, ArrowLeftRight, User, ChevronRight } from "lucide-react";
-
-/* ── Phone Mockup ── */
-function PhoneMockup() {
-  const transactions = [
-    { name: "Acco Balance", time: "4 hours ago", amount: "$87.95", positive: true },
-    { name: "Amazon", time: "2 hours ago", amount: "-$87.95", positive: false },
-    { name: "Refunded: Apple", time: "Yesterday", amount: "+$199.00", positive: true },
-    { name: "Utility Payment", time: "2 days ago", amount: "-$185.60", positive: false },
-  ];
-
-  return (
-    <div className="relative w-[280px] sm:w-[300px] lg:w-[320px] mx-auto">
-      {/* Phone frame */}
-      <div className="relative rounded-[2.5rem] border-[3px] border-white/[0.08] bg-navy-900/90 shadow-2xl shadow-black/60 overflow-hidden backdrop-blur-sm">
-        {/* Status bar */}
-        <div className="flex items-center justify-between px-7 pt-3 pb-1">
-          <span className="text-[11px] font-semibold text-white/80">15:26</span>
-          <div className="flex items-center gap-1">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white" opacity="0.7"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="white" opacity="0.7"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
-          </div>
-        </div>
-
-        {/* App header */}
-        <div className="flex items-center justify-between px-5 py-3">
-          <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="" width={28} height={28} className="h-6 w-auto brightness-0 invert opacity-90" />
-            <div>
-              <p className="text-[11px] font-bold text-gold-400 tracking-wide leading-none">Atlas Trust</p>
-              <p className="text-[8px] font-semibold text-gold-400/60 tracking-[0.2em] uppercase leading-none mt-0.5">Bank</p>
-            </div>
-          </div>
-          <Search className="h-4 w-4 text-white/50" />
-        </div>
-
-        {/* Balance card */}
-        <div className="mx-4 rounded-xl bg-navy-800/80 border border-white/[0.06] p-4 mb-3">
-          <p className="text-2xl font-bold text-white tracking-tight">$27,450.00</p>
-          <p className="text-[11px] text-white/50 mt-0.5">Atlas Platinum</p>
-        </div>
-
-        {/* Transactions */}
-        <div className="px-4 space-y-0">
-          {transactions.map((tx, i) => (
-            <div key={i} className="flex items-center justify-between py-2.5 border-b border-white/[0.04] last:border-0">
-              <div>
-                <p className="text-[11px] font-medium text-white/90">{tx.name}</p>
-                <p className="text-[9px] text-white/35 mt-0.5">{tx.time}</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className={`text-[12px] font-semibold ${tx.positive ? "text-white/90" : "text-white/70"}`}>
-                  {tx.amount}
-                </span>
-                <ChevronRight className="h-3 w-3 text-white/25" />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick actions */}
-        <div className="flex justify-around px-6 py-4 mt-2 border-t border-white/[0.06]">
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-              <CreditCard className="h-4 w-4 text-white/60" />
-            </div>
-            <span className="text-[9px] text-white/40">Debit Card</span>
-          </div>
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-              <ArrowLeftRight className="h-4 w-4 text-white/60" />
-            </div>
-            <span className="text-[9px] text-white/40">Transfers</span>
-          </div>
-          <div className="flex flex-col items-center gap-1.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.06]">
-              <User className="h-4 w-4 text-white/60" />
-            </div>
-            <span className="text-[9px] text-white/40">Accounts</span>
-          </div>
-        </div>
-
-        {/* Bottom nav */}
-        <div className="flex justify-center gap-6 pb-4 pt-1">
-          <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-          <div className="h-1.5 w-1.5 rounded-full bg-gold-400/60" />
-          <div className="h-1.5 w-1.5 rounded-full bg-white/20" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Hero() {
   return (
@@ -118,11 +26,11 @@ export default function Hero() {
       </div>
 
       {/* ── Main Content ── */}
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-32 lg:px-8 lg:py-0">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-screen py-24">
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 py-12 lg:px-8 lg:py-0">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center min-h-screen py-24">
 
-          {/* ── Left Column ── */}
-          <div className="animate-fade-in">
+          {/* ── Left Column — Text & CTAs ── */}
+          <div className="animate-fade-in text-center lg:text-left">
             {/* Heading */}
             <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-text-primary sm:text-5xl lg:text-[3.5rem] xl:text-6xl">
               Global Banking{" "}
@@ -131,13 +39,13 @@ export default function Hero() {
             </h1>
 
             {/* Subtext */}
-            <p className="mt-6 max-w-md text-base leading-relaxed text-text-secondary/80">
+            <p className="mt-6 max-w-md mx-auto lg:mx-0 text-base leading-relaxed text-text-secondary/80">
               Elevating your financial experience with secure
               and innovative banking solutions.
             </p>
 
             {/* CTA Buttons */}
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 href="/register"
                 className="gold-gradient inline-flex items-center justify-center rounded-lg px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
@@ -151,13 +59,38 @@ export default function Hero() {
                 Learn More
               </Link>
             </div>
+
+            {/* ── Mobile Image — phone mockup (visible below lg) ── */}
+            <div className="mt-12 flex justify-center lg:hidden">
+              <Image
+                src="/images/mobile-banking.png"
+                alt="Atlas Trust Bank mobile banking"
+                width={320}
+                height={640}
+                priority
+                className="h-auto object-contain drop-shadow-2xl"
+                style={{ width: "clamp(220px, 70vw, 320px)", maxWidth: "320px" }}
+              />
+            </div>
           </div>
 
-          {/* ── Right Column — Phone Mockup ── */}
-          <div className="relative hidden lg:flex items-center justify-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            {/* Glow behind phone */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[400px] rounded-full bg-gold-500/[0.04] blur-[100px]" />
-            <PhoneMockup />
+          {/* ── Right Column — Card stack (visible lg and above) ── */}
+          <div
+            className="relative hidden lg:flex items-center justify-end animate-fade-in"
+            style={{ animationDelay: "0.2s" }}
+          >
+            {/* Ambient glow behind cards */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-gold-500/[0.04] blur-[100px]" />
+
+            <Image
+              src="/images/hero-cards.png"
+              alt="Atlas Trust Bank premium cards"
+              width={560}
+              height={560}
+              priority
+              className="relative z-10 h-auto object-contain drop-shadow-2xl"
+              style={{ width: "clamp(380px, 42vw, 560px)", maxWidth: "560px" }}
+            />
           </div>
         </div>
       </div>
