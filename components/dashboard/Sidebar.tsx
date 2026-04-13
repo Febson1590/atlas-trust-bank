@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -59,16 +60,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 px-6 shrink-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg gold-gradient">
-          <span className="text-sm font-bold text-navy-950">AT</span>
-        </div>
-        <div>
-          <span className="text-base font-bold gold-text">Atlas Trust</span>
-          <span className="block text-[10px] font-medium text-text-muted tracking-widest uppercase">
-            Banking
-          </span>
-        </div>
+      <div className="flex h-16 items-center px-6 shrink-0">
+        <Link href="/dashboard">
+          <Image
+            src="/logo.png"
+            alt="Atlas Trust Bank"
+            width={160}
+            height={44}
+            className="h-10 w-auto"
+          />
+        </Link>
       </div>
 
       {/* Divider */}

@@ -41,9 +41,9 @@ export default function Navbar() {
           <Image
             src="/logo.png"
             alt="Atlas Trust Bank"
-            width={180}
-            height={50}
-            className="h-10 w-auto"
+            width={220}
+            height={60}
+            className="h-14 w-auto"
             priority
           />
         </Link>
@@ -104,9 +104,9 @@ export default function Navbar() {
           <Image
             src="/logo.png"
             alt="Atlas Trust Bank"
-            width={140}
-            height={40}
-            className="h-8 w-auto"
+            width={180}
+            height={50}
+            className="h-10 w-auto"
           />
           <button
             type="button"

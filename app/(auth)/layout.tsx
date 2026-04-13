@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: {
@@ -26,19 +27,16 @@ export default function AuthLayout({
         href="/"
         className="relative z-10 mb-8 sm:mb-10 flex flex-col items-center gap-3 group"
       >
-        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl gold-gradient flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
-          <span className="text-navy-900 font-bold text-xl sm:text-2xl tracking-tight">
-            AT
-          </span>
-        </div>
-        <div className="text-center">
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-wide gold-text">
-            Atlas Trust Bank
-          </h1>
-          <p className="text-text-muted text-xs sm:text-sm mt-1 tracking-widest uppercase">
-            Global Banking Excellence
-          </p>
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Atlas Trust Bank"
+          width={220}
+          height={60}
+          className="h-16 w-auto group-hover:scale-105 transition-transform duration-300"
+        />
+        <p className="text-text-muted text-xs sm:text-sm tracking-widest uppercase">
+          Global Banking Excellence
+        </p>
       </Link>
 
       {/* Page content */}

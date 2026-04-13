@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -62,20 +63,18 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 px-6 shrink-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg gold-gradient">
-          <span className="text-sm font-bold text-navy-950">AT</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div>
-            <span className="text-base font-bold gold-text">Atlas Trust</span>
-            <span className="block text-[10px] font-medium text-text-muted tracking-widest uppercase">
-              Banking
-            </span>
-          </div>
-          <span className="ml-1 rounded-md bg-gold-500/15 border border-gold-500/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold-500">
-            Admin
-          </span>
-        </div>
+        <Link href="/admin">
+          <Image
+            src="/logo.png"
+            alt="Atlas Trust Bank"
+            width={160}
+            height={44}
+            className="h-10 w-auto"
+          />
+        </Link>
+        <span className="rounded-md bg-gold-500/15 border border-gold-500/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold-500">
+          Admin
+        </span>
       </div>
 
       {/* Divider */}

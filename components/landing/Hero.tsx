@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -16,22 +15,20 @@ export default function Hero() {
 
       {/* ── Content ── */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-12 py-28 sm:py-32 lg:py-0 lg:min-h-screen">
-
-          {/* ── Left: Text ── */}
-          <div className="animate-fade-in text-center lg:text-left">
-            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-text-primary sm:text-5xl lg:text-[3.4rem] xl:text-[3.75rem]">
+        <div className="flex items-center justify-center min-h-screen py-28 sm:py-32">
+          <div className="animate-fade-in text-center max-w-2xl">
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-text-primary sm:text-5xl lg:text-[3.5rem] xl:text-6xl">
               Global Banking
               <br />
               <span className="gold-text">Excellence</span>
             </h1>
 
-            <p className="mt-6 max-w-[26rem] mx-auto lg:mx-0 text-base leading-relaxed text-text-secondary/80">
+            <p className="mt-6 mx-auto max-w-md text-base leading-relaxed text-text-secondary/80">
               Elevating your financial experience with secure
               and innovative banking solutions.
             </p>
 
-            <div className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:justify-center lg:justify-start">
+            <div className="mt-10 flex flex-col gap-3.5 sm:flex-row sm:justify-center">
               <Link
                 href="/register"
                 className="gold-gradient inline-flex items-center justify-center rounded-lg px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
@@ -44,43 +41,6 @@ export default function Hero() {
               >
                 Learn More
               </Link>
-            </div>
-
-            {/* ── Mobile: phone image ── */}
-            <div className="mt-14 flex justify-center lg:hidden">
-              <div className="relative overflow-hidden rounded-2xl" style={{ width: "clamp(220px, 68vw, 300px)", maxWidth: "300px" }}>
-                <Image
-                  src="/images/mobile-banking.png"
-                  alt="Atlas Trust Bank mobile banking"
-                  width={600}
-                  height={900}
-                  priority
-                  className="h-auto w-full object-contain"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Right: Card stack (desktop only) ── */}
-          <div
-            className="relative hidden lg:flex items-center justify-end animate-fade-in"
-            style={{ animationDelay: "0.15s" }}
-          >
-            {/* Subtle glow */}
-            <div className="absolute top-1/2 right-[10%] -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-gold-500/[0.03] blur-[100px]" />
-
-            <div
-              className="relative overflow-hidden"
-              style={{ width: "clamp(360px, 40vw, 520px)", maxWidth: "520px" }}
-            >
-              <Image
-                src="/images/hero-cards.png"
-                alt="Atlas Trust Bank premium cards"
-                width={1024}
-                height={1024}
-                priority
-                className="relative z-10 h-auto w-full object-contain"
-              />
             </div>
           </div>
         </div>

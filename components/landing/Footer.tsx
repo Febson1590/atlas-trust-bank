@@ -40,9 +40,9 @@ export default function Footer() {
               <Image
                 src="/logo.png"
                 alt="Atlas Trust Bank"
-                width={160}
-                height={44}
-                className="h-9 w-auto"
+                width={200}
+                height={56}
+                className="h-12 w-auto"
               />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-text-muted">
