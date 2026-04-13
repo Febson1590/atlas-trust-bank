@@ -6,12 +6,11 @@ import { sendOTPEmail } from "@/lib/email";
 import { generateAccountNumber } from "@/lib/utils";
 
 export async function POST(request: Request) {
-  let step = "init";
   try {
-    step = "json";
+    // Parse request body
     const body = await request.json();
 
-    step = "validate";
+    // Validate input
     const result = registerSchema.safeParse(body);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
@@ -23,7 +22,7 @@ export async function POST(request: Request) {
 
     const { firstName, lastName, email, password } = result.data;
 
-    step = "rateLimit";
+    // Rate limiting
     const ip = getClientIP(request);
     const rateLimit = await checkRateLimit("register", ip);
     if (!rateLimit.allowed) {
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
       );
     }
 
-    step = "findUser";
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
@@ -48,10 +47,10 @@ export async function POST(request: Request) {
       );
     }
 
-    step = "hash";
+    // Hash password
     const hashedPassword = await hashPassword(password);
 
-    step = "createUser";
+    // Create user and default checking account in a transaction
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -76,10 +75,10 @@ export async function POST(request: Request) {
       },
     });
 
-    step = "storeOTP";
+    // Generate and store OTP for email verification
     const otp = await storeOTP(user.email, "verification");
 
-    step = "sendEmail";
+    // Send verification email
     await sendOTPEmail(user.email, otp, "verification");
 
     return NextResponse.json(
@@ -95,10 +94,8 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Registration error:", error);
-    const message = error instanceof Error ? error.message : String(error);
-    const name = error instanceof Error ? error.constructor.name : "Unknown";
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { step, name, message, hasDbUrl: !!process.env.DATABASE_URL } },
+      { success: false, error: "An unexpected error occurred. Please try again." },
       { status: 500 }
     );
   }
