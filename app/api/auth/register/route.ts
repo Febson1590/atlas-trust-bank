@@ -94,8 +94,10 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Registration error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    const name = error instanceof Error ? error.constructor.name : "Unknown";
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again." },
+      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { name, message } },
       { status: 500 }
     );
   }
