@@ -6,11 +6,12 @@ import { sendOTPEmail } from "@/lib/email";
 import { generateAccountNumber } from "@/lib/utils";
 
 export async function POST(request: Request) {
+  let step = "init";
   try {
-    // Parse request body
+    step = "json";
     const body = await request.json();
 
-    // Validate input
+    step = "validate";
     const result = registerSchema.safeParse(body);
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors;
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
 
     const { firstName, lastName, email, password } = result.data;
 
-    // Rate limiting
+    step = "rateLimit";
     const ip = getClientIP(request);
     const rateLimit = await checkRateLimit("register", ip);
     if (!rateLimit.allowed) {
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user already exists
+    step = "findUser";
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
@@ -47,10 +48,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Hash password
+    step = "hash";
     const hashedPassword = await hashPassword(password);
 
-    // Create user and default checking account in a transaction
+    step = "createUser";
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -75,10 +76,10 @@ export async function POST(request: Request) {
       },
     });
 
-    // Generate and store OTP for email verification
+    step = "storeOTP";
     const otp = await storeOTP(user.email, "verification");
 
-    // Send verification email
+    step = "sendEmail";
     await sendOTPEmail(user.email, otp, "verification");
 
     return NextResponse.json(
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : String(error);
     const name = error instanceof Error ? error.constructor.name : "Unknown";
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { name, message } },
+      { success: false, error: "An unexpected error occurred. Please try again.", _debug: { step, name, message } },
       { status: 500 }
     );
   }
