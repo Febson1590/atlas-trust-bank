@@ -194,6 +194,39 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(197, 165, 90, 0.15), 0 0 20px rgba(197, 165, 90, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(197, 165, 90, 0.3), 0 0 40px rgba(197, 165, 90, 0.1);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-6px) rotate(0.5deg); }
+  66% { transform: translateY(3px) rotate(-0.5deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 7s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
 /* ─── Input Styles ────────────────────────────────────── */
 
 input:-webkit-autofill,

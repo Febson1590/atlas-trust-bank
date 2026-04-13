@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function CTA() {
   return (
-    <section className="relative py-28 overflow-hidden">
+    <section className="relative py-20 sm:py-28 overflow-hidden">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950 via-navy-900 to-navy-950" />

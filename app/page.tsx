@@ -1,7 +1,9 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import Services from "@/components/landing/Services";
+import Products from "@/components/landing/Products";
+import DashboardPreview from "@/components/landing/DashboardPreview";
 import Features from "@/components/landing/Features";
+import Testimonials from "@/components/landing/Testimonials";
 import CTA from "@/components/landing/CTA";
 import Footer from "@/components/landing/Footer";
 
@@ -11,8 +13,10 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <Services />
+        <Products />
+        <DashboardPreview />
         <Features />
+        <Testimonials />
         <CTA />
       </main>
       <Footer />
