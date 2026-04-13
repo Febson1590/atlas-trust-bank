@@ -37,19 +37,19 @@ function baseTemplate(content: string): string {
         <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:600px;width:100%;border-collapse:collapse;">
           <!-- Logo Header — dark navy -->
           <tr>
-            <td align="center" style="background-color:#0A1628;padding:40px 32px 32px;border-radius:12px 12px 0 0;">
+            <td align="center" bgcolor="#0A1628" style="background-color:#0A1628;padding:40px 32px 32px;border-radius:12px 12px 0 0;">
               <img src="${LOGO_URL}" alt="${APP_NAME}" width="220" style="display:block;margin:0 auto;width:220px;max-width:80%;height:auto;border:0;outline:none;text-decoration:none;" />
             </td>
           </tr>
           <!-- Content — clean white -->
           <tr>
-            <td style="background-color:#FFFFFF;padding:36px 32px 32px;">
+            <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:36px 32px 32px;">
               ${content}
             </td>
           </tr>
           <!-- Footer — light gray, fully visible -->
           <tr>
-            <td style="background-color:#F4F6F8;padding:28px 32px 32px;border-radius:0 0 12px 12px;">
+            <td bgcolor="#F4F6F8" style="background-color:#F4F6F8;padding:28px 32px 32px;border-radius:0 0 12px 12px;">
               <p style="margin:0;color:#8A9AB5;font-size:12px;line-height:1.8;text-align:center;">
                 This is an automated message from ${APP_NAME}.<br>
                 Please do not reply to this email.<br>
