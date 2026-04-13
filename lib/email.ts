@@ -19,40 +19,49 @@ const LOGO_URL = "https://atlas-trust-bank.vercel.app/logo.png";
 function baseTemplate(content: string): string {
   return `
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="light dark">
-  <meta name="supported-color-schemes" content="light dark">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
   <title>${APP_NAME}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#0A1628;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#0A1628;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#E8ECF1;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <!-- Outer wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color:#E8ECF1;padding:0;margin:0;">
     <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#0F1D32;border-radius:12px;overflow:hidden;border:1px solid #1E3054;">
-          <!-- Header with Logo -->
+      <td align="center" style="padding:32px 16px 40px;">
+        <!-- Card container — NO overflow:hidden -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:600px;width:100%;border-collapse:collapse;">
+          <!-- Logo Header — dark navy -->
           <tr>
-            <td style="padding:36px 40px 28px;text-align:center;border-bottom:1px solid #1E3054;background-color:#0A1628;">
-              <img src="${LOGO_URL}" alt="${APP_NAME}" width="240" height="auto" style="display:block;margin:0 auto;width:240px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />
+            <td align="center" style="background-color:#0A1628;padding:40px 32px 32px;border-radius:12px 12px 0 0;">
+              <img src="${LOGO_URL}" alt="${APP_NAME}" width="220" style="display:block;margin:0 auto;width:220px;max-width:80%;height:auto;border:0;outline:none;text-decoration:none;" />
             </td>
           </tr>
-          <!-- Content -->
+          <!-- Content — clean white -->
           <tr>
-            <td style="padding:40px;">
+            <td style="background-color:#FFFFFF;padding:36px 32px 32px;">
               ${content}
             </td>
           </tr>
-          <!-- Footer -->
+          <!-- Footer — light gray, fully visible -->
           <tr>
-            <td style="padding:24px 40px;text-align:center;border-top:1px solid #1E3054;">
-              <p style="margin:0;color:#8A9AB5;font-size:12px;line-height:1.6;">
+            <td style="background-color:#F4F6F8;padding:28px 32px 32px;border-radius:0 0 12px 12px;">
+              <p style="margin:0;color:#8A9AB5;font-size:12px;line-height:1.8;text-align:center;">
                 This is an automated message from ${APP_NAME}.<br>
                 Please do not reply to this email.<br>
                 &copy; ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.
               </p>
             </td>
+          </tr>
+        </table>
+        <!-- Bottom spacer for mobile Gmail -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="height:24px;font-size:1px;line-height:1px;">&nbsp;</td>
           </tr>
         </table>
       </td>
@@ -73,14 +82,14 @@ export async function sendOTPEmail(
     purpose === "login" ? "sign-in" : purpose === "transfer" ? "transfer confirmation" : "email verification";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">Verification Code</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Verification Code</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Use the following code for your ${purposeText}. This code expires in 5 minutes.
     </p>
-    <div style="background-color:#0A1628;border:2px solid #C5A55A;border-radius:8px;padding:20px;text-align:center;margin:0 0 24px;">
+    <div style="background-color:#0A1628;border:2px solid #C5A55A;border-radius:8px;padding:22px 16px;text-align:center;margin:0 0 24px;">
       <span style="color:#C5A55A;font-size:36px;font-weight:700;letter-spacing:8px;">${code}</span>
     </div>
-    <p style="color:#8A9AB5;font-size:13px;line-height:1.6;margin:0;">
+    <p style="color:#718096;font-size:13px;line-height:1.6;margin:0;">
       If you did not request this code, please ignore this email or contact our support team immediately.
     </p>
   `);
@@ -104,14 +113,14 @@ export async function sendWelcomeEmail(
   firstName: string
 ): Promise<boolean> {
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">Welcome to ${APP_NAME}</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 16px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Welcome to ${APP_NAME}</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 16px;">
       Dear ${firstName},
     </p>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Your account has been successfully created. You now have access to our premium banking services including secure transfers, account management, and investment tools.
     </p>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       To get started, please complete your KYC verification to unlock all features.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
@@ -140,8 +149,8 @@ export async function sendPasswordResetEmail(
   resetUrl: string
 ): Promise<boolean> {
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">Password Reset Request</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Password Reset Request</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       We received a request to reset your password. Click the button below to create a new password. This link expires in 15 minutes.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
@@ -149,7 +158,7 @@ export async function sendPasswordResetEmail(
         Reset Password
       </a>
     </div>
-    <p style="color:#8A9AB5;font-size:13px;line-height:1.6;margin:0;">
+    <p style="color:#718096;font-size:13px;line-height:1.6;margin:0;">
       If you did not request a password reset, you can safely ignore this email. Your account remains secure.
     </p>
   `);
@@ -186,15 +195,15 @@ export async function sendTransferAlertEmail(
       : "#F59E0B";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">Transfer ${details.status === "completed" ? "Completed" : details.status === "failed" ? "Failed" : "Update"}</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Transfer ${details.status === "completed" ? "Completed" : details.status === "failed" ? "Failed" : "Update"}</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Dear ${firstName}, your transfer has been updated.
     </p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A1628;border-radius:8px;padding:20px;margin:0 0 24px;">
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Amount</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.amount}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Recipient</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.recipient}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Reference</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.reference}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Status</td><td style="padding:8px 16px;font-size:14px;text-align:right;"><span style="color:${statusColor};font-weight:600;">${details.status.toUpperCase()}</span></td></tr>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">Amount</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${details.amount}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Recipient</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.recipient}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Reference</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.reference}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Status</td><td style="padding:10px 16px;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;"><span style="color:${statusColor};font-weight:600;">${details.status.toUpperCase()}</span></td></tr>
     </table>
   `);
 
@@ -226,11 +235,11 @@ export async function sendKycUpdateEmail(
       : "Your identity verification is being reviewed. We will notify you once the review is complete.";
 
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">KYC Verification Update</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">KYC Verification Update</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Dear ${firstName},
     </p>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       ${statusText}
     </p>
     <div style="text-align:center;margin:0 0 24px;">
@@ -260,15 +269,15 @@ export async function sendSecurityAlertEmail(
   details: { action: string; device: string; ip: string; time: string }
 ): Promise<boolean> {
   const html = baseTemplate(`
-    <h2 style="margin:0 0 16px;color:#F1F1F1;font-size:20px;">Security Alert</h2>
-    <p style="color:#8A9AB5;font-size:15px;line-height:1.6;margin:0 0 24px;">
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Security Alert</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 24px;">
       Dear ${firstName}, we detected a new ${details.action} on your account.
     </p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A1628;border-radius:8px;padding:20px;margin:0 0 24px;">
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Activity</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.action}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Device</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.device}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">IP Address</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.ip}</td></tr>
-      <tr><td style="padding:8px 16px;color:#8A9AB5;font-size:14px;">Time</td><td style="padding:8px 16px;color:#F1F1F1;font-size:14px;text-align:right;">${details.time}</td></tr>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">Activity</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${details.action}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Device</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.device}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">IP Address</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.ip}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Time</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${details.time}</td></tr>
     </table>
     <p style="color:#EF4444;font-size:13px;line-height:1.6;margin:0;">
       If this was not you, please secure your account immediately by changing your password.
