@@ -119,24 +119,24 @@ export default function Features() {
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-gold-500">
-            Why Atlas Trust
+            Security & Trust
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Built on{" "}
-            <span className="gold-text">Trust</span>
+            Banking built for{" "}
+            <span className="gold-text">confidence</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Reliable banking services for individuals and businesses, backed by
-            modern security standards and dedicated support.
+            Protected transactions, global access, and dedicated support
+            — backed by modern security standards.
           </p>
         </div>
 
         {/* Trust cards */}
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {trustCards.map((card) => (
             <div
               key={card.title}
-              className="card-premium card-shine group rounded-2xl p-7"
+              className="card-premium card-shine group rounded-2xl p-6 sm:p-7"
             >
               {/* Icon */}
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gold-500/[0.08] text-gold-400 transition-all duration-300 group-hover:bg-gold-500/[0.14] group-hover:shadow-lg group-hover:shadow-gold-500/10">
@@ -157,7 +157,7 @@ export default function Features() {
         </div>
 
         {/* Stats row */}
-        <div className="mt-16 rounded-2xl border border-border-subtle bg-navy-800/40 backdrop-blur-sm px-6 py-8 sm:px-10">
+        <div className="mt-12 rounded-2xl border border-border-subtle bg-navy-800/40 backdrop-blur-sm px-6 py-7 sm:px-10 sm:py-8">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">

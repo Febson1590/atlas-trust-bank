@@ -7,21 +7,21 @@ const products = [
     title: "Personal Banking",
     description:
       "Checking and savings accounts with competitive rates, multi-currency cards, and real-time visibility into your finances.",
-    href: "/services",
+    href: "/services#personal",
   },
   {
     icon: Building2,
     title: "Business Banking",
     description:
       "Dedicated business accounts with payroll integration, multi-currency support, and cash management tools built for scale.",
-    href: "/services",
+    href: "/services#business",
   },
   {
     icon: TrendingUp,
     title: "Investment Solutions",
     description:
       "Portfolio management, market insights, and advisory services designed to help you build long-term wealth with clarity.",
-    href: "/services",
+    href: "/services#wealth",
   },
 ];
 

@@ -5,26 +5,24 @@ const columns = [
   {
     heading: "Product",
     links: [
-      { label: "Personal Banking", href: "/services" },
-      { label: "Business", href: "/services" },
-      { label: "Cards", href: "/services" },
-      { label: "Transfers", href: "/services" },
+      { label: "Personal Banking", href: "/services#personal" },
+      { label: "Business Solutions", href: "/services#business" },
+      { label: "Wealth Management", href: "/services#wealth" },
     ],
   },
   {
     heading: "Company",
     links: [
       { label: "About", href: "/about" },
+      { label: "Services", href: "/services" },
       { label: "Contact", href: "/contact" },
-      { label: "Careers", href: "/about" },
     ],
   },
   {
     heading: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-      { label: "Compliance", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
     ],
   },
 ];
