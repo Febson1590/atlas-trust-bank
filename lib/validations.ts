@@ -66,7 +66,11 @@ export const transferSchema = z.object({
   fromAccountId: z.string().min(1, "Select source account"),
   recipientName: z.string().min(2, "Recipient name is required"),
   recipientBank: z.string().min(2, "Bank name is required"),
-  recipientAcct: z.string().min(5, "Account number is required"),
+  recipientAcct: z.string().min(4, "Account number or IBAN is required"),
+  recipientCountry: z.string().optional(),
+  routingNumber: z.string().optional(),
+  swiftCode: z.string().optional(),
+  sortCode: z.string().optional(),
   amount: z
     .number({ message: "Enter a valid amount" })
     .positive("Amount must be greater than 0"),

@@ -18,6 +18,8 @@ import {
   Wallet,
   Building2,
   CheckCircle2,
+  Globe,
+  Info,
 } from "lucide-react";
 import { transferSchema, type TransferInput } from "@/lib/validations";
 import { cn, formatCurrency, maskAccountNumber } from "@/lib/utils";
@@ -74,6 +76,73 @@ const STEPS = [
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 
+// ─── Country transfer configs ────────────────────────────────
+
+interface CountryConfig {
+  label: string;
+  flag: string;
+  acctLabel: string;
+  acctPlaceholder: string;
+  acctHint?: string;
+  requireRouting?: boolean;
+  routingLabel?: string;
+  routingPlaceholder?: string;
+  requireSwift?: boolean;
+  requireSortCode?: boolean;
+  sortCodePlaceholder?: string;
+}
+
+const COUNTRIES: Record<string, CountryConfig> = {
+  US: {
+    label: "United States",
+    flag: "🇺🇸",
+    acctLabel: "Account Number",
+    acctPlaceholder: "Enter account number",
+    requireRouting: true,
+    routingLabel: "Routing Number (ABA)",
+    routingPlaceholder: "9 digits (e.g. 021000021)",
+  },
+  GB: {
+    label: "United Kingdom",
+    flag: "🇬🇧",
+    acctLabel: "Account Number",
+    acctPlaceholder: "8-digit account number",
+    requireSortCode: true,
+    sortCodePlaceholder: "6 digits (e.g. 20-00-00)",
+    requireSwift: true,
+  },
+  EU: {
+    label: "Europe (SEPA)",
+    flag: "🇪🇺",
+    acctLabel: "IBAN",
+    acctPlaceholder: "e.g. DE89 3704 0044 0532 0130 00",
+    acctHint: "IBAN is required for SEPA transfers",
+    requireSwift: true,
+  },
+  CA: {
+    label: "Canada",
+    flag: "🇨🇦",
+    acctLabel: "Account Number",
+    acctPlaceholder: "Enter account number",
+    requireRouting: true,
+    routingLabel: "Transit / Institution Number",
+    routingPlaceholder: "e.g. 12345-001",
+    requireSwift: true,
+  },
+  OTHER: {
+    label: "Other Country",
+    flag: "🌍",
+    acctLabel: "Account Number / IBAN",
+    acctPlaceholder: "Enter account number or IBAN",
+    requireSwift: true,
+  },
+};
+
+const COUNTRY_OPTIONS = Object.entries(COUNTRIES).map(([code, cfg]) => ({
+  code,
+  ...cfg,
+}));
+
 // ─── Component ──────────────────────────────────────────────
 
 export default function TransferWizard({
@@ -88,6 +157,9 @@ export default function TransferWizard({
     beneficiaries.length > 0 ? "beneficiary" : "new"
   );
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<string>("");
+
+  // Country selection for new recipients
+  const [selectedCountry, setSelectedCountry] = useState<string>("US");
 
   // Transfer result
   const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
@@ -121,6 +193,10 @@ export default function TransferWizard({
       recipientName: "",
       recipientBank: "",
       recipientAcct: "",
+      recipientCountry: "US",
+      routingNumber: "",
+      swiftCode: "",
+      sortCode: "",
       amount: undefined,
       description: "",
     },
@@ -197,6 +273,10 @@ export default function TransferWizard({
           recipientName: watchAll.recipientName,
           recipientBank: watchAll.recipientBank,
           recipientAcct: watchAll.recipientAcct,
+          recipientCountry: selectedCountry,
+          routingNumber: watchAll.routingNumber || undefined,
+          swiftCode: watchAll.swiftCode || undefined,
+          sortCode: watchAll.sortCode || undefined,
           amount: watchAll.amount,
           description: watchAll.description || undefined,
         };
@@ -503,73 +583,169 @@ export default function TransferWizard({
               </div>
             )}
 
-            {/* Recipient Fields (shown for new or auto-filled from beneficiary) */}
-            {(recipientMode === "new" || selectedBeneficiary) && (
-              <div className="space-y-4 mb-5">
-                {/* Recipient Name */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                    Recipient Name
-                  </label>
-                  <input
-                    type="text"
-                    {...register("recipientName")}
-                    readOnly={recipientMode === "beneficiary"}
-                    placeholder="Enter recipient's full name"
-                    className={cn(
-                      "w-full bg-navy-900 border border-border-default rounded-lg px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
-                      recipientMode === "beneficiary" && "opacity-70 cursor-not-allowed"
-                    )}
-                  />
-                  {errors.recipientName && (
-                    <p className="text-xs text-error mt-1">{errors.recipientName.message}</p>
-                  )}
-                </div>
+            {/* Recipient Fields */}
+            {(recipientMode === "new" || selectedBeneficiary) && (() => {
+              const isBeneficiary = recipientMode === "beneficiary";
+              const countryConfig = COUNTRIES[selectedCountry] || COUNTRIES.OTHER;
+              const inputCls = (readOnly: boolean) => cn(
+                "w-full bg-navy-900 border border-border-default rounded-lg px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
+                readOnly && "opacity-70 cursor-not-allowed"
+              );
 
-                {/* Bank Name */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                    Bank Name
-                  </label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+              return (
+                <div className="space-y-4 mb-5">
+                  {/* Recipient Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                      Recipient Name
+                    </label>
                     <input
                       type="text"
-                      {...register("recipientBank")}
-                      readOnly={recipientMode === "beneficiary"}
-                      placeholder="Enter bank name"
-                      className={cn(
-                        "w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
-                        recipientMode === "beneficiary" && "opacity-70 cursor-not-allowed"
-                      )}
+                      {...register("recipientName")}
+                      readOnly={isBeneficiary}
+                      placeholder="Full name as shown on their account"
+                      className={inputCls(isBeneficiary)}
                     />
-                  </div>
-                  {errors.recipientBank && (
-                    <p className="text-xs text-error mt-1">{errors.recipientBank.message}</p>
-                  )}
-                </div>
-
-                {/* Account Number */}
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                    Account Number
-                  </label>
-                  <input
-                    type="text"
-                    {...register("recipientAcct")}
-                    readOnly={recipientMode === "beneficiary"}
-                    placeholder="Enter account number"
-                    className={cn(
-                      "w-full bg-navy-900 border border-border-default rounded-lg px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
-                      recipientMode === "beneficiary" && "opacity-70 cursor-not-allowed"
+                    {errors.recipientName && (
+                      <p className="text-xs text-error mt-1">{errors.recipientName.message}</p>
                     )}
-                  />
-                  {errors.recipientAcct && (
-                    <p className="text-xs text-error mt-1">{errors.recipientAcct.message}</p>
+                  </div>
+
+                  {/* Destination Country (new recipients only) */}
+                  {!isBeneficiary && (
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        Destination Country
+                      </label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                        <select
+                          value={selectedCountry}
+                          onChange={(e) => {
+                            setSelectedCountry(e.target.value);
+                            setValue("recipientCountry", e.target.value);
+                            setValue("routingNumber", "");
+                            setValue("swiftCode", "");
+                            setValue("sortCode", "");
+                          }}
+                          className="w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary focus:border-gold-500 focus:outline-none appearance-none cursor-pointer"
+                        >
+                          {COUNTRY_OPTIONS.map((c) => (
+                            <option key={c.code} value={c.code}>
+                              {c.flag} {c.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                      Bank Name
+                    </label>
+                    <div className="relative">
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                      <input
+                        type="text"
+                        {...register("recipientBank")}
+                        readOnly={isBeneficiary}
+                        placeholder="Enter bank name"
+                        className={cn(
+                          "w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
+                          isBeneficiary && "opacity-70 cursor-not-allowed"
+                        )}
+                      />
+                    </div>
+                    {errors.recipientBank && (
+                      <p className="text-xs text-error mt-1">{errors.recipientBank.message}</p>
+                    )}
+                  </div>
+
+                  {/* Account Number / IBAN */}
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                      {isBeneficiary ? "Account Number" : countryConfig.acctLabel}
+                    </label>
+                    <input
+                      type="text"
+                      {...register("recipientAcct")}
+                      readOnly={isBeneficiary}
+                      placeholder={isBeneficiary ? "Account number" : countryConfig.acctPlaceholder}
+                      className={inputCls(isBeneficiary)}
+                    />
+                    {!isBeneficiary && countryConfig.acctHint && (
+                      <p className="flex items-center gap-1 text-xs text-gold-400/80 mt-1">
+                        <Info className="h-3 w-3" />
+                        {countryConfig.acctHint}
+                      </p>
+                    )}
+                    {errors.recipientAcct && (
+                      <p className="text-xs text-error mt-1">{errors.recipientAcct.message}</p>
+                    )}
+                  </div>
+
+                  {/* Routing Number (US, CA) */}
+                  {!isBeneficiary && countryConfig.requireRouting && (
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        {countryConfig.routingLabel || "Routing Number"}
+                      </label>
+                      <input
+                        type="text"
+                        {...register("routingNumber")}
+                        placeholder={countryConfig.routingPlaceholder || "Routing number"}
+                        className={inputCls(false)}
+                      />
+                      {errors.routingNumber && (
+                        <p className="text-xs text-error mt-1">{errors.routingNumber.message}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Sort Code (UK) */}
+                  {!isBeneficiary && countryConfig.requireSortCode && (
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        Sort Code
+                      </label>
+                      <input
+                        type="text"
+                        {...register("sortCode")}
+                        placeholder={countryConfig.sortCodePlaceholder || "Sort code"}
+                        className={inputCls(false)}
+                      />
+                      {errors.sortCode && (
+                        <p className="text-xs text-error mt-1">{errors.sortCode.message}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* SWIFT/BIC (international) */}
+                  {!isBeneficiary && countryConfig.requireSwift && (
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                        SWIFT / BIC Code
+                      </label>
+                      <input
+                        type="text"
+                        {...register("swiftCode")}
+                        placeholder="e.g. CHASUS33"
+                        className={inputCls(false)}
+                      />
+                      <p className="flex items-center gap-1 text-xs text-text-muted mt-1">
+                        <Info className="h-3 w-3" />
+                        Required for international transfers
+                      </p>
+                      {errors.swiftCode && (
+                        <p className="text-xs text-error mt-1">{errors.swiftCode.message}</p>
+                      )}
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Amount */}
             <div className="mb-5">
@@ -662,13 +838,53 @@ export default function TransferWizard({
                 </span>
               </div>
 
-              {/* Recipient Account */}
+              {/* Destination */}
+              {selectedCountry && COUNTRIES[selectedCountry] && (
+                <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
+                  <span className="text-sm text-text-muted">Destination</span>
+                  <span className="text-sm font-medium text-text-primary">
+                    {COUNTRIES[selectedCountry].flag} {COUNTRIES[selectedCountry].label}
+                  </span>
+                </div>
+              )}
+
+              {/* Account / IBAN */}
               <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
-                <span className="text-sm text-text-muted">Account Number</span>
+                <span className="text-sm text-text-muted">
+                  {COUNTRIES[selectedCountry]?.acctLabel || "Account Number"}
+                </span>
                 <span className="text-sm font-medium text-text-primary font-mono">
                   {watchAll.recipientAcct}
                 </span>
               </div>
+
+              {/* Routing / Sort Code / SWIFT */}
+              {watchAll.routingNumber && (
+                <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
+                  <span className="text-sm text-text-muted">
+                    {COUNTRIES[selectedCountry]?.routingLabel || "Routing Number"}
+                  </span>
+                  <span className="text-sm font-medium text-text-primary font-mono">
+                    {watchAll.routingNumber}
+                  </span>
+                </div>
+              )}
+              {watchAll.sortCode && (
+                <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
+                  <span className="text-sm text-text-muted">Sort Code</span>
+                  <span className="text-sm font-medium text-text-primary font-mono">
+                    {watchAll.sortCode}
+                  </span>
+                </div>
+              )}
+              {watchAll.swiftCode && (
+                <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
+                  <span className="text-sm text-text-muted">SWIFT / BIC</span>
+                  <span className="text-sm font-medium text-text-primary font-mono">
+                    {watchAll.swiftCode}
+                  </span>
+                </div>
+              )}
 
               {/* Amount */}
               <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
