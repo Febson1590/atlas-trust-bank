@@ -46,7 +46,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-text-muted">
-              Simple, secure digital banking. Trusted by over 1.2 million people around the world.
+              Secure digital banking for individuals and businesses. Established 1998.
             </p>
           </div>
 

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { KycDocType, KycStatus } from "@/generated/prisma";
@@ -56,7 +54,7 @@ export async function GET() {
   } catch (error) {
     console.error("KYC GET error:", error);
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again." },
+      { success: false, error: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
@@ -81,7 +79,7 @@ export async function POST(request: NextRequest) {
     // Validate document type
     if (!docType || !Object.values(KycDocType).includes(docType as KycDocType)) {
       return NextResponse.json(
-        { success: false, error: "Invalid document type. Must be ID, SELFIE, or PROOF_OF_ADDRESS." },
+        { success: false, error: "Invalid document type." },
         { status: 400 }
       );
     }
@@ -97,16 +95,18 @@ export async function POST(request: NextRequest) {
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: "File size exceeds 5MB limit." },
+        { success: false, error: "File is too large. Maximum size is 5MB." },
         { status: 400 }
       );
     }
 
-    // Validate file type by extension
-    const fileExtension = path.extname(file.name).toLowerCase();
+    // Validate file extension
+    const fileName = file.name;
+    const lastDot = fileName.lastIndexOf(".");
+    const fileExtension = lastDot >= 0 ? fileName.slice(lastDot).toLowerCase() : "";
     if (!ALLOWED_EXTENSIONS.includes(fileExtension)) {
       return NextResponse.json(
-        { success: false, error: "Invalid file type. Only JPG, PNG, and PDF files are allowed." },
+        { success: false, error: "Only JPG, PNG, and PDF files are accepted." },
         { status: 400 }
       );
     }
@@ -114,30 +114,18 @@ export async function POST(request: NextRequest) {
     // Validate MIME type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: "Invalid file type. Only JPG, PNG, and PDF files are allowed." },
+        { success: false, error: "Only JPG, PNG, and PDF files are accepted." },
         { status: 400 }
       );
     }
 
-    // Create upload directory
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "kyc", session.userId);
-    await mkdir(uploadDir, { recursive: true });
-
-    // Generate unique filename
-    const timestamp = Date.now();
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const fileName = `${docType}_${timestamp}_${safeFileName}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    // Write file to disk
+    // Convert file to base64 data URL for storage (works on serverless)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
+    const base64 = buffer.toString("base64");
+    const fileUrl = `data:${file.type};base64,${base64}`;
 
-    // File URL relative to public directory
-    const fileUrl = `/uploads/kyc/${session.userId}/${fileName}`;
-
-    // Check if there's an existing document of this type and remove it
+    // Check if there's an existing document of this type
     const existingDoc = await prisma.kycDocument.findFirst({
       where: {
         userId: session.userId,
@@ -148,7 +136,7 @@ export async function POST(request: NextRequest) {
     let document;
 
     if (existingDoc) {
-      // Update existing document (re-upload scenario)
+      // Update existing document (re-upload)
       document = await prisma.kycDocument.update({
         where: { id: existingDoc.id },
         data: {
@@ -173,7 +161,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Update user's KYC status to PENDING after document upload
+    // Update user's KYC status to PENDING
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
       select: { kycStatus: true },
@@ -193,7 +181,12 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: {
-          document,
+          document: {
+            id: document.id,
+            type: document.type,
+            fileName: document.fileName,
+            status: document.status,
+          },
         },
       },
       { status: 201 }
@@ -201,7 +194,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("KYC POST error:", error);
     return NextResponse.json(
-      { success: false, error: "An unexpected error occurred. Please try again." },
+      { success: false, error: "Upload failed. Please try again." },
       { status: 500 }
     );
   }

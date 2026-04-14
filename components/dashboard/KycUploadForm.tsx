@@ -110,7 +110,8 @@ export default function KycUploadForm({
       setSuccess(true);
 
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error("KYC upload error:", err);
       setError("Something went wrong. Check your connection and try again.");
       setUploading(false);
       setProgress(0);

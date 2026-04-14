@@ -7,10 +7,9 @@ import { Menu, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "About Us", href: "/about" },
+  { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Wealth Management", href: "/services" },
-  { label: "Resources", href: "/contact" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
@@ -37,6 +36,7 @@ export default function Navbar() {
       }`}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+        {/* Logo */}
         <Link href="/" className="flex-shrink-0">
           <Image
             src="/logo.png"
@@ -48,6 +48,7 @@ export default function Navbar() {
           />
         </Link>
 
+        {/* Desktop links */}
         <ul className="hidden lg:flex items-center gap-8">
           {navLinks.map((link) => (
             <li key={link.label}>
@@ -61,6 +62,7 @@ export default function Navbar() {
           ))}
         </ul>
 
+        {/* Desktop CTAs */}
         <div className="hidden lg:flex items-center gap-3">
           <Link
             href="/login"
@@ -70,12 +72,13 @@ export default function Navbar() {
           </Link>
           <Link
             href="/register"
-            className="rounded-lg border border-text-secondary/30 px-6 py-2 text-[13px] font-medium text-text-secondary transition-all duration-200 hover:border-gold-500/40 hover:text-gold-400"
+            className="gold-gradient rounded-lg px-6 py-2 text-[13px] font-semibold text-navy-950 transition-all duration-200 hover:shadow-md hover:shadow-gold-500/20"
           >
             Open Account
           </Link>
         </div>
 
+        {/* Mobile hamburger */}
         <button
           type="button"
           className="lg:hidden text-text-secondary hover:text-gold-400 transition-colors"
@@ -142,7 +145,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/register"
-            className="rounded-lg border border-border-default py-3 text-center text-sm font-medium text-text-secondary transition-all hover:border-gold-500/30 hover:text-gold-400"
+            className="gold-gradient rounded-lg py-3 text-center text-sm font-semibold text-navy-950 transition-all hover:opacity-90"
             onClick={() => setMobileOpen(false)}
           >
             Open Account

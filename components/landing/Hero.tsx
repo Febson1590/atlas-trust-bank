@@ -4,49 +4,90 @@ import { Wifi } from "lucide-react";
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#020508]">
-      {/* ── Background ── */}
-      {/* Right-side gold glow */}
+      {/* ── Background layers ── */}
+
+      {/* Primary right-side gold glow */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "-10%",
-          right: "-15%",
-          width: "65%",
-          height: "80%",
+          top: "-15%",
+          right: "-10%",
+          width: "70%",
+          height: "90%",
           background:
-            "radial-gradient(ellipse at 60% 40%, rgba(180,130,40,0.14) 0%, rgba(140,90,20,0.05) 45%, transparent 70%)",
+            "radial-gradient(ellipse at 65% 35%, rgba(180,130,40,0.16) 0%, rgba(140,90,20,0.06) 40%, transparent 70%)",
         }}
       />
-      {/* Left-side stays dark — subtle deep glow only */}
+      {/* Secondary warm glow (mid-right) */}
       <div
         className="pointer-events-none absolute"
         style={{
-          bottom: "-20%",
-          left: "-10%",
-          width: "50%",
-          height: "60%",
+          top: "20%",
+          right: "5%",
+          width: "40%",
+          height: "50%",
           background:
-            "radial-gradient(ellipse at 30% 70%, rgba(10,22,40,0.8) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 50% 50%, rgba(197,165,90,0.08) 0%, transparent 60%)",
         }}
       />
-      {/* Subtle dot grid overlay */}
+      {/* Left dark anchor */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute"
+        style={{
+          top: "0%",
+          left: "-5%",
+          width: "55%",
+          height: "100%",
+          background:
+            "radial-gradient(ellipse at 20% 50%, rgba(3,8,17,0.9) 0%, transparent 70%)",
+        }}
+      />
+      {/* Bottom gradient blend */}
+      <div
+        className="pointer-events-none absolute"
+        style={{
+          bottom: "-10%",
+          left: "0%",
+          width: "100%",
+          height: "40%",
+          background:
+            "radial-gradient(ellipse at 50% 90%, rgba(10,22,40,0.6) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Dot grid overlay (subtle texture) */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.025]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, #c5a55a 0.8px, transparent 0.8px)",
-          backgroundSize: "48px 48px",
+            "radial-gradient(circle, #c5a55a 0.7px, transparent 0.7px)",
+          backgroundSize: "44px 44px",
         }}
       />
-      {/* Ambient bokeh */}
+
+      {/* Fine horizontal lines (right side depth) */}
+      <div
+        className="pointer-events-none absolute hidden lg:block opacity-[0.03]"
+        style={{
+          top: "10%",
+          right: "0%",
+          width: "45%",
+          height: "80%",
+          backgroundImage:
+            "repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(197,165,90,0.3) 39px, rgba(197,165,90,0.3) 40px)",
+        }}
+      />
+
+      {/* Ambient bokeh particles */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute h-1 w-1 rounded-full bg-gold-400/30 animate-float" style={{ top: "15%", right: "25%", filter: "blur(1px)" }} />
-        <div className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/20 animate-float-slow" style={{ top: "35%", right: "15%", filter: "blur(1.5px)" }} />
-        <div className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/40 animate-float-delayed" style={{ top: "10%", right: "40%", filter: "blur(0.5px)" }} />
+        <div className="absolute h-1 w-1 rounded-full bg-gold-400/25 animate-float" style={{ top: "18%", right: "28%", filter: "blur(1px)" }} />
+        <div className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/15 animate-float-slow" style={{ top: "40%", right: "18%", filter: "blur(2px)" }} />
+        <div className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/35 animate-float-delayed" style={{ top: "12%", right: "42%", filter: "blur(0.5px)" }} />
+        <div className="absolute h-1 w-1 rounded-full bg-gold-400/20 animate-float-slow" style={{ top: "55%", right: "35%", filter: "blur(1.5px)" }} />
       </div>
 
-      {/* Bottom fade */}
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy-950 to-transparent" />
+      {/* Bottom section fade */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-navy-950 to-transparent" />
 
       {/* ── Content ── */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-16">
@@ -55,7 +96,7 @@ export default function Hero() {
           {/* ── Left column: Text ── */}
           <div className="flex-1 text-center lg:text-left animate-fade-in">
             <span className="inline-block mb-5 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
-              Trusted by 1.2 Million People Worldwide
+              Secure Digital Banking
             </span>
 
             <h1 className="text-3xl font-bold leading-[1.08] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.5rem] font-display italic">
@@ -69,8 +110,8 @@ export default function Hero() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-text-secondary/80 sm:text-lg lg:mx-0">
-              A better way to manage your money. Safe, simple, and ready when you
-              are. Open an account in minutes.
+              Secure digital banking designed for confidence and control. Manage
+              accounts, send transfers, and track your finances — all in one place.
             </p>
 
             <div className="mt-9 flex flex-col items-center gap-3.5 sm:flex-row sm:justify-center lg:justify-start">
@@ -78,7 +119,7 @@ export default function Hero() {
                 href="/register"
                 className="gold-gradient inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
               >
-                Get Started in Minutes
+                Open an Account
                 <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -87,7 +128,7 @@ export default function Hero() {
                 href="#features"
                 className="glass glass-border inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-medium text-text-secondary transition-all duration-300 hover:border-gold-500/40 hover:text-gold-400"
               >
-                Explore Features
+                Learn More
               </Link>
             </div>
           </div>
@@ -95,18 +136,14 @@ export default function Hero() {
           {/* ── Right column: Desktop card stack ── */}
           <div className="hidden lg:flex flex-1 items-center justify-center">
             <div className="relative w-[380px] h-[340px]">
-
               {/* Ambient glow behind cards */}
-              <div className="absolute -inset-8 rounded-full bg-gold-500/[0.06] blur-[60px]" />
+              <div className="absolute -inset-10 rounded-full bg-gold-500/[0.05] blur-[70px]" />
 
-              {/* Back card (dark, rotated left) */}
+              {/* Back card */}
               <div
                 className="absolute rounded-2xl border border-border-subtle shadow-2xl shadow-black/40"
                 style={{
-                  width: "300px",
-                  height: "185px",
-                  top: "30px",
-                  left: "0px",
+                  width: "300px", height: "185px", top: "30px", left: "0px",
                   transform: "rotate(-8deg)",
                   background: "linear-gradient(145deg, #0c1829 0%, #060e1a 60%, #0a1420 100%)",
                 }}
@@ -118,14 +155,11 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Middle card (dark, slight rotation) */}
+              {/* Middle card */}
               <div
                 className="absolute rounded-2xl border border-border-default shadow-2xl shadow-black/50"
                 style={{
-                  width: "300px",
-                  height: "185px",
-                  top: "50px",
-                  left: "30px",
+                  width: "300px", height: "185px", top: "50px", left: "30px",
                   transform: "rotate(-3deg)",
                   background: "linear-gradient(145deg, #122240 0%, #0c1829 50%, #060e1a 100%)",
                 }}
@@ -137,14 +171,11 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Front card (gold accent) */}
+              {/* Front card (gold) */}
               <div
                 className="absolute rounded-2xl border border-gold-500/25 shadow-2xl shadow-black/60"
                 style={{
-                  width: "300px",
-                  height: "185px",
-                  top: "75px",
-                  left: "60px",
+                  width: "300px", height: "185px", top: "75px", left: "60px",
                   transform: "rotate(2deg)",
                   background: "linear-gradient(145deg, #c5a55a 0%, #a88a3e 35%, #d4b96e 65%, #8a6d2b 100%)",
                 }}
@@ -169,11 +200,8 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Floating mini balance card */}
-              <div
-                className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-slow"
-                style={{ top: "5px", right: "-20px" }}
-              >
+              {/* Floating mini balance */}
+              <div className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-slow" style={{ top: "5px", right: "-20px" }}>
                 <p className="text-[9px] font-medium text-text-muted">Balance</p>
                 <p className="text-sm font-bold gold-text">$24,850</p>
                 <div className="mt-0.5 flex items-center gap-1">
@@ -182,11 +210,8 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Floating mini chart card */}
-              <div
-                className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-delayed"
-                style={{ bottom: "10px", left: "-15px" }}
-              >
+              {/* Floating mini chart */}
+              <div className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-delayed" style={{ bottom: "10px", left: "-15px" }}>
                 <p className="text-[9px] font-medium text-text-muted">Portfolio</p>
                 <div className="mt-1 flex items-end gap-1.5">
                   <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="text-gold-500">
@@ -201,18 +226,13 @@ export default function Hero() {
           {/* ── Mobile visual: Phone mockup ── */}
           <div className="flex justify-center lg:hidden">
             <div className="relative w-[220px]">
-              {/* Phone frame */}
               <div className="rounded-[28px] border-2 border-border-default bg-navy-900 p-2 shadow-2xl shadow-black/60">
-                {/* Notch */}
                 <div className="mx-auto mb-2 h-5 w-20 rounded-full bg-navy-950" />
-                {/* Screen */}
                 <div className="rounded-[20px] bg-navy-950 px-4 py-4 space-y-3">
-                  {/* Greeting */}
                   <div>
                     <p className="text-[10px] text-text-muted">Good morning</p>
                     <p className="text-xs font-semibold text-text-primary">Welcome back</p>
                   </div>
-                  {/* Balance */}
                   <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
                     <p className="text-[9px] text-text-muted uppercase tracking-wider">Total Balance</p>
                     <p className="mt-1 text-lg font-bold gold-text">$24,850.00</p>
@@ -221,7 +241,6 @@ export default function Hero() {
                       <span className="text-[9px] text-success">+2.8% today</span>
                     </div>
                   </div>
-                  {/* Mini chart */}
                   <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[9px] text-text-muted">This week</p>
@@ -238,7 +257,6 @@ export default function Hero() {
                       <path d="M0,22 C15,20 30,18 45,15 C60,12 75,20 90,16 C105,12 120,8 135,10 C150,12 155,6 160,4 L160,30 L0,30 Z" fill="url(#mobileChartFill)" />
                     </svg>
                   </div>
-                  {/* Quick actions */}
                   <div className="flex justify-between pt-1">
                     {["Send", "Add", "Cards", "More"].map((label) => (
                       <div key={label} className="flex flex-col items-center gap-1">
@@ -250,7 +268,6 @@ export default function Hero() {
                     ))}
                   </div>
                 </div>
-                {/* Home indicator */}
                 <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-text-muted/30" />
               </div>
             </div>

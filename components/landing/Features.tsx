@@ -12,27 +12,27 @@ interface TrustCard {
 const trustCards: TrustCard[] = [
   {
     icon: Shield,
-    title: "Secure Transactions",
+    title: "Protected Transactions",
     description:
-      "Every payment is protected with 256-bit encryption and real-time fraud monitoring.",
+      "256-bit encryption on every payment. Real-time monitoring catches threats before they reach you.",
   },
   {
     icon: Globe,
-    title: "Global Access",
+    title: "Available Globally",
     description:
-      "Use your account from anywhere in the world. We operate in over 160 countries.",
+      "Access your accounts from anywhere. Our platform supports banking across multiple regions.",
   },
   {
     icon: Zap,
-    title: "Fast Processing",
+    title: "Fast Transfers",
     description:
-      "Local transfers go through instantly. International ones arrive the same day.",
+      "Domestic transfers process instantly. International payments settle within the same business day.",
   },
   {
     icon: HeadphonesIcon,
-    title: "24/7 Support",
+    title: "Support When You Need It",
     description:
-      "Real people ready to help, anytime you need it. Chat, call, or email us.",
+      "Reach our team by chat, phone, or email — any time, any day. No bots, real people.",
   },
 ];
 
@@ -42,10 +42,10 @@ interface StatItem {
 }
 
 const stats: StatItem[] = [
-  { value: "10,000+", label: "Active Users" },
-  { value: "50+", label: "Countries Supported" },
-  { value: "99.9%", label: "Secure Transactions" },
-  { value: "24/7", label: "Support" },
+  { value: "25+", label: "Years of Service" },
+  { value: "160+", label: "Countries Served" },
+  { value: "99.9%", label: "Uptime Reliability" },
+  { value: "24/7", label: "Client Support" },
 ];
 
 function AnimatedValue({ value }: { value: string }) {
@@ -122,12 +122,12 @@ export default function Features() {
             Why Atlas Trust
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Trusted by Clients{" "}
-            <span className="gold-text">Worldwide</span>
+            Built on{" "}
+            <span className="gold-text">Trust</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Delivering secure and reliable banking services to individuals and
-            businesses globally.
+            Reliable banking services for individuals and businesses, backed by
+            modern security standards and dedicated support.
           </p>
         </div>
 
