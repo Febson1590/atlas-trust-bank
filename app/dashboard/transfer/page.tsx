@@ -22,6 +22,7 @@ export default async function TransferPage() {
       id: true,
       firstName: true,
       kycStatus: true,
+      transferPin: true,
       accounts: {
         where: { status: "ACTIVE" },
         orderBy: { createdAt: "asc" },
@@ -151,7 +152,7 @@ export default async function TransferPage() {
         </p>
       </div>
 
-      <TransferWizard accounts={accounts} beneficiaries={beneficiaries} />
+      <TransferWizard accounts={accounts} beneficiaries={beneficiaries} hasTransferPin={!!user.transferPin} />
     </div>
   );
 }

@@ -110,6 +110,7 @@ model User {
   country       String?
   zipCode       String?
   avatarUrl     String?
+  transferPin   String?
   lastLoginAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

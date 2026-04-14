@@ -61,6 +61,7 @@ interface TransferResult {
 interface TransferWizardProps {
   accounts: Account[];
   beneficiaries: Beneficiary[];
+  hasTransferPin: boolean;
 }
 
 // ─── Constants ──────────────────────────────────────────────
@@ -68,10 +69,12 @@ interface TransferWizardProps {
 const STEPS = [
   { label: "Details", icon: Send },
   { label: "Review", icon: ShieldCheck },
-  { label: "Verify", icon: ShieldCheck },
+  { label: "Confirm", icon: ShieldCheck },
   { label: "Processing", icon: Loader2 },
   { label: "Complete", icon: CheckCircle2 },
 ];
+
+const HIGH_RISK_AMOUNT = 10000;
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
@@ -148,6 +151,7 @@ const COUNTRY_OPTIONS = Object.entries(COUNTRIES).map(([code, cfg]) => ({
 export default function TransferWizard({
   accounts,
   beneficiaries,
+  hasTransferPin,
 }: TransferWizardProps) {
   const router = useRouter();
 
@@ -168,12 +172,14 @@ export default function TransferWizard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  // OTP state
+  // PIN + OTP state
+  const [pin, setPin] = useState("");
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [otpSent, setOtpSent] = useState(false);
+  const [needsOtp, setNeedsOtp] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Copy state
@@ -260,66 +266,87 @@ export default function TransferWizard({
     inputRefs.current[focusIndex]?.focus();
   };
 
-  // ── Verify OTP + create transfer ────────────────────────────
-  const verifyOtp = useCallback(
-    async (code: string) => {
+  // ── Build transfer payload ──────────────────────────────────
+  const buildTransferPayload = useCallback(() => {
+    const payload: Record<string, unknown> = {
+      fromAccountId: watchAll.fromAccountId,
+      recipientName: watchAll.recipientName,
+      recipientBank: watchAll.recipientBank,
+      recipientAcct: watchAll.recipientAcct,
+      recipientCountry: selectedCountry,
+      routingNumber: watchAll.routingNumber || undefined,
+      swiftCode: watchAll.swiftCode || undefined,
+      sortCode: watchAll.sortCode || undefined,
+      amount: watchAll.amount,
+      description: watchAll.description || undefined,
+    };
+    if (recipientMode === "beneficiary" && selectedBeneficiary) {
+      payload.beneficiaryId = selectedBeneficiary;
+    }
+    return payload;
+  }, [watchAll, selectedCountry, recipientMode, selectedBeneficiary]);
+
+  // ── Submit transfer with PIN (+ OTP if high-risk) ──────────
+  const submitTransfer = useCallback(
+    async (pinCode: string, otpCode?: string) => {
       setServerError("");
       setIsVerifying(true);
 
       try {
-        // Send OTP code + transfer data together for atomic verification + creation
-        const transferPayload: Record<string, unknown> = {
-          fromAccountId: watchAll.fromAccountId,
-          recipientName: watchAll.recipientName,
-          recipientBank: watchAll.recipientBank,
-          recipientAcct: watchAll.recipientAcct,
-          recipientCountry: selectedCountry,
-          routingNumber: watchAll.routingNumber || undefined,
-          swiftCode: watchAll.swiftCode || undefined,
-          sortCode: watchAll.sortCode || undefined,
-          amount: watchAll.amount,
-          description: watchAll.description || undefined,
-        };
-
-        if (recipientMode === "beneficiary" && selectedBeneficiary) {
-          transferPayload.beneficiaryId = selectedBeneficiary;
-        }
-
-        const res = await fetch("/api/transfers/verify-otp", {
+        const res = await fetch("/api/transfers/submit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code, transferData: transferPayload }),
+          body: JSON.stringify({
+            pin: pinCode,
+            otpCode,
+            transferData: buildTransferPayload(),
+          }),
         });
 
         const result = await res.json();
 
         if (!res.ok) {
-          setServerError(result.error || "The code you entered is incorrect");
+          // High-risk: OTP required
+          if (result.error === "OTP_REQUIRED") {
+            setNeedsOtp(true);
+            setIsVerifying(false);
+            // Send OTP
+            setIsSendingOtp(true);
+            const otpRes = await fetch("/api/transfers/send-otp", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            });
+            setIsSendingOtp(false);
+            if (otpRes.ok) {
+              setOtpSent(true);
+              setCooldown(RESEND_COOLDOWN);
+            }
+            return;
+          }
+          setServerError(result.error || "Transfer failed");
           setIsVerifying(false);
           return;
         }
 
-        // OTP valid + transfer created
+        // Success
         setTransferResult(result.data);
         setCurrentStep(3);
-
-        setTimeout(() => {
-          setCurrentStep(4);
-        }, 2000);
+        setTimeout(() => setCurrentStep(4), 2000);
       } catch {
         setServerError("Something went wrong. Please try again.");
         setIsVerifying(false);
       }
     },
-    [watchAll, recipientMode, selectedBeneficiary]
+    [buildTransferPayload]
   );
 
+  // Auto-submit OTP for high-risk transfers
   useEffect(() => {
     const code = otp.join("");
-    if (code.length === OTP_LENGTH && !isVerifying && currentStep === 2) {
-      verifyOtp(code);
+    if (code.length === OTP_LENGTH && !isVerifying && needsOtp && pin) {
+      submitTransfer(pin, code);
     }
-  }, [otp, isVerifying, currentStep, verifyOtp]);
+  }, [otp, isVerifying, needsOtp, pin, submitTransfer]);
 
   // ── Step Handlers ──────────────────────────────────────────
 
@@ -328,39 +355,19 @@ export default function TransferWizard({
     setCurrentStep(1);
   });
 
-  // Review step: only send OTP (no transfer creation yet)
-  const handleSendOtp = async () => {
+  // Review step: go to PIN entry
+  const handleProceedToConfirm = () => {
     setServerError("");
-    setIsSubmitting(true);
-    setIsSendingOtp(true);
+    setCurrentStep(2);
+  };
 
-    try {
-      const res = await fetch("/api/transfers/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        const result = await res.json();
-        setServerError(result.error || "Failed to send verification code");
-        setIsSubmitting(false);
-        setIsSendingOtp(false);
-        return;
-      }
-
-      setOtpSent(true);
-      setCooldown(RESEND_COOLDOWN);
-      setCurrentStep(2);
-
-      setTimeout(() => {
-        inputRefs.current[0]?.focus();
-      }, 100);
-    } catch {
-      setServerError("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-      setIsSendingOtp(false);
+  // PIN submit handler
+  const handlePinSubmit = () => {
+    if (pin.length < 4) {
+      setServerError("Enter your 4–6 digit transfer PIN");
+      return;
     }
+    submitTransfer(pin);
   };
 
   const handleResendOtp = async () => {
@@ -922,8 +929,9 @@ export default function TransferWizard({
 
           {/* Info Note */}
           <div className="rounded-lg bg-gold-500/5 border border-gold-500/20 px-4 py-3 text-xs text-gold-400">
-            A verification code will be sent to your registered email. You will
-            need to enter it to confirm this transfer.
+            {!hasTransferPin
+              ? "You'll need to set a transfer PIN in Security settings before confirming."
+              : "You'll need your transfer PIN to confirm this transfer."}
           </div>
 
           {/* Buttons */}
@@ -941,28 +949,19 @@ export default function TransferWizard({
             </button>
             <button
               type="button"
-              onClick={handleSendOtp}
-              disabled={isSubmitting}
+              onClick={handleProceedToConfirm}
+              disabled={!hasTransferPin}
               className="flex-1 gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Sending code...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="h-4 w-4" />
-                  Send Verification Code
-                </>
-              )}
+              <ShieldCheck className="h-4 w-4" />
+              Confirm Transfer
             </button>
           </div>
         </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          STEP 3 — OTP Confirmation
+          STEP 3 — Transfer PIN (+ OTP for high-risk)
           ═══════════════════════════════════════════════════════ */}
       {currentStep === 2 && (
         <div className="space-y-6">
@@ -971,89 +970,158 @@ export default function TransferWizard({
               <ShieldCheck className="w-6 h-6 text-gold-500" />
             </div>
 
-            <h3 className="text-lg font-semibold text-text-primary mb-2">
-              Enter Verification Code
-            </h3>
-            <p className="text-sm text-text-muted mb-6">
-              We sent a 6-digit code to your registered email. Enter it below to
-              confirm this transfer.
-            </p>
+            {!needsOtp ? (
+              <>
+                {/* PIN entry */}
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  Enter Transfer PIN
+                </h3>
+                <p className="text-sm text-text-muted mb-6">
+                  Enter your 4–6 digit transfer PIN to confirm this transfer.
+                </p>
 
-            {/* OTP Inputs */}
-            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6">
-              {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    inputRefs.current[index] = el;
+                <div className="max-w-[200px] mx-auto mb-6">
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={pin}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setPin(val);
+                    }}
+                    disabled={isVerifying}
+                    placeholder="••••"
+                    className="w-full bg-navy-900 border border-border-default rounded-lg py-3 text-center text-2xl font-bold tracking-[0.3em] text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
+                    autoFocus
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handlePinSubmit}
+                  disabled={isVerifying || pin.length < 4}
+                  className="w-full gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isVerifying ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      Confirm Transfer
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* High-risk OTP */}
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  Additional Verification
+                </h3>
+                <p className="text-sm text-text-muted mb-2">
+                  This transfer requires additional verification due to the amount.
+                </p>
+                <p className="text-sm text-text-muted mb-6">
+                  Enter the 6-digit code sent to your email.
+                </p>
+
+                <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6">
+                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => {
+                        inputRefs.current[index] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={otp[index]}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      onPaste={index === 0 ? handleOtpPaste : undefined}
+                      disabled={isVerifying}
+                      className="w-11 h-13 sm:w-13 sm:h-14 bg-navy-900 border border-border-default rounded-lg text-center text-xl font-semibold text-text-primary focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
+                      aria-label={`Digit ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const code = otp.join("");
+                    if (code.length === OTP_LENGTH) submitTransfer(pin, code);
                   }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={otp[index]}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                  onPaste={index === 0 ? handleOtpPaste : undefined}
-                  disabled={isVerifying}
-                  className="w-11 h-13 sm:w-13 sm:h-14 bg-navy-900 border border-border-default rounded-lg text-center text-xl font-semibold text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
-                  aria-label={`Digit ${index + 1}`}
-                />
-              ))}
+                  disabled={isVerifying || otp.join("").length !== OTP_LENGTH}
+                  className="w-full gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isVerifying ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      Verify &amp; Submit
+                    </>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Resend for high-risk OTP */}
+          {needsOtp && (
+            <div className="text-center">
+              <p className="text-sm text-text-secondary">
+                Didn&apos;t receive the code?
+              </p>
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={cooldown > 0 || isSendingOtp}
+                className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-gold-500 hover:text-gold-400 transition disabled:text-text-muted disabled:cursor-not-allowed"
+              >
+                {isSendingOtp ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Sending...
+                  </>
+                ) : cooldown > 0 ? (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Resend in {cooldown}s
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Resend Code
+                  </>
+                )}
+              </button>
             </div>
+          )}
 
-            {/* Verify Button */}
-            <button
-              type="button"
-              onClick={() => {
-                const code = otp.join("");
-                if (code.length === OTP_LENGTH) verifyOtp(code);
-              }}
-              disabled={isVerifying || otp.join("").length !== OTP_LENGTH}
-              className="w-full gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {isVerifying ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4" />
-                  Verify Transfer
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Resend */}
-          <div className="text-center">
-            <p className="text-sm text-text-secondary">
-              Didn&apos;t receive the code?
-            </p>
-            <button
-              type="button"
-              onClick={handleResendOtp}
-              disabled={cooldown > 0 || isSendingOtp}
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-gold-500 hover:text-gold-400 transition disabled:text-text-muted disabled:cursor-not-allowed"
-            >
-              {isSendingOtp ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Sending...
-                </>
-              ) : cooldown > 0 ? (
-                <>
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Resend in {cooldown}s
-                </>
-              ) : (
-                <>
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Resend Code
-                </>
-              )}
-            </button>
-          </div>
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => {
+              setCurrentStep(1);
+              setPin("");
+              setNeedsOtp(false);
+              setOtp(Array(OTP_LENGTH).fill(""));
+              setServerError("");
+            }}
+            className="w-full bg-navy-800 border border-border-subtle text-text-secondary font-medium py-2.5 rounded-lg hover:bg-navy-700 transition flex items-center justify-center gap-2 text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Review
+          </button>
         </div>
       )}
 
