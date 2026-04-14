@@ -29,7 +29,7 @@ const transactions = [
 
 export default function DashboardPreview() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24 lg:py-28">
+    <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-navy-950" />
@@ -40,14 +40,14 @@ export default function DashboardPreview() {
         {/* Heading */}
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-gold-500">
-            See It in Action
+            The Platform
           </p>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Your money, <span className="gold-text">all in one place</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            A clean dashboard that shows you everything. Check your balance,
-            track spending, and stay on top of things.
+            Balances, transactions, and portfolio performance — clearly
+            organized and always up to date.
           </p>
         </div>
 

@@ -32,7 +32,7 @@ const columns = [
 export default function Footer() {
   return (
     <footer className="relative border-t border-border-subtle bg-navy-950">
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-12">
           {/* Brand */}
           <div className="lg:col-span-4">
@@ -90,7 +90,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-8 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border-subtle pt-6 sm:flex-row">
           <p className="text-xs text-text-muted">
             &copy; {new Date().getFullYear()} Atlas Trust Bank. All rights reserved.
           </p>

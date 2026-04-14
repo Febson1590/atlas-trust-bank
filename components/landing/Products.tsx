@@ -6,28 +6,28 @@ const products = [
     icon: User,
     title: "Personal Banking",
     description:
-      "Checking accounts, savings that earn more, and debit cards that work everywhere. See your money clearly and manage it easily.",
+      "Checking and savings accounts with competitive rates, multi-currency cards, and real-time visibility into your finances.",
     href: "/services",
   },
   {
     icon: Building2,
     title: "Business Banking",
     description:
-      "Business accounts, payroll tools, and support for multiple currencies. Everything your company needs to run smoothly and grow.",
+      "Dedicated business accounts with payroll integration, multi-currency support, and cash management tools built for scale.",
     href: "/services",
   },
   {
     icon: TrendingUp,
     title: "Investment Solutions",
     description:
-      "Smart investment options, expert advice, and easy-to-read market insights. Grow your money with a plan that fits your goals.",
+      "Portfolio management, market insights, and advisory services designed to help you build long-term wealth with clarity.",
     href: "/services",
   },
 ];
 
 export default function Products() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24 lg:py-28">
+    <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-navy-950" />
@@ -46,17 +46,17 @@ export default function Products() {
             <span className="gold-text">works for you</span>
           </h2>
           <p className="mt-4 leading-relaxed text-text-secondary">
-            Whether you&apos;re saving for yourself, running a business, or
-            growing your wealth — we&apos;ve got what you need.
+            Personal accounts, business tools, and investment services
+            — all on one platform.
           </p>
         </div>
 
         {/* Product cards */}
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <div
               key={product.title}
-              className="card-premium card-shine group rounded-2xl p-8"
+              className="card-premium card-shine group rounded-2xl p-6 sm:p-7"
             >
               {/* Icon */}
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold-500/[0.08] text-gold-400 transition-all duration-300 group-hover:bg-gold-500/[0.14] group-hover:shadow-lg group-hover:shadow-gold-500/10">
