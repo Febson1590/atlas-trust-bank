@@ -63,20 +63,20 @@ export default function KycActions({ document }: { document: KycDocument }) {
 
   return (
     <>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => { setAction("approve"); setShowModal(true); setError(""); }}
-          title="Approve"
-          className="p-1.5 rounded-lg hover:bg-success/10 text-success transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 border border-success/20 text-success text-xs font-medium hover:bg-success/20 transition-colors"
         >
-          <CheckCircle className="h-4 w-4" />
+          <CheckCircle className="h-3.5 w-3.5" />
+          Approve
         </button>
         <button
           onClick={() => { setAction("reject"); setShowModal(true); setError(""); }}
-          title="Reject"
-          className="p-1.5 rounded-lg hover:bg-error/10 text-error transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-error/10 border border-error/20 text-error text-xs font-medium hover:bg-error/20 transition-colors"
         >
-          <XCircle className="h-4 w-4" />
+          <XCircle className="h-3.5 w-3.5" />
+          Reject
         </button>
       </div>
 

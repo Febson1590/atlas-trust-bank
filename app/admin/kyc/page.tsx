@@ -141,18 +141,18 @@ export default async function AdminKycPage({ searchParams }: PageProps) {
           {Object.entries(grouped).map(([userId, { user, docs }]) => (
             <div key={userId} className="glass glass-border rounded-xl overflow-hidden">
               {/* User Header */}
-              <div className="px-6 py-4 border-b border-border-default flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-800 border border-border-default">
+              <div className="px-4 sm:px-6 py-4 border-b border-border-default flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-800 border border-border-default flex-shrink-0">
                     <span className="text-sm font-semibold gold-text">
                       {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                     </span>
                   </div>
-                  <div>
-                    <p className="text-text-primary font-medium">
+                  <div className="min-w-0">
+                    <p className="text-text-primary font-medium truncate">
                       {user.firstName} {user.lastName}
                     </p>
-                    <p className="text-text-muted text-xs">{user.email}</p>
+                    <p className="text-text-muted text-xs truncate">{user.email}</p>
                   </div>
                 </div>
                 <StatusBadge status={user.kycStatus} />
@@ -161,50 +161,62 @@ export default async function AdminKycPage({ searchParams }: PageProps) {
               {/* Documents */}
               <div className="divide-y divide-border-default">
                 {docs.map((doc) => (
-                  <div key={doc.id} className="px-6 py-4 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-navy-800 border border-border-default flex-shrink-0">
-                        <FileText className="h-5 w-5 text-text-muted" />
+                  <div key={doc.id} className="px-4 sm:px-6 py-4 space-y-3">
+                    {/* Doc info row */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-navy-800 border border-border-default flex-shrink-0">
+                        <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-text-muted" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-text-primary text-sm font-medium">
-                          {DOC_TYPE_LABELS[doc.type] || doc.type}
-                        </p>
-                        <p className="text-text-muted text-xs truncate">{doc.fileName}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-text-primary text-sm font-medium">
+                            {DOC_TYPE_LABELS[doc.type] || doc.type}
+                          </p>
+                          <StatusBadge status={doc.status} />
+                        </div>
+                        <p className="text-text-muted text-xs truncate mt-0.5">{doc.fileName}</p>
                         <p className="text-text-muted text-xs mt-0.5">
                           Uploaded {formatDate(doc.createdAt)}
-                          {doc.reviewedAt && ` — Reviewed ${formatDate(doc.reviewedAt)}`}
+                          {doc.reviewedAt && ` · Reviewed ${formatDate(doc.reviewedAt)}`}
                         </p>
+                        {doc.adminNote && (
+                          <p className="text-xs text-text-muted mt-1 italic">
+                            Note: {doc.adminNote}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <StatusBadge status={doc.status} />
+                    {/* Action row — visible and tappable */}
+                    {doc.status === "PENDING" && (
+                      <div className="flex items-center gap-2 pl-12 sm:pl-[52px]">
+                        <KycActions document={doc} />
+                        {doc.fileUrl && !doc.fileUrl.startsWith("data:") && (
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-gold-500 hover:text-gold-400 px-3 py-1.5 rounded-lg border border-gold-500/20 hover:border-gold-500/40 transition-colors"
+                          >
+                            View File
+                          </a>
+                        )}
+                      </div>
+                    )}
 
-                      {doc.fileUrl && (
+                    {/* View file for non-pending docs */}
+                    {doc.status !== "PENDING" && doc.fileUrl && !doc.fileUrl.startsWith("data:") && (
+                      <div className="pl-12 sm:pl-[52px]">
                         <a
                           href={doc.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-gold-500 hover:text-gold-400 underline decoration-dashed transition-colors"
+                          className="text-xs text-gold-500 hover:text-gold-400 transition-colors underline decoration-dashed"
                         >
                           View File
                         </a>
-                      )}
-
-                      {doc.status === "PENDING" && (
-                        <KycActions document={doc} />
-                      )}
-
-                      {doc.adminNote && (
-                        <span
-                          title={doc.adminNote}
-                          className="text-xs text-text-muted cursor-help underline decoration-dashed"
-                        >
-                          Note
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

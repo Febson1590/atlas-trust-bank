@@ -90,27 +90,27 @@ export default function TransferActions({ transfer }: { transfer: Transfer }) {
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-end gap-1.5">
         <button
           onClick={() => openModal("approve")}
-          title="Approve"
-          className="p-1.5 rounded-lg hover:bg-success/10 text-success transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-success/10 border border-success/20 text-success text-xs font-medium hover:bg-success/20 transition-colors"
         >
-          <CheckCircle className="h-4 w-4" />
+          <CheckCircle className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Approve</span>
         </button>
         <button
           onClick={() => openModal("reject")}
-          title="Reject"
-          className="p-1.5 rounded-lg hover:bg-error/10 text-error transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-error/10 border border-error/20 text-error text-xs font-medium hover:bg-error/20 transition-colors"
         >
-          <XCircle className="h-4 w-4" />
+          <XCircle className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Reject</span>
         </button>
         <button
           onClick={() => openModal("delay")}
-          title="Delay"
-          className="p-1.5 rounded-lg hover:bg-warning/10 text-warning transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-warning/10 border border-warning/20 text-warning text-xs font-medium hover:bg-warning/20 transition-colors"
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Delay</span>
         </button>
       </div>
 
