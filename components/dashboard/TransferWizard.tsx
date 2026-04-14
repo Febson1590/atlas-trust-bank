@@ -79,10 +79,11 @@ const HIGH_RISK_AMOUNT = 10000;
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
 
-// ─── Country transfer configs ────────────────────────────────
+// ─── Bank database with region metadata ─────────────────────
 
-interface CountryConfig {
-  label: string;
+interface BankEntry {
+  name: string;
+  region: string;
   flag: string;
   acctLabel: string;
   acctPlaceholder: string;
@@ -93,58 +94,52 @@ interface CountryConfig {
   requireSwift?: boolean;
   requireSortCode?: boolean;
   sortCodePlaceholder?: string;
+  helperText: string;
 }
 
-const COUNTRIES: Record<string, CountryConfig> = {
-  US: {
-    label: "United States",
-    flag: "🇺🇸",
-    acctLabel: "Account Number",
-    acctPlaceholder: "Enter account number",
-    requireRouting: true,
-    routingLabel: "Routing Number (ABA)",
-    routingPlaceholder: "9 digits (e.g. 021000021)",
-  },
-  GB: {
-    label: "United Kingdom",
-    flag: "🇬🇧",
-    acctLabel: "Account Number",
-    acctPlaceholder: "8-digit account number",
-    requireSortCode: true,
-    sortCodePlaceholder: "6 digits (e.g. 20-00-00)",
-    requireSwift: true,
-  },
-  EU: {
-    label: "Europe (SEPA)",
-    flag: "🇪🇺",
-    acctLabel: "IBAN",
-    acctPlaceholder: "e.g. DE89 3704 0044 0532 0130 00",
-    acctHint: "IBAN is required for SEPA transfers",
-    requireSwift: true,
-  },
-  CA: {
-    label: "Canada",
-    flag: "🇨🇦",
-    acctLabel: "Account Number",
-    acctPlaceholder: "Enter account number",
-    requireRouting: true,
-    routingLabel: "Transit / Institution Number",
-    routingPlaceholder: "e.g. 12345-001",
-    requireSwift: true,
-  },
-  OTHER: {
-    label: "Other Country",
-    flag: "🌍",
-    acctLabel: "Account Number / IBAN",
-    acctPlaceholder: "Enter account number or IBAN",
-    requireSwift: true,
-  },
-};
+const BANK_DB: BankEntry[] = [
+  // US
+  { name: "JPMorgan Chase", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 021000021)", helperText: "Requires account number and routing number" },
+  { name: "Bank of America", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 026009593)", helperText: "Requires account number and routing number" },
+  { name: "Wells Fargo", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 121000248)", helperText: "Requires account number and routing number" },
+  { name: "Citibank", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 021000089)", helperText: "Requires account number and routing number" },
+  { name: "Capital One", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits", helperText: "Requires account number and routing number" },
+  { name: "Goldman Sachs", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits", helperText: "Requires account number and routing number" },
+  // UK
+  { name: "Barclays", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 20-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
+  { name: "HSBC UK", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 40-02-50", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
+  { name: "Lloyds Bank", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 30-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
+  { name: "NatWest", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 60-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
+  // EU
+  { name: "Deutsche Bank", region: "EU", flag: "🇩🇪", acctLabel: "IBAN", acctPlaceholder: "e.g. DE89 3704 0044 0532 0130 00", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  { name: "BNP Paribas", region: "EU", flag: "🇫🇷", acctLabel: "IBAN", acctPlaceholder: "e.g. FR76 3000 6000 0112 3456 7890 189", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  { name: "ING Group", region: "EU", flag: "🇳🇱", acctLabel: "IBAN", acctPlaceholder: "e.g. NL91 ABNA 0417 1643 00", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  { name: "Santander", region: "EU", flag: "🇪🇸", acctLabel: "IBAN", acctPlaceholder: "e.g. ES91 2100 0418 4502 0005 1332", acctHint: "IBAN is required", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  { name: "UBS", region: "EU", flag: "🇨🇭", acctLabel: "IBAN", acctPlaceholder: "e.g. CH93 0076 2011 6238 5295 7", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  { name: "Credit Suisse", region: "EU", flag: "🇨🇭", acctLabel: "IBAN", acctPlaceholder: "e.g. CH93 0076 2011 6238 5295 7", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  // Canada
+  { name: "Royal Bank of Canada", region: "CA", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-003", requireSwift: true, helperText: "Requires account number, transit number, and SWIFT" },
+  { name: "TD Bank", region: "CA", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-004", requireSwift: true, helperText: "Requires account number, transit number, and SWIFT" },
+  // Asia-Pacific
+  { name: "DBS Bank", region: "SG", flag: "🇸🇬", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
+  { name: "HDFC Bank", region: "IN", flag: "🇮🇳", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code (IFSC optional)" },
+  { name: "Mitsubishi UFJ", region: "JP", flag: "🇯🇵", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
+  // Africa / Middle East
+  { name: "Standard Bank", region: "ZA", flag: "🇿🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
+  { name: "First Bank Nigeria", region: "NG", flag: "🇳🇬", acctLabel: "Account Number", acctPlaceholder: "10-digit account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
+  { name: "GTBank", region: "NG", flag: "🇳🇬", acctLabel: "Account Number", acctPlaceholder: "10-digit account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
+  { name: "Emirates NBD", region: "AE", flag: "🇦🇪", acctLabel: "IBAN", acctPlaceholder: "e.g. AE07 0331 2345 6789 0123 456", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
+  // Australia
+  { name: "Commonwealth Bank", region: "AU", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits (e.g. 062-000)", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+  { name: "ANZ Bank", region: "AU", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+];
 
-const COUNTRY_OPTIONS = Object.entries(COUNTRIES).map(([code, cfg]) => ({
-  code,
-  ...cfg,
-}));
+// Fallback for banks not in the list
+const DEFAULT_BANK_CONFIG: Omit<BankEntry, "name" | "region" | "flag" | "helperText"> = {
+  acctLabel: "Account Number / IBAN",
+  acctPlaceholder: "Enter account number or IBAN",
+  requireSwift: true,
+};
 
 // ─── Component ──────────────────────────────────────────────
 
@@ -162,8 +157,20 @@ export default function TransferWizard({
   );
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<string>("");
 
-  // Country selection for new recipients
-  const [selectedCountry, setSelectedCountry] = useState<string>("US");
+  // Bank autocomplete state
+  const [selectedBank, setSelectedBank] = useState<BankEntry | null>(null);
+  const [bankSearch, setBankSearch] = useState("");
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
+  const bankInputRef = useRef<HTMLInputElement | null>(null);
+  const bankDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  // Derived: selected country from bank
+  const selectedCountry = selectedBank?.region || "OTHER";
+
+  // Filter banks for autocomplete
+  const filteredBanks = bankSearch.length >= 1
+    ? BANK_DB.filter((b) => b.name.toLowerCase().includes(bankSearch.toLowerCase())).slice(0, 8)
+    : [];
 
   // Transfer result
   const [transferResult, setTransferResult] = useState<TransferResult | null>(null);
@@ -224,6 +231,17 @@ export default function TransferWizard({
     }, 1000);
     return () => clearInterval(timer);
   }, [cooldown]);
+
+  // ── Close bank dropdown on outside click ───────────────────
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (bankDropdownRef.current && !bankDropdownRef.current.contains(e.target as Node)) {
+        setBankDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   // ── Auto-fill from beneficiary ─────────────────────────────
   useEffect(() => {
@@ -617,7 +635,7 @@ export default function TransferWizard({
             {/* Recipient Fields */}
             {(recipientMode === "new" || selectedBeneficiary) && (() => {
               const isBeneficiary = recipientMode === "beneficiary";
-              const countryConfig = COUNTRIES[selectedCountry] || COUNTRIES.OTHER;
+              const bankConfig = selectedBank || DEFAULT_BANK_CONFIG;
               const inputCls = (readOnly: boolean) => cn(
                 "w-full bg-navy-900 border border-border-default rounded-lg px-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
                 readOnly && "opacity-70 cursor-not-allowed"
@@ -642,74 +660,133 @@ export default function TransferWizard({
                     )}
                   </div>
 
-                  {/* Destination Country (new recipients only) */}
-                  {!isBeneficiary && (
-                    <div>
+                  {/* Bank Autocomplete (new recipients only) */}
+                  {!isBeneficiary ? (
+                    <div ref={bankDropdownRef} className="relative">
                       <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                        Destination Country
+                        Bank
                       </label>
                       <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
-                        <select
-                          value={selectedCountry}
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                        <input
+                          ref={bankInputRef}
+                          type="text"
+                          value={bankSearch}
                           onChange={(e) => {
-                            setSelectedCountry(e.target.value);
-                            setValue("recipientCountry", e.target.value);
-                            setValue("routingNumber", "");
-                            setValue("swiftCode", "");
-                            setValue("sortCode", "");
+                            setBankSearch(e.target.value);
+                            setBankDropdownOpen(true);
+                            if (!e.target.value) {
+                              setSelectedBank(null);
+                              setValue("recipientBank", "");
+                              setValue("recipientCountry", "");
+                              setValue("routingNumber", "");
+                              setValue("swiftCode", "");
+                              setValue("sortCode", "");
+                            }
                           }}
-                          className="w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary focus:border-gold-500 focus:outline-none appearance-none cursor-pointer"
-                        >
-                          {COUNTRY_OPTIONS.map((c) => (
-                            <option key={c.code} value={c.code}>
-                              {c.flag} {c.label}
-                            </option>
+                          onFocus={() => { if (bankSearch) setBankDropdownOpen(true); }}
+                          placeholder="Search for a bank..."
+                          className="w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition"
+                          autoComplete="off"
+                        />
+                        {selectedBank && (
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+                            {selectedBank.flag}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Dropdown */}
+                      {bankDropdownOpen && filteredBanks.length > 0 && (
+                        <div className="absolute z-30 mt-1 w-full rounded-lg bg-navy-900 border border-border-default shadow-xl shadow-navy-950/60 max-h-56 overflow-y-auto">
+                          {filteredBanks.map((bank) => (
+                            <button
+                              key={bank.name + bank.region}
+                              type="button"
+                              onClick={() => {
+                                setSelectedBank(bank);
+                                setBankSearch(bank.name);
+                                setBankDropdownOpen(false);
+                                setValue("recipientBank", bank.name);
+                                setValue("recipientCountry", bank.region);
+                                setValue("routingNumber", "");
+                                setValue("swiftCode", "");
+                                setValue("sortCode", "");
+                              }}
+                              className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-navy-800 transition-colors"
+                            >
+                              <span className="text-base">{bank.flag}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-text-primary truncate">{bank.name}</p>
+                                <p className="text-[10px] text-text-muted">{bank.region}</p>
+                              </div>
+                            </button>
                           ))}
-                        </select>
+                        </div>
+                      )}
+
+                      {/* No results hint */}
+                      {bankDropdownOpen && bankSearch.length >= 2 && filteredBanks.length === 0 && (
+                        <div className="absolute z-30 mt-1 w-full rounded-lg bg-navy-900 border border-border-default shadow-xl shadow-navy-950/60 px-4 py-3">
+                          <p className="text-xs text-text-muted">No banks found. You can type the bank name manually.</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedBank(null);
+                              setValue("recipientBank", bankSearch);
+                              setBankDropdownOpen(false);
+                            }}
+                            className="mt-1.5 text-xs text-gold-500 hover:text-gold-400 transition-colors"
+                          >
+                            Use &ldquo;{bankSearch}&rdquo; as bank name →
+                          </button>
+                        </div>
+                      )}
+
+                      {errors.recipientBank && (
+                        <p className="text-xs text-error mt-1">{errors.recipientBank.message}</p>
+                      )}
+
+                      {/* Bank helper message */}
+                      {selectedBank && (
+                        <div className="flex items-center gap-1.5 mt-2 rounded-lg bg-gold-500/5 border border-gold-500/15 px-3 py-2">
+                          <Info className="h-3 w-3 text-gold-400 shrink-0" />
+                          <p className="text-xs text-gold-400">{selectedBank.helperText}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Beneficiary bank (read-only) */
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1.5">Bank</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                        <input
+                          type="text"
+                          {...register("recipientBank")}
+                          readOnly
+                          className="w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary opacity-70 cursor-not-allowed"
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* Bank Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                      Bank Name
-                    </label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
-                      <input
-                        type="text"
-                        {...register("recipientBank")}
-                        readOnly={isBeneficiary}
-                        placeholder="Enter bank name"
-                        className={cn(
-                          "w-full bg-navy-900 border border-border-default rounded-lg pl-10 pr-4 py-3 text-sm text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition",
-                          isBeneficiary && "opacity-70 cursor-not-allowed"
-                        )}
-                      />
-                    </div>
-                    {errors.recipientBank && (
-                      <p className="text-xs text-error mt-1">{errors.recipientBank.message}</p>
-                    )}
-                  </div>
-
                   {/* Account Number / IBAN */}
                   <div>
                     <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                      {isBeneficiary ? "Account Number" : countryConfig.acctLabel}
+                      {isBeneficiary ? "Account Number" : bankConfig.acctLabel}
                     </label>
                     <input
                       type="text"
                       {...register("recipientAcct")}
                       readOnly={isBeneficiary}
-                      placeholder={isBeneficiary ? "Account number" : countryConfig.acctPlaceholder}
+                      placeholder={isBeneficiary ? "Account number" : bankConfig.acctPlaceholder}
                       className={inputCls(isBeneficiary)}
                     />
-                    {!isBeneficiary && countryConfig.acctHint && (
+                    {!isBeneficiary && bankConfig.acctHint && (
                       <p className="flex items-center gap-1 text-xs text-gold-400/80 mt-1">
                         <Info className="h-3 w-3" />
-                        {countryConfig.acctHint}
+                        {bankConfig.acctHint}
                       </p>
                     )}
                     {errors.recipientAcct && (
@@ -717,26 +794,23 @@ export default function TransferWizard({
                     )}
                   </div>
 
-                  {/* Routing Number (US, CA) */}
-                  {!isBeneficiary && countryConfig.requireRouting && (
+                  {/* Routing Number */}
+                  {!isBeneficiary && bankConfig.requireRouting && (
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                        {countryConfig.routingLabel || "Routing Number"}
+                        {bankConfig.routingLabel || "Routing Number"}
                       </label>
                       <input
                         type="text"
                         {...register("routingNumber")}
-                        placeholder={countryConfig.routingPlaceholder || "Routing number"}
+                        placeholder={bankConfig.routingPlaceholder || "Routing number"}
                         className={inputCls(false)}
                       />
-                      {errors.routingNumber && (
-                        <p className="text-xs text-error mt-1">{errors.routingNumber.message}</p>
-                      )}
                     </div>
                   )}
 
-                  {/* Sort Code (UK) */}
-                  {!isBeneficiary && countryConfig.requireSortCode && (
+                  {/* Sort Code */}
+                  {!isBeneficiary && bankConfig.requireSortCode && (
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1.5">
                         Sort Code
@@ -744,17 +818,14 @@ export default function TransferWizard({
                       <input
                         type="text"
                         {...register("sortCode")}
-                        placeholder={countryConfig.sortCodePlaceholder || "Sort code"}
+                        placeholder={bankConfig.sortCodePlaceholder || "Sort code"}
                         className={inputCls(false)}
                       />
-                      {errors.sortCode && (
-                        <p className="text-xs text-error mt-1">{errors.sortCode.message}</p>
-                      )}
                     </div>
                   )}
 
-                  {/* SWIFT/BIC (international) */}
-                  {!isBeneficiary && countryConfig.requireSwift && (
+                  {/* SWIFT/BIC */}
+                  {!isBeneficiary && bankConfig.requireSwift && (
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1.5">
                         SWIFT / BIC Code
@@ -765,13 +836,6 @@ export default function TransferWizard({
                         placeholder="e.g. CHASUS33"
                         className={inputCls(false)}
                       />
-                      <p className="flex items-center gap-1 text-xs text-text-muted mt-1">
-                        <Info className="h-3 w-3" />
-                        Required for international transfers
-                      </p>
-                      {errors.swiftCode && (
-                        <p className="text-xs text-error mt-1">{errors.swiftCode.message}</p>
-                      )}
                     </div>
                   )}
                 </div>
@@ -869,12 +933,12 @@ export default function TransferWizard({
                 </span>
               </div>
 
-              {/* Destination */}
-              {selectedCountry && COUNTRIES[selectedCountry] && (
+              {/* Bank with region */}
+              {selectedBank && (
                 <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
-                  <span className="text-sm text-text-muted">Destination</span>
-                  <span className="text-sm font-medium text-text-primary">
-                    {COUNTRIES[selectedCountry].flag} {COUNTRIES[selectedCountry].label}
+                  <span className="text-sm text-text-muted">Bank</span>
+                  <span className="text-sm font-medium text-text-primary text-right">
+                    {selectedBank.flag} {watchAll.recipientBank}
                   </span>
                 </div>
               )}
@@ -882,9 +946,9 @@ export default function TransferWizard({
               {/* Account / IBAN */}
               <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
                 <span className="text-sm text-text-muted">
-                  {COUNTRIES[selectedCountry]?.acctLabel || "Account Number"}
+                  {selectedBank?.acctLabel || "Account Number"}
                 </span>
-                <span className="text-sm font-medium text-text-primary font-mono">
+                <span className="text-sm font-medium text-text-primary font-mono text-right max-w-[180px] truncate">
                   {watchAll.recipientAcct}
                 </span>
               </div>
@@ -893,7 +957,7 @@ export default function TransferWizard({
               {watchAll.routingNumber && (
                 <div className="flex items-center justify-between py-3 border-b border-border-subtle/50">
                   <span className="text-sm text-text-muted">
-                    {COUNTRIES[selectedCountry]?.routingLabel || "Routing Number"}
+                    {selectedBank?.routingLabel || "Routing Number"}
                   </span>
                   <span className="text-sm font-medium text-text-primary font-mono">
                     {watchAll.routingNumber}
