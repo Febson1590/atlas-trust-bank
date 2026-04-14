@@ -3,118 +3,106 @@ import { Wifi } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[#020508]">
-      {/* ── Background layers ── */}
+    <section className="relative w-full overflow-hidden bg-[#020508]">
+      {/* ── Full-width background layers ── */}
 
-      {/* Primary right-side gold glow */}
+      {/* Far-right gold glow (soft, diffused) */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "-15%",
-          right: "-10%",
-          width: "70%",
-          height: "90%",
+          top: "-20%",
+          right: "-20%",
+          width: "75%",
+          height: "110%",
           background:
-            "radial-gradient(ellipse at 65% 35%, rgba(180,130,40,0.16) 0%, rgba(140,90,20,0.06) 40%, transparent 70%)",
+            "radial-gradient(ellipse at 85% 40%, rgba(160,120,35,0.12) 0%, rgba(130,90,20,0.04) 45%, transparent 75%)",
         }}
       />
-      {/* Secondary warm glow (mid-right) */}
+      {/* Secondary glow (mid-far right, lower) */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "20%",
-          right: "5%",
-          width: "40%",
+          top: "30%",
+          right: "-5%",
+          width: "45%",
           height: "50%",
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(197,165,90,0.08) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 70% 50%, rgba(197,165,90,0.06) 0%, transparent 65%)",
         }}
       />
-      {/* Left dark anchor */}
+      {/* Left dark anchor — keeps text readable */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "0%",
-          left: "-5%",
-          width: "55%",
+          top: "0",
+          left: "0",
+          width: "60%",
           height: "100%",
           background:
-            "radial-gradient(ellipse at 20% 50%, rgba(3,8,17,0.9) 0%, transparent 70%)",
+            "linear-gradient(to right, rgba(2,5,8,0.95) 0%, rgba(2,5,8,0.6) 50%, transparent 100%)",
         }}
       />
-      {/* Bottom gradient blend */}
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          bottom: "-10%",
-          left: "0%",
-          width: "100%",
-          height: "40%",
-          background:
-            "radial-gradient(ellipse at 50% 90%, rgba(10,22,40,0.6) 0%, transparent 70%)",
-        }}
-      />
+      {/* Bottom blend into next section */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-navy-950 to-transparent" />
 
-      {/* Dot grid overlay (subtle texture) */}
+      {/* Subtle dot grid texture */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.025]"
+        className="pointer-events-none absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, #c5a55a 0.7px, transparent 0.7px)",
-          backgroundSize: "44px 44px",
+            "radial-gradient(circle, #c5a55a 0.6px, transparent 0.6px)",
+          backgroundSize: "48px 48px",
         }}
       />
 
-      {/* Fine horizontal lines (right side depth) */}
+      {/* Fine horizontal rules (right side depth, desktop) */}
       <div
-        className="pointer-events-none absolute hidden lg:block opacity-[0.03]"
+        className="pointer-events-none absolute hidden lg:block opacity-[0.025]"
         style={{
-          top: "10%",
-          right: "0%",
-          width: "45%",
-          height: "80%",
+          top: "8%",
+          right: "0",
+          width: "40%",
+          height: "84%",
           backgroundImage:
-            "repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(197,165,90,0.3) 39px, rgba(197,165,90,0.3) 40px)",
+            "repeating-linear-gradient(0deg, transparent, transparent 43px, rgba(197,165,90,0.25) 43px, rgba(197,165,90,0.25) 44px)",
         }}
       />
 
-      {/* Ambient bokeh particles */}
+      {/* Bokeh particles */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute h-1 w-1 rounded-full bg-gold-400/25 animate-float" style={{ top: "18%", right: "28%", filter: "blur(1px)" }} />
-        <div className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/15 animate-float-slow" style={{ top: "40%", right: "18%", filter: "blur(2px)" }} />
-        <div className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/35 animate-float-delayed" style={{ top: "12%", right: "42%", filter: "blur(0.5px)" }} />
-        <div className="absolute h-1 w-1 rounded-full bg-gold-400/20 animate-float-slow" style={{ top: "55%", right: "35%", filter: "blur(1.5px)" }} />
+        <div className="absolute h-1 w-1 rounded-full bg-gold-400/20 animate-float" style={{ top: "20%", right: "30%", filter: "blur(1px)" }} />
+        <div className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/12 animate-float-slow" style={{ top: "45%", right: "20%", filter: "blur(2px)" }} />
+        <div className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/30 animate-float-delayed" style={{ top: "14%", right: "45%", filter: "blur(0.5px)" }} />
+        <div className="absolute h-1 w-1 rounded-full bg-gold-400/15 animate-float-slow" style={{ top: "60%", right: "38%", filter: "blur(1.5px)" }} />
       </div>
 
-      {/* Bottom section fade */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-navy-950 to-transparent" />
-
-      {/* ── Content ── */}
+      {/* ── Content container ── */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-16">
-        <div className="flex flex-col items-center gap-12 py-28 sm:py-32 lg:flex-row lg:gap-16 lg:py-40">
+        <div className="flex flex-col items-center gap-10 pb-20 pt-32 sm:pb-24 sm:pt-36 lg:flex-row lg:gap-14 lg:pb-28 lg:pt-40">
 
-          {/* ── Left column: Text ── */}
+          {/* ── Left: Text ── */}
           <div className="flex-1 text-center lg:text-left animate-fade-in">
-            <span className="inline-block mb-5 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
+            <span className="inline-block mb-4 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
               Secure Digital Banking
             </span>
 
-            <h1 className="text-3xl font-bold leading-[1.08] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.5rem] font-display italic">
+            <h1 className="text-3xl font-bold leading-[1.10] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.4rem] font-display italic">
               Banking Without Limits.
               <br />
               <span className="gold-text">
-                Fast, Secure,
+                Fast, secure,
                 <br className="hidden sm:block" />
-                and in Your Control.
+                {" "}and in your control.
               </span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-text-secondary/80 sm:text-lg lg:mx-0">
-              Secure digital banking designed for confidence and control. Manage
-              accounts, send transfers, and track your finances — all in one place.
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-text-secondary/80 sm:text-lg lg:mx-0">
+              Secure digital banking designed for confidence and control.
+              Manage accounts, send transfers, and track your finances
+              — all in one place.
             </p>
 
-            <div className="mt-9 flex flex-col items-center gap-3.5 sm:flex-row sm:justify-center lg:justify-start">
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 href="/register"
                 className="gold-gradient inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
@@ -133,24 +121,24 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* ── Right column: Desktop card stack ── */}
+          {/* ── Right: Desktop card stack ── */}
           <div className="hidden lg:flex flex-1 items-center justify-center">
-            <div className="relative w-[380px] h-[340px]">
-              {/* Ambient glow behind cards */}
-              <div className="absolute -inset-10 rounded-full bg-gold-500/[0.05] blur-[70px]" />
+            <div className="relative w-[370px] h-[330px]">
+              {/* Card glow */}
+              <div className="absolute -inset-12 rounded-full bg-gold-500/[0.04] blur-[80px]" />
 
               {/* Back card */}
               <div
                 className="absolute rounded-2xl border border-border-subtle shadow-2xl shadow-black/40"
                 style={{
-                  width: "300px", height: "185px", top: "30px", left: "0px",
+                  width: "290px", height: "180px", top: "28px", left: "0px",
                   transform: "rotate(-8deg)",
                   background: "linear-gradient(145deg, #0c1829 0%, #060e1a 60%, #0a1420 100%)",
                 }}
               >
                 <div className="p-5">
                   <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-muted/60">Atlas Trust</p>
-                  <div className="mt-8 h-5 w-7 rounded-sm border border-gold-500/20 bg-gold-500/10" />
+                  <div className="mt-7 h-5 w-7 rounded-sm border border-gold-500/20 bg-gold-500/10" />
                   <p className="mt-4 font-mono text-[10px] tracking-[0.2em] text-text-muted/50">**** **** **** 7392</p>
                 </div>
               </div>
@@ -159,14 +147,14 @@ export default function Hero() {
               <div
                 className="absolute rounded-2xl border border-border-default shadow-2xl shadow-black/50"
                 style={{
-                  width: "300px", height: "185px", top: "50px", left: "30px",
+                  width: "290px", height: "180px", top: "48px", left: "28px",
                   transform: "rotate(-3deg)",
                   background: "linear-gradient(145deg, #122240 0%, #0c1829 50%, #060e1a 100%)",
                 }}
               >
                 <div className="p-5">
                   <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-muted/70">Atlas Trust</p>
-                  <div className="mt-8 h-5 w-7 rounded-sm border border-gold-500/25 bg-gold-500/15" />
+                  <div className="mt-7 h-5 w-7 rounded-sm border border-gold-500/25 bg-gold-500/15" />
                   <p className="mt-4 font-mono text-[10px] tracking-[0.2em] text-text-muted/60">**** **** **** 5108</p>
                 </div>
               </div>
@@ -175,100 +163,102 @@ export default function Hero() {
               <div
                 className="absolute rounded-2xl border border-gold-500/25 shadow-2xl shadow-black/60"
                 style={{
-                  width: "300px", height: "185px", top: "75px", left: "60px",
+                  width: "290px", height: "180px", top: "72px", left: "58px",
                   transform: "rotate(2deg)",
                   background: "linear-gradient(145deg, #c5a55a 0%, #a88a3e 35%, #d4b96e 65%, #8a6d2b 100%)",
                 }}
               >
-                <div className="p-5">
+                <div className="p-4.5">
                   <div className="flex items-center justify-between">
                     <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-navy-950/70">Atlas Trust</p>
-                    <Wifi className="h-4 w-4 text-navy-950/40 rotate-90" />
+                    <Wifi className="h-3.5 w-3.5 text-navy-950/40 rotate-90" />
                   </div>
-                  <div className="mt-6 h-6 w-8 rounded-sm bg-navy-950/15 border border-navy-950/10" />
-                  <p className="mt-5 font-mono text-xs tracking-[0.2em] text-navy-950/70">**** **** **** 4821</p>
-                  <div className="mt-2.5 flex items-end justify-between">
+                  <div className="mt-5 h-5.5 w-7.5 rounded-sm bg-navy-950/15 border border-navy-950/10" />
+                  <p className="mt-4 font-mono text-[11px] tracking-[0.2em] text-navy-950/70">**** **** **** 4821</p>
+                  <div className="mt-2 flex items-end justify-between">
                     <div>
-                      <p className="text-[8px] uppercase text-navy-950/50">Cardholder</p>
-                      <p className="text-[10px] font-semibold text-navy-950/80">Atlas Member</p>
+                      <p className="text-[7px] uppercase text-navy-950/50">Cardholder</p>
+                      <p className="text-[9px] font-semibold text-navy-950/80">Atlas Member</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[8px] uppercase text-navy-950/50">Expires</p>
-                      <p className="text-[10px] font-semibold text-navy-950/80">09/28</p>
+                      <p className="text-[7px] uppercase text-navy-950/50">Expires</p>
+                      <p className="text-[9px] font-semibold text-navy-950/80">09/28</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Floating mini balance */}
-              <div className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-slow" style={{ top: "5px", right: "-20px" }}>
-                <p className="text-[9px] font-medium text-text-muted">Balance</p>
-                <p className="text-sm font-bold gold-text">$24,850</p>
+              <div className="absolute glass glass-border rounded-xl px-3 py-2 animate-float-slow" style={{ top: "2px", right: "-18px" }}>
+                <p className="text-[8px] font-medium text-text-muted">Balance</p>
+                <p className="text-[13px] font-bold gold-text">$24,850</p>
                 <div className="mt-0.5 flex items-center gap-1">
-                  <div className="h-0 w-0 border-l-[3px] border-r-[3px] border-b-[5px] border-transparent border-b-success" />
-                  <span className="text-[8px] font-medium text-success">+2.8%</span>
+                  <div className="h-0 w-0 border-l-[2.5px] border-r-[2.5px] border-b-[4px] border-transparent border-b-success" />
+                  <span className="text-[7px] font-medium text-success">+2.8%</span>
                 </div>
               </div>
 
               {/* Floating mini chart */}
-              <div className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-delayed" style={{ bottom: "10px", left: "-15px" }}>
-                <p className="text-[9px] font-medium text-text-muted">Portfolio</p>
+              <div className="absolute glass glass-border rounded-xl px-3 py-2 animate-float-delayed" style={{ bottom: "12px", left: "-12px" }}>
+                <p className="text-[8px] font-medium text-text-muted">Portfolio</p>
                 <div className="mt-1 flex items-end gap-1.5">
-                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="text-gold-500">
-                    <polyline points="0,18 10,15 20,20 30,10 40,13 50,5 60,3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="52" height="20" viewBox="0 0 52 20" fill="none" className="text-gold-500">
+                    <polyline points="0,15 8,12 16,17 24,8 32,11 40,4 52,2" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="text-[8px] font-semibold text-success">+12%</span>
+                  <span className="text-[7px] font-semibold text-success">+12%</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── Mobile visual: Phone mockup ── */}
+          {/* ── Mobile: Phone mockup (smaller, faded bottom) ── */}
           <div className="flex justify-center lg:hidden">
-            <div className="relative w-[220px]">
-              <div className="rounded-[28px] border-2 border-border-default bg-navy-900 p-2 shadow-2xl shadow-black/60">
-                <div className="mx-auto mb-2 h-5 w-20 rounded-full bg-navy-950" />
-                <div className="rounded-[20px] bg-navy-950 px-4 py-4 space-y-3">
+            <div className="relative w-[190px] opacity-90">
+              {/* Bottom fade mask */}
+              <div className="absolute inset-x-0 bottom-0 h-16 z-10 bg-gradient-to-t from-[#020508] to-transparent rounded-b-[28px]" />
+              <div className="rounded-[24px] border-2 border-border-default bg-navy-900 p-1.5 shadow-xl shadow-black/50">
+                <div className="mx-auto mb-1.5 h-4 w-16 rounded-full bg-navy-950" />
+                <div className="rounded-[18px] bg-navy-950 px-3 py-3 space-y-2.5">
                   <div>
-                    <p className="text-[10px] text-text-muted">Good morning</p>
-                    <p className="text-xs font-semibold text-text-primary">Welcome back</p>
+                    <p className="text-[9px] text-text-muted">Good morning</p>
+                    <p className="text-[11px] font-semibold text-text-primary">Welcome back</p>
                   </div>
-                  <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
-                    <p className="text-[9px] text-text-muted uppercase tracking-wider">Total Balance</p>
-                    <p className="mt-1 text-lg font-bold gold-text">$24,850.00</p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <div className="h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-transparent border-b-success" />
-                      <span className="text-[9px] text-success">+2.8% today</span>
+                  <div className="rounded-lg bg-navy-800 border border-border-subtle p-2.5">
+                    <p className="text-[8px] text-text-muted uppercase tracking-wider">Total Balance</p>
+                    <p className="mt-0.5 text-base font-bold gold-text">$24,850.00</p>
+                    <div className="mt-0.5 flex items-center gap-1">
+                      <div className="h-0 w-0 border-l-[2.5px] border-r-[2.5px] border-b-[3.5px] border-transparent border-b-success" />
+                      <span className="text-[8px] text-success">+2.8%</span>
                     </div>
                   </div>
-                  <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[9px] text-text-muted">This week</p>
-                      <p className="text-[9px] text-gold-400">+$1,240</p>
+                  <div className="rounded-lg bg-navy-800 border border-border-subtle p-2.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[8px] text-text-muted">This week</p>
+                      <p className="text-[8px] text-gold-400">+$1,240</p>
                     </div>
-                    <svg className="w-full h-8" viewBox="0 0 160 30" preserveAspectRatio="none">
+                    <svg className="w-full h-6" viewBox="0 0 160 24" preserveAspectRatio="none">
                       <defs>
                         <linearGradient id="mobileChartFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#c5a55a" stopOpacity="0.15" />
+                          <stop offset="0%" stopColor="#c5a55a" stopOpacity="0.12" />
                           <stop offset="100%" stopColor="#030811" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      <path d="M0,22 C15,20 30,18 45,15 C60,12 75,20 90,16 C105,12 120,8 135,10 C150,12 155,6 160,4" fill="none" stroke="#c5a55a" strokeWidth="1.5" strokeLinecap="round" />
-                      <path d="M0,22 C15,20 30,18 45,15 C60,12 75,20 90,16 C105,12 120,8 135,10 C150,12 155,6 160,4 L160,30 L0,30 Z" fill="url(#mobileChartFill)" />
+                      <path d="M0,18 C20,16 40,14 60,11 C80,8 100,16 120,12 C140,8 150,4 160,3" fill="none" stroke="#c5a55a" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M0,18 C20,16 40,14 60,11 C80,8 100,16 120,12 C140,8 150,4 160,3 L160,24 L0,24 Z" fill="url(#mobileChartFill)" />
                     </svg>
                   </div>
-                  <div className="flex justify-between pt-1">
+                  <div className="flex justify-between pt-0.5">
                     {["Send", "Add", "Cards", "More"].map((label) => (
-                      <div key={label} className="flex flex-col items-center gap-1">
-                        <div className="h-8 w-8 rounded-full bg-navy-800 border border-border-subtle flex items-center justify-center">
-                          <div className="h-2.5 w-2.5 rounded-full bg-gold-500/30" />
+                      <div key={label} className="flex flex-col items-center gap-0.5">
+                        <div className="h-6 w-6 rounded-full bg-navy-800 border border-border-subtle flex items-center justify-center">
+                          <div className="h-2 w-2 rounded-full bg-gold-500/25" />
                         </div>
-                        <span className="text-[8px] text-text-muted">{label}</span>
+                        <span className="text-[7px] text-text-muted">{label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-text-muted/30" />
+                <div className="mx-auto mt-1.5 h-0.5 w-12 rounded-full bg-text-muted/25" />
               </div>
             </div>
           </div>
