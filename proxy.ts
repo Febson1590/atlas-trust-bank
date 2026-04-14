@@ -22,7 +22,7 @@ const authRoutes = [
 
 const SESSION_COOKIE = "atlas_session";
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
 
