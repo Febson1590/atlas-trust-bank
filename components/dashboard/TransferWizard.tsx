@@ -180,6 +180,10 @@ export default function TransferWizard({
   const [cooldown, setCooldown] = useState(0);
   const [otpSent, setOtpSent] = useState(false);
   const [needsOtp, setNeedsOtp] = useState(false);
+  const [otpAttempts, setOtpAttempts] = useState(0);
+  const [pinShake, setPinShake] = useState(false);
+  const [otpShake, setOtpShake] = useState(false);
+  const pinInputRef = useRef<HTMLInputElement | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Copy state
@@ -287,6 +291,8 @@ export default function TransferWizard({
   }, [watchAll, selectedCountry, recipientMode, selectedBeneficiary]);
 
   // ── Submit transfer with PIN (+ OTP if high-risk) ──────────
+  const MAX_OTP_ATTEMPTS = 5;
+
   const submitTransfer = useCallback(
     async (pinCode: string, otpCode?: string) => {
       setServerError("");
@@ -310,7 +316,6 @@ export default function TransferWizard({
           if (result.error === "OTP_REQUIRED") {
             setNeedsOtp(true);
             setIsVerifying(false);
-            // Send OTP
             setIsSendingOtp(true);
             const otpRes = await fetch("/api/transfers/send-otp", {
               method: "POST",
@@ -320,9 +325,28 @@ export default function TransferWizard({
             if (otpRes.ok) {
               setOtpSent(true);
               setCooldown(RESEND_COOLDOWN);
+              setTimeout(() => inputRefs.current[0]?.focus(), 100);
             }
             return;
           }
+
+          // PIN error — shake and clear
+          if (result.error?.toLowerCase().includes("pin")) {
+            setPinShake(true);
+            setTimeout(() => setPinShake(false), 600);
+            setPin("");
+            setTimeout(() => pinInputRef.current?.focus(), 100);
+          }
+
+          // OTP error — shake, increment attempts, clear
+          if (otpCode) {
+            setOtpShake(true);
+            setTimeout(() => setOtpShake(false), 600);
+            setOtpAttempts((prev) => prev + 1);
+            setOtp(Array(OTP_LENGTH).fill(""));
+            setTimeout(() => inputRefs.current[0]?.focus(), 100);
+          }
+
           setServerError(result.error || "Transfer failed");
           setIsVerifying(false);
           return;
@@ -964,7 +988,7 @@ export default function TransferWizard({
           STEP 3 — Transfer PIN (+ OTP for high-risk)
           ═══════════════════════════════════════════════════════ */}
       {currentStep === 2 && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div className="rounded-xl bg-navy-800 border border-border-subtle p-6 text-center">
             <div className="mx-auto w-14 h-14 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mb-4">
               <ShieldCheck className="w-6 h-6 text-gold-500" />
@@ -972,30 +996,58 @@ export default function TransferWizard({
 
             {!needsOtp ? (
               <>
-                {/* PIN entry */}
-                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                {/* ─── PIN entry ─── */}
+                <h3 className="text-lg font-semibold text-text-primary mb-1">
                   Enter Transfer PIN
                 </h3>
                 <p className="text-sm text-text-muted mb-6">
-                  Enter your 4–6 digit transfer PIN to confirm this transfer.
+                  Enter your 4-digit PIN to confirm.
                 </p>
 
-                <div className="max-w-[200px] mx-auto mb-6">
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={pin}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, "");
-                      setPin(val);
-                    }}
-                    disabled={isVerifying}
-                    placeholder="••••"
-                    className="w-full bg-navy-900 border border-border-default rounded-lg py-3 text-center text-2xl font-bold tracking-[0.3em] text-text-primary placeholder-text-muted focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
-                    autoFocus
-                  />
+                {/* PIN dots display */}
+                <div className={cn("flex items-center justify-center gap-3 mb-6", pinShake && "animate-shake")}>
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-4 w-4 rounded-full transition-all duration-200",
+                        i < pin.length
+                          ? "bg-gold-500 scale-110"
+                          : "bg-navy-700 border border-border-default"
+                      )}
+                    />
+                  ))}
                 </div>
+
+                {/* Hidden numeric input */}
+                <input
+                  ref={pinInputRef}
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={pin}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    setPin(val);
+                    setServerError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && pin.length === 4) handlePinSubmit();
+                  }}
+                  disabled={isVerifying}
+                  autoFocus
+                  className="sr-only"
+                  aria-label="Transfer PIN"
+                />
+
+                {/* Tappable area to focus input */}
+                <button
+                  type="button"
+                  onClick={() => pinInputRef.current?.focus()}
+                  className="w-full text-center text-xs text-text-muted mb-6 hover:text-text-secondary transition-colors"
+                >
+                  Tap here if keyboard doesn&apos;t appear
+                </button>
 
                 <button
                   type="button"
@@ -1015,62 +1067,82 @@ export default function TransferWizard({
                     </>
                   )}
                 </button>
+
+                {/* Forgot PIN */}
+                <p className="mt-4 text-xs text-text-muted">
+                  Forgot your PIN?{" "}
+                  <a
+                    href="/dashboard/security"
+                    className="text-gold-500 hover:text-gold-400 transition-colors"
+                  >
+                    Reset in Security settings
+                  </a>
+                </p>
               </>
             ) : (
               <>
-                {/* High-risk OTP */}
-                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                {/* ─── High-risk OTP ─── */}
+                <h3 className="text-lg font-semibold text-text-primary mb-1">
                   Additional Verification
                 </h3>
-                <p className="text-sm text-text-muted mb-2">
-                  This transfer requires additional verification due to the amount.
-                </p>
                 <p className="text-sm text-text-muted mb-6">
-                  Enter the 6-digit code sent to your email.
+                  This transfer requires a verification code. Check your email.
                 </p>
 
-                <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6">
-                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => {
-                        inputRefs.current[index] = el;
-                      }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={otp[index]}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      disabled={isVerifying}
-                      className="w-11 h-13 sm:w-13 sm:h-14 bg-navy-900 border border-border-default rounded-lg text-center text-xl font-semibold text-text-primary focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
-                      aria-label={`Digit ${index + 1}`}
-                    />
-                  ))}
-                </div>
+                {/* OTP attempt limit */}
+                {otpAttempts >= MAX_OTP_ATTEMPTS ? (
+                  <div className="rounded-lg bg-error/10 border border-error/20 p-4 mb-4">
+                    <p className="text-sm text-error font-medium">
+                      Too many failed attempts.
+                    </p>
+                    <p className="text-xs text-error/80 mt-1">
+                      Please request a new code or try again later.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className={cn("flex items-center justify-center gap-2 sm:gap-3 mb-6", otpShake && "animate-shake")}>
+                      {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => { inputRefs.current[index] = el; }}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={otp[index]}
+                          onChange={(e) => handleOtpChange(index, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          onPaste={index === 0 ? handleOtpPaste : undefined}
+                          disabled={isVerifying || otpAttempts >= MAX_OTP_ATTEMPTS}
+                          className="w-10 h-12 sm:w-12 sm:h-14 bg-navy-900 border border-border-default rounded-lg text-center text-lg sm:text-xl font-semibold text-text-primary focus:border-gold-500 focus:outline-none transition disabled:opacity-50"
+                          aria-label={`Digit ${index + 1}`}
+                        />
+                      ))}
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    const code = otp.join("");
-                    if (code.length === OTP_LENGTH) submitTransfer(pin, code);
-                  }}
-                  disabled={isVerifying || otp.join("").length !== OTP_LENGTH}
-                  className="w-full gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isVerifying ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4" />
-                      Verify &amp; Submit
-                    </>
-                  )}
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const code = otp.join("");
+                        if (code.length === OTP_LENGTH) submitTransfer(pin, code);
+                      }}
+                      disabled={isVerifying || otp.join("").length !== OTP_LENGTH || otpAttempts >= MAX_OTP_ATTEMPTS}
+                      className="w-full gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4" />
+                          Verify &amp; Submit
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
               </>
             )}
           </div>
@@ -1078,14 +1150,14 @@ export default function TransferWizard({
           {/* Resend for high-risk OTP */}
           {needsOtp && (
             <div className="text-center">
-              <p className="text-sm text-text-secondary">
-                Didn&apos;t receive the code?
-              </p>
               <button
                 type="button"
-                onClick={handleResendOtp}
+                onClick={() => {
+                  handleResendOtp();
+                  setOtpAttempts(0);
+                }}
                 disabled={cooldown > 0 || isSendingOtp}
-                className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-gold-500 hover:text-gold-400 transition disabled:text-text-muted disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-gold-500 hover:text-gold-400 transition disabled:text-text-muted disabled:cursor-not-allowed"
               >
                 {isSendingOtp ? (
                   <>
@@ -1115,6 +1187,7 @@ export default function TransferWizard({
               setPin("");
               setNeedsOtp(false);
               setOtp(Array(OTP_LENGTH).fill(""));
+              setOtpAttempts(0);
               setServerError("");
             }}
             className="w-full bg-navy-800 border border-border-subtle text-text-secondary font-medium py-2.5 rounded-lg hover:bg-navy-700 transition flex items-center justify-center gap-2 text-sm"
