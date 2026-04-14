@@ -308,6 +308,17 @@ export default function TransferWizard({
     return () => clearInterval(timer);
   }, [cooldown]);
 
+  // ── Auto-focus PIN input when entering step 2 ─────────────
+  useEffect(() => {
+    if (currentStep === 2 && !needsOtp) {
+      // Retry focus multiple times for mobile reliability
+      const attempts = [50, 150, 400];
+      attempts.forEach((delay) => {
+        setTimeout(() => pinInputRef.current?.focus(), delay);
+      });
+    }
+  }, [currentStep, needsOtp]);
+
   // ── Close bank dropdown on outside click ───────────────────
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -1144,50 +1155,49 @@ export default function TransferWizard({
                   Enter your 4-digit PIN to confirm.
                 </p>
 
-                {/* PIN dots display */}
-                <div className={cn("flex items-center justify-center gap-3 mb-6", pinShake && "animate-shake")}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-4 w-4 rounded-full transition-all duration-200",
-                        i < pin.length
-                          ? "bg-gold-500 scale-110"
-                          : "bg-navy-700 border border-border-default"
-                      )}
-                    />
-                  ))}
-                </div>
-
-                {/* Hidden numeric input */}
-                <input
-                  ref={pinInputRef}
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={pin}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                    setPin(val);
-                    setServerError("");
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && pin.length === 4) handlePinSubmit();
-                  }}
-                  disabled={isVerifying}
-                  autoFocus
-                  className="sr-only"
-                  aria-label="Transfer PIN"
-                />
-
-                {/* Tappable area to focus input */}
-                <button
-                  type="button"
+                {/* PIN input overlay — real input sits on top of dots */}
+                <div
+                  className={cn("relative mx-auto w-[180px] h-14 mb-6 cursor-text", pinShake && "animate-shake")}
                   onClick={() => pinInputRef.current?.focus()}
-                  className="w-full text-center text-xs text-text-muted mb-6 hover:text-text-secondary transition-colors"
                 >
-                  Tap here if keyboard doesn&apos;t appear
-                </button>
+                  {/* Dots underneath */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-4 pointer-events-none">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "h-4 w-4 rounded-full transition-all duration-200",
+                          i < pin.length
+                            ? "bg-gold-500 scale-110"
+                            : "bg-navy-700 border-2 border-border-default"
+                        )}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Real input — transparent, overlays the dots */}
+                  <input
+                    ref={pinInputRef}
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={4}
+                    value={pin}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      setPin(val);
+                      setServerError("");
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && pin.length === 4) handlePinSubmit();
+                    }}
+                    disabled={isVerifying}
+                    autoFocus
+                    autoComplete="one-time-code"
+                    className="absolute inset-0 w-full h-full opacity-0 text-lg caret-transparent"
+                    aria-label="Transfer PIN"
+                  />
+                </div>
 
                 <button
                   type="button"
