@@ -83,7 +83,9 @@ const RESEND_COOLDOWN = 60;
 
 interface BankEntry {
   name: string;
+  aliases?: string[];
   region: string;
+  country: string;
   flag: string;
   acctLabel: string;
   acctPlaceholder: string;
@@ -97,41 +99,108 @@ interface BankEntry {
   helperText: string;
 }
 
+// Helper to create US bank entries
+const usBank = (name: string, aliases?: string[]): BankEntry => ({ name, aliases, region: "US", country: "United States", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits", helperText: "Requires account number and routing number" });
+const ukBank = (name: string, aliases?: string[]): BankEntry => ({ name, aliases, region: "GB", country: "United Kingdom", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 20-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" });
+const euBank = (name: string, country: string, flag: string, aliases?: string[]): BankEntry => ({ name, aliases, region: "EU", country, flag, acctLabel: "IBAN", acctPlaceholder: "Enter IBAN", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" });
+const swiftBank = (name: string, country: string, flag: string, region: string, aliases?: string[]): BankEntry => ({ name, aliases, region, country, flag, acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" });
+const ibanBank = (name: string, country: string, flag: string, region: string, aliases?: string[]): BankEntry => ({ name, aliases, region, country, flag, acctLabel: "IBAN", acctPlaceholder: "Enter IBAN", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" });
+
 const BANK_DB: BankEntry[] = [
-  // US
-  { name: "JPMorgan Chase", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 021000021)", helperText: "Requires account number and routing number" },
-  { name: "Bank of America", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 026009593)", helperText: "Requires account number and routing number" },
-  { name: "Wells Fargo", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 121000248)", helperText: "Requires account number and routing number" },
-  { name: "Citibank", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits (e.g. 021000089)", helperText: "Requires account number and routing number" },
-  { name: "Capital One", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits", helperText: "Requires account number and routing number" },
-  { name: "Goldman Sachs", region: "US", flag: "🇺🇸", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Routing Number (ABA)", routingPlaceholder: "9 digits", helperText: "Requires account number and routing number" },
-  // UK
-  { name: "Barclays", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 20-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
-  { name: "HSBC UK", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 40-02-50", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
-  { name: "Lloyds Bank", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 30-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
-  { name: "NatWest", region: "GB", flag: "🇬🇧", acctLabel: "Account Number", acctPlaceholder: "8-digit account number", requireSortCode: true, sortCodePlaceholder: "e.g. 60-00-00", requireSwift: true, helperText: "Requires account number, sort code, and SWIFT" },
-  // EU
-  { name: "Deutsche Bank", region: "EU", flag: "🇩🇪", acctLabel: "IBAN", acctPlaceholder: "e.g. DE89 3704 0044 0532 0130 00", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  { name: "BNP Paribas", region: "EU", flag: "🇫🇷", acctLabel: "IBAN", acctPlaceholder: "e.g. FR76 3000 6000 0112 3456 7890 189", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  { name: "ING Group", region: "EU", flag: "🇳🇱", acctLabel: "IBAN", acctPlaceholder: "e.g. NL91 ABNA 0417 1643 00", acctHint: "IBAN is required for SEPA transfers", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  { name: "Santander", region: "EU", flag: "🇪🇸", acctLabel: "IBAN", acctPlaceholder: "e.g. ES91 2100 0418 4502 0005 1332", acctHint: "IBAN is required", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  { name: "UBS", region: "EU", flag: "🇨🇭", acctLabel: "IBAN", acctPlaceholder: "e.g. CH93 0076 2011 6238 5295 7", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  { name: "Credit Suisse", region: "EU", flag: "🇨🇭", acctLabel: "IBAN", acctPlaceholder: "e.g. CH93 0076 2011 6238 5295 7", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  // Canada
-  { name: "Royal Bank of Canada", region: "CA", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-003", requireSwift: true, helperText: "Requires account number, transit number, and SWIFT" },
-  { name: "TD Bank", region: "CA", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-004", requireSwift: true, helperText: "Requires account number, transit number, and SWIFT" },
-  // Asia-Pacific
-  { name: "DBS Bank", region: "SG", flag: "🇸🇬", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
-  { name: "HDFC Bank", region: "IN", flag: "🇮🇳", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code (IFSC optional)" },
-  { name: "Mitsubishi UFJ", region: "JP", flag: "🇯🇵", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
-  // Africa / Middle East
-  { name: "Standard Bank", region: "ZA", flag: "🇿🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
-  { name: "First Bank Nigeria", region: "NG", flag: "🇳🇬", acctLabel: "Account Number", acctPlaceholder: "10-digit account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
-  { name: "GTBank", region: "NG", flag: "🇳🇬", acctLabel: "Account Number", acctPlaceholder: "10-digit account number", requireSwift: true, helperText: "Requires account number and SWIFT/BIC code" },
-  { name: "Emirates NBD", region: "AE", flag: "🇦🇪", acctLabel: "IBAN", acctPlaceholder: "e.g. AE07 0331 2345 6789 0123 456", requireSwift: true, helperText: "Requires IBAN and SWIFT/BIC code" },
-  // Australia
-  { name: "Commonwealth Bank", region: "AU", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits (e.g. 062-000)", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
-  { name: "ANZ Bank", region: "AU", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+  // ── North America ──
+  usBank("JPMorgan Chase", ["Chase", "JP Morgan"]),
+  usBank("Bank of America", ["BofA", "BOA"]),
+  usBank("Wells Fargo"),
+  usBank("Citibank", ["Citi"]),
+  usBank("Capital One"),
+  usBank("Goldman Sachs", ["GS"]),
+  usBank("Morgan Stanley"),
+  usBank("US Bank", ["USB"]),
+  usBank("PNC Bank", ["PNC"]),
+  usBank("Charles Schwab", ["Schwab"]),
+  { name: "Royal Bank of Canada", aliases: ["RBC"], region: "CA", country: "Canada", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-003", requireSwift: true, helperText: "Requires account, transit number, and SWIFT" },
+  { name: "TD Bank", aliases: ["Toronto-Dominion"], region: "CA", country: "Canada", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-004", requireSwift: true, helperText: "Requires account, transit number, and SWIFT" },
+  { name: "Scotiabank", aliases: ["Bank of Nova Scotia"], region: "CA", country: "Canada", flag: "🇨🇦", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "Transit / Institution Number", routingPlaceholder: "e.g. 12345-002", requireSwift: true, helperText: "Requires account, transit number, and SWIFT" },
+  // ── United Kingdom ──
+  ukBank("Barclays"),
+  ukBank("HSBC UK", ["HSBC"]),
+  ukBank("Lloyds Bank", ["Lloyds"]),
+  ukBank("NatWest"),
+  ukBank("Monzo"),
+  ukBank("Revolut UK", ["Revolut"]),
+  ukBank("Standard Chartered", ["StanChart"]),
+  // ── Europe ──
+  euBank("Deutsche Bank", "Germany", "🇩🇪"),
+  euBank("Commerzbank", "Germany", "🇩🇪"),
+  euBank("BNP Paribas", "France", "🇫🇷", ["BNP"]),
+  euBank("Société Générale", "France", "🇫🇷", ["SocGen"]),
+  euBank("Crédit Agricole", "France", "🇫🇷"),
+  euBank("ING Group", "Netherlands", "🇳🇱", ["ING"]),
+  euBank("ABN AMRO", "Netherlands", "🇳🇱"),
+  euBank("Rabobank", "Netherlands", "🇳🇱"),
+  euBank("Santander", "Spain", "🇪🇸"),
+  euBank("BBVA", "Spain", "🇪🇸"),
+  euBank("CaixaBank", "Spain", "🇪🇸"),
+  euBank("UniCredit", "Italy", "🇮🇹"),
+  euBank("Intesa Sanpaolo", "Italy", "🇮🇹"),
+  euBank("UBS", "Switzerland", "🇨🇭"),
+  euBank("Credit Suisse", "Switzerland", "🇨🇭"),
+  euBank("Nordea", "Sweden", "🇸🇪"),
+  euBank("Danske Bank", "Denmark", "🇩🇰"),
+  euBank("KBC Group", "Belgium", "🇧🇪", ["KBC"]),
+  // ── China ──
+  swiftBank("Industrial and Commercial Bank of China", "China", "🇨🇳", "CN", ["ICBC"]),
+  swiftBank("China Construction Bank", "China", "🇨🇳", "CN", ["CCB"]),
+  swiftBank("Agricultural Bank of China", "China", "🇨🇳", "CN", ["ABC"]),
+  swiftBank("Bank of China", "China", "🇨🇳", "CN", ["BOC"]),
+  swiftBank("Bank of Communications", "China", "🇨🇳", "CN", ["BoCom"]),
+  // ── India ──
+  swiftBank("State Bank of India", "India", "🇮🇳", "IN", ["SBI"]),
+  swiftBank("HDFC Bank", "India", "🇮🇳", "IN", ["HDFC"]),
+  swiftBank("ICICI Bank", "India", "🇮🇳", "IN", ["ICICI"]),
+  swiftBank("Axis Bank", "India", "🇮🇳", "IN"),
+  swiftBank("Kotak Mahindra Bank", "India", "🇮🇳", "IN", ["Kotak"]),
+  // ── Japan ──
+  swiftBank("Mitsubishi UFJ Financial Group", "Japan", "🇯🇵", "JP", ["MUFG", "Mitsubishi UFJ"]),
+  swiftBank("Sumitomo Mitsui Banking", "Japan", "🇯🇵", "JP", ["SMBC"]),
+  swiftBank("Mizuho Bank", "Japan", "🇯🇵", "JP", ["Mizuho"]),
+  // ── Singapore / Southeast Asia ──
+  swiftBank("DBS Bank", "Singapore", "🇸🇬", "SG", ["DBS"]),
+  swiftBank("OCBC Bank", "Singapore", "🇸🇬", "SG", ["OCBC"]),
+  swiftBank("United Overseas Bank", "Singapore", "🇸🇬", "SG", ["UOB"]),
+  swiftBank("Bangkok Bank", "Thailand", "🇹🇭", "TH"),
+  swiftBank("BDO Unibank", "Philippines", "🇵🇭", "PH", ["BDO"]),
+  swiftBank("Maybank", "Malaysia", "🇲🇾", "MY"),
+  // ── Middle East ──
+  ibanBank("Emirates NBD", "UAE", "🇦🇪", "AE", ["ENBD"]),
+  ibanBank("Abu Dhabi Commercial Bank", "UAE", "🇦🇪", "AE", ["ADCB"]),
+  ibanBank("Saudi National Bank", "Saudi Arabia", "🇸🇦", "SA", ["SNB"]),
+  ibanBank("Al Rajhi Bank", "Saudi Arabia", "🇸🇦", "SA"),
+  ibanBank("Qatar National Bank", "Qatar", "🇶🇦", "QA", ["QNB"]),
+  // ── Africa ──
+  swiftBank("Standard Bank", "South Africa", "🇿🇦", "ZA"),
+  swiftBank("FirstRand Bank", "South Africa", "🇿🇦", "ZA", ["FNB"]),
+  swiftBank("Nedbank", "South Africa", "🇿🇦", "ZA"),
+  swiftBank("First Bank of Nigeria", "Nigeria", "🇳🇬", "NG", ["FirstBank"]),
+  swiftBank("GTBank", "Nigeria", "🇳🇬", "NG", ["Guaranty Trust"]),
+  swiftBank("Zenith Bank", "Nigeria", "🇳🇬", "NG"),
+  swiftBank("Access Bank", "Nigeria", "🇳🇬", "NG"),
+  swiftBank("United Bank for Africa", "Nigeria", "🇳🇬", "NG", ["UBA"]),
+  swiftBank("Ecobank", "Pan-Africa", "🌍", "AF"),
+  swiftBank("KCB Bank", "Kenya", "🇰🇪", "KE", ["Kenya Commercial Bank"]),
+  swiftBank("Equity Bank", "Kenya", "🇰🇪", "KE"),
+  // ── South America ──
+  swiftBank("Itaú Unibanco", "Brazil", "🇧🇷", "BR", ["Itau"]),
+  swiftBank("Banco do Brasil", "Brazil", "🇧🇷", "BR", ["BB"]),
+  swiftBank("Bradesco", "Brazil", "🇧🇷", "BR"),
+  swiftBank("Banco de Chile", "Chile", "🇨🇱", "CL"),
+  swiftBank("Bancolombia", "Colombia", "🇨🇴", "CO"),
+  swiftBank("Banco de la Nación Argentina", "Argentina", "🇦🇷", "AR"),
+  // ── Australia / NZ ──
+  { name: "Commonwealth Bank", aliases: ["CommBank", "CBA"], region: "AU", country: "Australia", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits (e.g. 062-000)", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+  { name: "ANZ Bank", aliases: ["ANZ"], region: "AU", country: "Australia", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+  { name: "Westpac", region: "AU", country: "Australia", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
+  { name: "National Australia Bank", aliases: ["NAB"], region: "AU", country: "Australia", flag: "🇦🇺", acctLabel: "Account Number", acctPlaceholder: "Enter account number", requireRouting: true, routingLabel: "BSB Number", routingPlaceholder: "6 digits", requireSwift: true, helperText: "Requires account number, BSB, and SWIFT" },
 ];
 
 // Fallback for banks not in the list
@@ -167,9 +236,16 @@ export default function TransferWizard({
   // Derived: selected country from bank
   const selectedCountry = selectedBank?.region || "OTHER";
 
-  // Filter banks for autocomplete
+  // Filter banks for autocomplete (matches name, aliases, and country)
   const filteredBanks = bankSearch.length >= 1
-    ? BANK_DB.filter((b) => b.name.toLowerCase().includes(bankSearch.toLowerCase())).slice(0, 8)
+    ? BANK_DB.filter((b) => {
+        const q = bankSearch.toLowerCase();
+        return (
+          b.name.toLowerCase().includes(q) ||
+          b.country.toLowerCase().includes(q) ||
+          b.aliases?.some((a) => a.toLowerCase().includes(q))
+        );
+      }).slice(0, 12)
     : [];
 
   // Transfer result
@@ -715,10 +791,10 @@ export default function TransferWizard({
                               }}
                               className="flex items-center gap-3 w-full px-4 py-2.5 text-left hover:bg-navy-800 transition-colors"
                             >
-                              <span className="text-base">{bank.flag}</span>
+                              <span className="text-base shrink-0">{bank.flag}</span>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-text-primary truncate">{bank.name}</p>
-                                <p className="text-[10px] text-text-muted">{bank.region}</p>
+                                <p className="text-[10px] text-text-muted">{bank.country}</p>
                               </div>
                             </button>
                           ))}
