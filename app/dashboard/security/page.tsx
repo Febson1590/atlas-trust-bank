@@ -20,6 +20,7 @@ export default async function SecurityPage() {
       id: true,
       email: true,
       status: true,
+      transferPin: true,
       lastLoginAt: true,
       createdAt: true,
     },
@@ -40,6 +41,7 @@ export default async function SecurityPage() {
       <SecurityForm
         email={user.email}
         status={user.status}
+        hasTransferPin={!!user.transferPin}
         lastLoginAt={user.lastLoginAt?.toISOString() ?? null}
         createdAt={user.createdAt.toISOString()}
       />

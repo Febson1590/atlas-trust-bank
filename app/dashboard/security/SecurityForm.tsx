@@ -18,6 +18,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 interface SecurityFormProps {
   email: string;
   status: string;
+  hasTransferPin: boolean;
   lastLoginAt: string | null;
   createdAt: string;
 }
@@ -25,9 +26,17 @@ interface SecurityFormProps {
 export default function SecurityForm({
   email,
   status,
+  hasTransferPin: initialHasPin,
   lastLoginAt,
   createdAt,
 }: SecurityFormProps) {
+  // Transfer PIN state
+  const [hasPin, setHasPin] = useState(initialHasPin);
+  const [pinForm, setPinForm] = useState({ currentPin: "", newPin: "", confirmPin: "" });
+  const [pinSaving, setPinSaving] = useState(false);
+  const [pinSuccess, setPinSuccess] = useState("");
+  const [pinError, setPinError] = useState("");
+
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -326,6 +335,166 @@ export default function SecurityForm({
           </div>
         </div>
       </form>
+
+      {/* ── Transfer PIN ─────────────────────────────────────── */}
+      <div className="rounded-xl bg-navy-800 border border-border-subtle overflow-hidden">
+        <div className="px-6 py-4 border-b border-border-subtle/50">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500/10">
+              <Shield className="h-4.5 w-4.5 text-gold-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">
+                Transfer PIN
+              </h3>
+              <p className="text-xs text-text-muted">
+                {hasPin ? "Change your 4-digit transfer PIN" : "Set up a 4-digit PIN to authorize transfers"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {pinSuccess && (
+            <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+              <p className="text-sm text-success">{pinSuccess}</p>
+            </div>
+          )}
+
+          {pinError && (
+            <div className="flex items-center gap-2 rounded-lg bg-error/10 border border-error/20 px-4 py-3">
+              <AlertCircle className="h-4 w-4 text-error shrink-0" />
+              <p className="text-sm text-error">{pinError}</p>
+            </div>
+          )}
+
+          {/* Current PIN (only if already set) */}
+          {hasPin && (
+            <div>
+              <label className="block text-xs font-medium text-text-muted mb-1.5">
+                Current PIN
+              </label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                value={pinForm.currentPin}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setPinForm((p) => ({ ...p, currentPin: val }));
+                  setPinError("");
+                  setPinSuccess("");
+                }}
+                placeholder="••••"
+                className="w-full max-w-[200px] rounded-lg bg-navy-900 border border-border-subtle px-4 py-2.5 text-sm text-text-primary text-center tracking-[0.3em] placeholder:text-text-muted/50 focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 transition-all"
+              />
+            </div>
+          )}
+
+          {/* New PIN */}
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1.5">
+              {hasPin ? "New PIN" : "Create PIN"}
+            </label>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={pinForm.newPin}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "");
+                setPinForm((p) => ({ ...p, newPin: val }));
+                setPinError("");
+                setPinSuccess("");
+              }}
+              placeholder="4 digits"
+              className="w-full max-w-[200px] rounded-lg bg-navy-900 border border-border-subtle px-4 py-2.5 text-sm text-text-primary text-center tracking-[0.3em] placeholder:text-text-muted/50 focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 transition-all"
+            />
+          </div>
+
+          {/* Confirm PIN */}
+          <div>
+            <label className="block text-xs font-medium text-text-muted mb-1.5">
+              Confirm PIN
+            </label>
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={4}
+              value={pinForm.confirmPin}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "");
+                setPinForm((p) => ({ ...p, confirmPin: val }));
+                setPinError("");
+                setPinSuccess("");
+              }}
+              placeholder="4 digits"
+              className="w-full max-w-[200px] rounded-lg bg-navy-900 border border-border-subtle px-4 py-2.5 text-sm text-text-primary text-center tracking-[0.3em] placeholder:text-text-muted/50 focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 transition-all"
+            />
+            {pinForm.confirmPin && pinForm.newPin !== pinForm.confirmPin && (
+              <p className="text-xs text-error mt-1.5">PINs do not match</p>
+            )}
+          </div>
+
+          {/* Save */}
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              disabled={pinSaving || pinForm.newPin.length !== 4 || pinForm.newPin !== pinForm.confirmPin}
+              onClick={async () => {
+                setPinError("");
+                setPinSuccess("");
+
+                if (pinForm.newPin.length !== 4) {
+                  setPinError("PIN must be exactly 4 digits");
+                  return;
+                }
+                if (pinForm.newPin !== pinForm.confirmPin) {
+                  setPinError("PINs do not match");
+                  return;
+                }
+                if (hasPin && !pinForm.currentPin) {
+                  setPinError("Enter your current PIN");
+                  return;
+                }
+
+                setPinSaving(true);
+                try {
+                  const res = await fetch("/api/transfer-pin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      pin: pinForm.newPin,
+                      currentPin: hasPin ? pinForm.currentPin : undefined,
+                    }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    setPinError(data.error || "Failed to set PIN");
+                  } else {
+                    setPinSuccess(hasPin ? "PIN changed successfully" : "Transfer PIN set successfully");
+                    setHasPin(true);
+                    setPinForm({ currentPin: "", newPin: "", confirmPin: "" });
+                  }
+                } catch {
+                  setPinError("Something went wrong");
+                } finally {
+                  setPinSaving(false);
+                }
+              }}
+              className="gold-gradient rounded-lg px-6 py-2.5 text-sm font-semibold text-navy-950 transition-all hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+            >
+              {pinSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Shield className="h-4 w-4" />
+              )}
+              {hasPin ? "Change PIN" : "Set PIN"}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* ── Security Information ─────────────────────────────── */}
       <div className="rounded-xl bg-navy-800 border border-border-subtle overflow-hidden">
