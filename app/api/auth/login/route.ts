@@ -102,7 +102,21 @@ export async function POST(request: Request) {
       );
     }
 
-    // Send login OTP for 2FA
+    // Admin users skip OTP — log in directly
+    if (user.role === "ADMIN") {
+      await createSession(user.id, user.email, user.role);
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            user: { id: user.id, email: user.email, role: user.role },
+          },
+        },
+        { status: 200 }
+      );
+    }
+
+    // Send login OTP for 2FA (regular users)
     const otp = await storeOTP(user.email, "login");
     await sendOTPEmail(user.email, otp, "login");
 
