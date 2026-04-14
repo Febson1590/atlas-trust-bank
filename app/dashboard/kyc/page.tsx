@@ -12,11 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function KycPage() {
-  // ── Session ────────────────────────────────────────────────
   const session = await getSession();
   if (!session) redirect("/login");
 
-  // ── Fetch user with KYC data ───────────────────────────────
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
     select: {
@@ -31,31 +29,35 @@ export default async function KycPage() {
 
   if (!user) redirect("/login");
 
-  // ── Serialize documents for client component ───────────────
-  const serializedDocuments = user.kycDocuments.map((doc) => ({
-    id: doc.id,
-    type: doc.type,
-    fileName: doc.fileName,
-    fileUrl: doc.fileUrl,
-    status: doc.status,
-    adminNote: doc.adminNote,
-    createdAt: doc.createdAt.toISOString(),
-  }));
+  // Get the latest document (for display)
+  const latestDoc = user.kycDocuments[0] ?? null;
 
-  // ── Find the latest rejection note (if any) ───────────────
+  const serializedDoc = latestDoc
+    ? {
+        id: latestDoc.id,
+        type: latestDoc.type,
+        fileName: latestDoc.fileName,
+        fileUrl: latestDoc.fileUrl,
+        status: latestDoc.status,
+        adminNote: latestDoc.adminNote,
+        createdAt: latestDoc.createdAt.toISOString(),
+      }
+    : null;
+
+  // Find rejection note if any
   const rejectedDoc = user.kycDocuments.find(
     (doc) => doc.status === "REJECTED" && doc.adminNote
   );
   const rejectionNote = rejectedDoc?.adminNote ?? null;
 
-  // ── Verification details for verified users ────────────────
+  // Verified date
   const verifiedDoc = user.kycDocuments.find(
     (doc) => doc.status === "VERIFIED" && doc.reviewedAt
   );
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* ── Page Header ──────────────────────────────────────── */}
+    <div className="max-w-2xl space-y-6 animate-fade-in">
+      {/* Page Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500/10">
@@ -66,17 +68,17 @@ export default async function KycPage() {
           </h2>
         </div>
         <p className="text-sm text-text-muted mt-1 ml-12">
-          Verify your identity to unlock full access to all banking features.
+          Verify your identity to get full access to your account.
         </p>
       </div>
 
-      {/* ── KYC Status Banner ────────────────────────────────── */}
+      {/* Status Banner */}
       <KycStatusComponent
         status={user.kycStatus}
         adminNote={rejectionNote}
       />
 
-      {/* ── Verified Details ─────────────────────────────────── */}
+      {/* Verified Details */}
       {user.kycStatus === "VERIFIED" && (
         <div className="rounded-xl bg-navy-800 border border-border-subtle p-6">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">
@@ -84,7 +86,7 @@ export default async function KycPage() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-text-muted mb-1">Verified Name</p>
+              <p className="text-xs text-text-muted mb-1">Name</p>
               <p className="text-sm font-medium text-text-primary">
                 {user.firstName} {user.lastName}
               </p>
@@ -97,65 +99,16 @@ export default async function KycPage() {
                 </p>
               </div>
             )}
-            <div>
-              <p className="text-xs text-text-muted mb-1">Documents Submitted</p>
-              <p className="text-sm font-medium text-text-primary">
-                {user.kycDocuments.length} document{user.kycDocuments.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-text-muted mb-1">Access Level</p>
-              <p className="text-sm font-medium text-success">
-                Full Access
-              </p>
-            </div>
           </div>
         </div>
       )}
 
-      {/* ── Upload Form ──────────────────────────────────────── */}
-      {/* Show form for NOT_STARTED, PENDING (read-only), and REJECTED */}
-      <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">
-          {user.kycStatus === "NOT_STARTED"
-            ? "Required Documents"
-            : user.kycStatus === "REJECTED"
-            ? "Re-submit Your Documents"
-            : user.kycStatus === "PENDING"
-            ? "Submitted Documents"
-            : "Your Documents"}
-        </h3>
+      {/* Upload Form — show for NOT_STARTED, PENDING, and REJECTED */}
+      {user.kycStatus !== "VERIFIED" && (
         <KycUploadForm
-          documents={serializedDocuments}
+          document={serializedDoc}
           kycStatus={user.kycStatus}
         />
-      </div>
-
-      {/* ── Help Section ─────────────────────────────────────── */}
-      {(user.kycStatus === "NOT_STARTED" || user.kycStatus === "REJECTED") && (
-        <div className="rounded-xl bg-navy-800 border border-border-subtle p-6">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-text-muted mb-4">
-            Tips for Successful Verification
-          </h3>
-          <ul className="space-y-3">
-            {[
-              "Ensure all documents are clearly visible and not blurry or cropped.",
-              "Government ID must be valid and not expired.",
-              "Selfie should clearly show your face alongside the ID document.",
-              "Proof of address must be dated within the last 3 months.",
-              "Accepted file formats: JPG, PNG, or PDF. Maximum file size: 5MB.",
-            ].map((tip, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold-500/10 mt-0.5">
-                  <span className="text-xs font-bold text-gold-500">
-                    {i + 1}
-                  </span>
-                </div>
-                <p className="text-sm text-text-secondary">{tip}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
       )}
     </div>
   );

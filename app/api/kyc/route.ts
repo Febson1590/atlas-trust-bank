@@ -173,35 +173,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Check if user now has all 3 document types uploaded
-    const allDocuments = await prisma.kycDocument.findMany({
-      where: { userId: session.userId },
-      select: { type: true },
+    // Update user's KYC status to PENDING after document upload
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { kycStatus: true },
     });
 
-    const uploadedTypes = new Set(allDocuments.map((d) => d.type));
-    const hasAllDocuments =
-      uploadedTypes.has(KycDocType.ID) &&
-      uploadedTypes.has(KycDocType.SELFIE) &&
-      uploadedTypes.has(KycDocType.PROOF_OF_ADDRESS);
-
-    // Update user's KYC status to PENDING if all documents are uploaded
-    if (hasAllDocuments) {
-      const user = await prisma.user.findUnique({
+    if (
+      user &&
+      (user.kycStatus === KycStatus.NOT_STARTED || user.kycStatus === KycStatus.REJECTED)
+    ) {
+      await prisma.user.update({
         where: { id: session.userId },
-        select: { kycStatus: true },
+        data: { kycStatus: KycStatus.PENDING },
       });
-
-      // Only update to PENDING if currently NOT_STARTED or REJECTED
-      if (
-        user &&
-        (user.kycStatus === KycStatus.NOT_STARTED || user.kycStatus === KycStatus.REJECTED)
-      ) {
-        await prisma.user.update({
-          where: { id: session.userId },
-          data: { kycStatus: KycStatus.PENDING },
-        });
-      }
     }
 
     return NextResponse.json(
@@ -209,7 +194,6 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           document,
-          allDocumentsUploaded: hasAllDocuments,
         },
       },
       { status: 201 }

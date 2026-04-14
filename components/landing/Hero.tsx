@@ -1,280 +1,261 @@
 import Link from "next/link";
+import { Wifi } from "lucide-react";
 
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#020508]">
-      {/* ── Background glow layers ── */}
+      {/* ── Background ── */}
+      {/* Right-side gold glow */}
       <div
         className="pointer-events-none absolute"
         style={{
-          top: "-20%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "80%",
-          height: "70%",
+          top: "-10%",
+          right: "-15%",
+          width: "65%",
+          height: "80%",
           background:
-            "radial-gradient(ellipse at 50% 40%, rgba(180,130,40,0.18) 0%, rgba(140,90,20,0.06) 40%, transparent 70%)",
+            "radial-gradient(ellipse at 60% 40%, rgba(180,130,40,0.14) 0%, rgba(140,90,20,0.05) 45%, transparent 70%)",
         }}
       />
+      {/* Left-side stays dark — subtle deep glow only */}
       <div
         className="pointer-events-none absolute"
         style={{
-          bottom: "-10%",
+          bottom: "-20%",
           left: "-10%",
-          width: "60%",
-          height: "50%",
-          background:
-            "radial-gradient(ellipse at 30% 70%, rgba(160,110,30,0.10) 0%, transparent 60%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          bottom: "-10%",
-          right: "-10%",
           width: "50%",
-          height: "40%",
+          height: "60%",
           background:
-            "radial-gradient(ellipse at 70% 80%, rgba(180,130,40,0.08) 0%, transparent 55%)",
+            "radial-gradient(ellipse at 30% 70%, rgba(10,22,40,0.8) 0%, transparent 60%)",
         }}
       />
-
-      {/* ── Dot grid overlay ── */}
+      {/* Subtle dot grid overlay */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, #c5a55a 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
+            "radial-gradient(circle, #c5a55a 0.8px, transparent 0.8px)",
+          backgroundSize: "48px 48px",
         }}
       />
-
-      {/* ── Bokeh particles ── */}
+      {/* Ambient bokeh */}
       <div className="pointer-events-none absolute inset-0">
-        <div
-          className="absolute h-1 w-1 rounded-full bg-gold-400/40 animate-float"
-          style={{ top: "12%", left: "15%", filter: "blur(1px)" }}
-        />
-        <div
-          className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/25 animate-float-slow"
-          style={{ top: "20%", right: "20%", filter: "blur(1.5px)" }}
-        />
-        <div
-          className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/50 animate-float-delayed"
-          style={{ top: "8%", right: "35%", filter: "blur(0.5px)" }}
-        />
-        <div
-          className="absolute h-1 w-1 rounded-full bg-amber-400/30 animate-float"
-          style={{ top: "30%", left: "8%", filter: "blur(1px)" }}
-        />
-        <div
-          className="absolute h-0.5 w-0.5 rounded-full bg-gold-400/35 animate-float-slow"
-          style={{ top: "15%", left: "42%", filter: "blur(1px)" }}
-        />
-        <div
-          className="absolute h-1.5 w-1.5 rounded-full bg-amber-300/20 animate-float-delayed"
-          style={{ top: "25%", right: "10%", filter: "blur(2px)" }}
-        />
+        <div className="absolute h-1 w-1 rounded-full bg-gold-400/30 animate-float" style={{ top: "15%", right: "25%", filter: "blur(1px)" }} />
+        <div className="absolute h-1.5 w-1.5 rounded-full bg-gold-500/20 animate-float-slow" style={{ top: "35%", right: "15%", filter: "blur(1.5px)" }} />
+        <div className="absolute h-0.5 w-0.5 rounded-full bg-gold-300/40 animate-float-delayed" style={{ top: "10%", right: "40%", filter: "blur(0.5px)" }} />
       </div>
 
-      {/* ── Floating UI elements (desktop only) ── */}
-      <div className="pointer-events-none absolute inset-0 hidden lg:block">
-        {/* Mini chart card — left */}
-        <div
-          className="absolute glass glass-border animate-float-slow rounded-xl px-4 py-3 opacity-60"
-          style={{ top: "22%", left: "6%" }}
-        >
-          <p className="text-[10px] font-medium text-text-muted">Portfolio</p>
-          <div className="mt-1 flex items-end gap-2">
-            <svg
-              width="80"
-              height="32"
-              viewBox="0 0 80 32"
-              fill="none"
-              className="text-gold-500"
-            >
-              <polyline
-                points="0,24 12,20 24,26 36,14 48,18 60,8 72,12 80,4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-[10px] font-semibold text-success">
-              +12.4%
-            </span>
-          </div>
-        </div>
-
-        {/* Mini balance card — right */}
-        <div
-          className="absolute glass glass-border animate-float-delayed rounded-xl px-4 py-3 opacity-60"
-          style={{ top: "18%", right: "7%" }}
-        >
-          <p className="text-[10px] font-medium text-text-muted">
-            Total Balance
-          </p>
-          <p className="mt-0.5 text-sm font-bold gold-text">$24,850.00</p>
-          <div className="mt-1 flex items-center gap-1">
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 10 10"
-              className="text-success"
-            >
-              <path
-                d="M5 1 L9 6 L1 6 Z"
-                fill="currentColor"
-              />
-            </svg>
-            <span className="text-[9px] text-success">+2.8% today</span>
-          </div>
-        </div>
-
-        {/* Mini transaction badge — bottom left */}
-        <div
-          className="absolute glass glass-border animate-float rounded-xl px-4 py-2.5 opacity-50"
-          style={{ bottom: "28%", left: "10%" }}
-        >
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success/20">
-              <svg
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
-                className="text-success"
-              >
-                <path
-                  d="M1 5 L4 8 L9 2"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[9px] text-text-muted">Payment received</p>
-              <p className="text-[10px] font-semibold text-text-primary">
-                +$3,200.00
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Mini world dots — bottom right */}
-        <div
-          className="absolute animate-float-slow opacity-40"
-          style={{ bottom: "25%", right: "8%" }}
-        >
-          <svg width="100" height="50" viewBox="0 0 100 50" fill="none">
-            {/* Stylized world map dots */}
-            <circle cx="20" cy="15" r="1.5" fill="#c5a55a" opacity="0.6" />
-            <circle cx="25" cy="12" r="1" fill="#c5a55a" opacity="0.4" />
-            <circle cx="30" cy="18" r="1.5" fill="#c5a55a" opacity="0.5" />
-            <circle cx="40" cy="10" r="2" fill="#c5a55a" opacity="0.7" />
-            <circle cx="45" cy="15" r="1" fill="#c5a55a" opacity="0.4" />
-            <circle cx="50" cy="20" r="1.5" fill="#c5a55a" opacity="0.5" />
-            <circle cx="55" cy="12" r="1" fill="#c5a55a" opacity="0.6" />
-            <circle cx="62" cy="18" r="2" fill="#c5a55a" opacity="0.7" />
-            <circle cx="70" cy="22" r="1.5" fill="#c5a55a" opacity="0.5" />
-            <circle cx="75" cy="15" r="1" fill="#c5a55a" opacity="0.4" />
-            <circle cx="82" cy="25" r="1.5" fill="#c5a55a" opacity="0.6" />
-            <circle cx="88" cy="20" r="1" fill="#c5a55a" opacity="0.3" />
-            <circle cx="35" cy="30" r="1.5" fill="#c5a55a" opacity="0.5" />
-            <circle cx="42" cy="35" r="1" fill="#c5a55a" opacity="0.4" />
-            <circle cx="65" cy="35" r="1.5" fill="#c5a55a" opacity="0.5" />
-          </svg>
-        </div>
-      </div>
-
-      {/* ── Bottom golden wave ── */}
-      <svg
-        className="pointer-events-none absolute bottom-0 left-0 w-full opacity-[0.10]"
-        viewBox="0 0 1440 200"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="none"
-        style={{ height: "160px" }}
-      >
-        <path
-          d="M0,120 C120,80 240,140 360,100 C480,60 600,130 720,110 C840,90 960,140 1080,100 C1200,60 1320,120 1440,90 L1440,200 L0,200 Z"
-          fill="url(#heroWave1)"
-        />
-        <path
-          d="M0,150 C160,110 320,170 480,130 C640,90 800,160 960,140 C1120,120 1280,160 1440,130 L1440,200 L0,200 Z"
-          fill="url(#heroWave2)"
-        />
-        <defs>
-          <linearGradient id="heroWave1" x1="0" y1="0" x2="1440" y2="0">
-            <stop offset="0%" stopColor="#8a6d2b" stopOpacity="0.3" />
-            <stop offset="50%" stopColor="#c5a55a" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#8a6d2b" stopOpacity="0.3" />
-          </linearGradient>
-          <linearGradient id="heroWave2" x1="0" y1="0" x2="1440" y2="0">
-            <stop offset="0%" stopColor="#a88a3e" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#d4b96e" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#a88a3e" stopOpacity="0.2" />
-          </linearGradient>
-        </defs>
-      </svg>
-
-      {/* ── Bottom fade for section blend ── */}
+      {/* Bottom fade */}
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy-950 to-transparent" />
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex items-center justify-center px-6 py-28 sm:py-32 lg:py-44">
-        <div className="mx-auto w-full max-w-3xl text-center animate-fade-in">
-          {/* Badge */}
-          <span className="inline-block mb-6 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
-            Trusted by 1.2 Million People Worldwide
-          </span>
+      <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-16">
+        <div className="flex flex-col items-center gap-12 py-28 sm:py-32 lg:flex-row lg:gap-16 lg:py-40">
 
-          <h1 className="text-3xl font-bold leading-[1.1] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-6xl font-display italic">
-            Banking Without Limits.
-            <br />
-            <span className="gold-text">
-              Fast, Secure,
-              <br className="hidden sm:block" />
-              and in Your Control.
+          {/* ── Left column: Text ── */}
+          <div className="flex-1 text-center lg:text-left animate-fade-in">
+            <span className="inline-block mb-5 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-gold-400">
+              Trusted by 1.2 Million People Worldwide
             </span>
-          </h1>
 
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-text-secondary/80 sm:text-lg">
-            A better way to manage your money. Safe, simple, and ready when you
-            are. Open an account in minutes.
-          </p>
+            <h1 className="text-3xl font-bold leading-[1.08] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.5rem] font-display italic">
+              Banking Without Limits.
+              <br />
+              <span className="gold-text">
+                Fast, Secure,
+                <br className="hidden sm:block" />
+                and in Your Control.
+              </span>
+            </h1>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-3.5 sm:flex-row">
-            <Link
-              href="/register"
-              className="gold-gradient inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
-            >
-              Get Started in Minutes
-              <svg
-                className="ml-2 h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
+            <p className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-text-secondary/80 sm:text-lg lg:mx-0">
+              A better way to manage your money. Safe, simple, and ready when you
+              are. Open an account in minutes.
+            </p>
+
+            <div className="mt-9 flex flex-col items-center gap-3.5 sm:flex-row sm:justify-center lg:justify-start">
+              <Link
+                href="/register"
+                className="gold-gradient inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
-              </svg>
-            </Link>
-            <Link
-              href="#features"
-              className="glass glass-border inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-medium text-text-secondary transition-all duration-300 hover:border-gold-500/40 hover:text-gold-400"
-            >
-              Explore Features
-            </Link>
+                Get Started in Minutes
+                <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="#features"
+                className="glass glass-border inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-medium text-text-secondary transition-all duration-300 hover:border-gold-500/40 hover:text-gold-400"
+              >
+                Explore Features
+              </Link>
+            </div>
           </div>
+
+          {/* ── Right column: Desktop card stack ── */}
+          <div className="hidden lg:flex flex-1 items-center justify-center">
+            <div className="relative w-[380px] h-[340px]">
+
+              {/* Ambient glow behind cards */}
+              <div className="absolute -inset-8 rounded-full bg-gold-500/[0.06] blur-[60px]" />
+
+              {/* Back card (dark, rotated left) */}
+              <div
+                className="absolute rounded-2xl border border-border-subtle shadow-2xl shadow-black/40"
+                style={{
+                  width: "300px",
+                  height: "185px",
+                  top: "30px",
+                  left: "0px",
+                  transform: "rotate(-8deg)",
+                  background: "linear-gradient(145deg, #0c1829 0%, #060e1a 60%, #0a1420 100%)",
+                }}
+              >
+                <div className="p-5">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-muted/60">Atlas Trust</p>
+                  <div className="mt-8 h-5 w-7 rounded-sm border border-gold-500/20 bg-gold-500/10" />
+                  <p className="mt-4 font-mono text-[10px] tracking-[0.2em] text-text-muted/50">**** **** **** 7392</p>
+                </div>
+              </div>
+
+              {/* Middle card (dark, slight rotation) */}
+              <div
+                className="absolute rounded-2xl border border-border-default shadow-2xl shadow-black/50"
+                style={{
+                  width: "300px",
+                  height: "185px",
+                  top: "50px",
+                  left: "30px",
+                  transform: "rotate(-3deg)",
+                  background: "linear-gradient(145deg, #122240 0%, #0c1829 50%, #060e1a 100%)",
+                }}
+              >
+                <div className="p-5">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-text-muted/70">Atlas Trust</p>
+                  <div className="mt-8 h-5 w-7 rounded-sm border border-gold-500/25 bg-gold-500/15" />
+                  <p className="mt-4 font-mono text-[10px] tracking-[0.2em] text-text-muted/60">**** **** **** 5108</p>
+                </div>
+              </div>
+
+              {/* Front card (gold accent) */}
+              <div
+                className="absolute rounded-2xl border border-gold-500/25 shadow-2xl shadow-black/60"
+                style={{
+                  width: "300px",
+                  height: "185px",
+                  top: "75px",
+                  left: "60px",
+                  transform: "rotate(2deg)",
+                  background: "linear-gradient(145deg, #c5a55a 0%, #a88a3e 35%, #d4b96e 65%, #8a6d2b 100%)",
+                }}
+              >
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-navy-950/70">Atlas Trust</p>
+                    <Wifi className="h-4 w-4 text-navy-950/40 rotate-90" />
+                  </div>
+                  <div className="mt-6 h-6 w-8 rounded-sm bg-navy-950/15 border border-navy-950/10" />
+                  <p className="mt-5 font-mono text-xs tracking-[0.2em] text-navy-950/70">**** **** **** 4821</p>
+                  <div className="mt-2.5 flex items-end justify-between">
+                    <div>
+                      <p className="text-[8px] uppercase text-navy-950/50">Cardholder</p>
+                      <p className="text-[10px] font-semibold text-navy-950/80">Atlas Member</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[8px] uppercase text-navy-950/50">Expires</p>
+                      <p className="text-[10px] font-semibold text-navy-950/80">09/28</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating mini balance card */}
+              <div
+                className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-slow"
+                style={{ top: "5px", right: "-20px" }}
+              >
+                <p className="text-[9px] font-medium text-text-muted">Balance</p>
+                <p className="text-sm font-bold gold-text">$24,850</p>
+                <div className="mt-0.5 flex items-center gap-1">
+                  <div className="h-0 w-0 border-l-[3px] border-r-[3px] border-b-[5px] border-transparent border-b-success" />
+                  <span className="text-[8px] font-medium text-success">+2.8%</span>
+                </div>
+              </div>
+
+              {/* Floating mini chart card */}
+              <div
+                className="absolute glass glass-border rounded-xl px-3.5 py-2.5 animate-float-delayed"
+                style={{ bottom: "10px", left: "-15px" }}
+              >
+                <p className="text-[9px] font-medium text-text-muted">Portfolio</p>
+                <div className="mt-1 flex items-end gap-1.5">
+                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="text-gold-500">
+                    <polyline points="0,18 10,15 20,20 30,10 40,13 50,5 60,3" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="text-[8px] font-semibold text-success">+12%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Mobile visual: Phone mockup ── */}
+          <div className="flex justify-center lg:hidden">
+            <div className="relative w-[220px]">
+              {/* Phone frame */}
+              <div className="rounded-[28px] border-2 border-border-default bg-navy-900 p-2 shadow-2xl shadow-black/60">
+                {/* Notch */}
+                <div className="mx-auto mb-2 h-5 w-20 rounded-full bg-navy-950" />
+                {/* Screen */}
+                <div className="rounded-[20px] bg-navy-950 px-4 py-4 space-y-3">
+                  {/* Greeting */}
+                  <div>
+                    <p className="text-[10px] text-text-muted">Good morning</p>
+                    <p className="text-xs font-semibold text-text-primary">Welcome back</p>
+                  </div>
+                  {/* Balance */}
+                  <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
+                    <p className="text-[9px] text-text-muted uppercase tracking-wider">Total Balance</p>
+                    <p className="mt-1 text-lg font-bold gold-text">$24,850.00</p>
+                    <div className="mt-1 flex items-center gap-1">
+                      <div className="h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-transparent border-b-success" />
+                      <span className="text-[9px] text-success">+2.8% today</span>
+                    </div>
+                  </div>
+                  {/* Mini chart */}
+                  <div className="rounded-xl bg-navy-800 border border-border-subtle p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[9px] text-text-muted">This week</p>
+                      <p className="text-[9px] text-gold-400">+$1,240</p>
+                    </div>
+                    <svg className="w-full h-8" viewBox="0 0 160 30" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="mobileChartFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#c5a55a" stopOpacity="0.15" />
+                          <stop offset="100%" stopColor="#030811" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,22 C15,20 30,18 45,15 C60,12 75,20 90,16 C105,12 120,8 135,10 C150,12 155,6 160,4" fill="none" stroke="#c5a55a" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M0,22 C15,20 30,18 45,15 C60,12 75,20 90,16 C105,12 120,8 135,10 C150,12 155,6 160,4 L160,30 L0,30 Z" fill="url(#mobileChartFill)" />
+                    </svg>
+                  </div>
+                  {/* Quick actions */}
+                  <div className="flex justify-between pt-1">
+                    {["Send", "Add", "Cards", "More"].map((label) => (
+                      <div key={label} className="flex flex-col items-center gap-1">
+                        <div className="h-8 w-8 rounded-full bg-navy-800 border border-border-subtle flex items-center justify-center">
+                          <div className="h-2.5 w-2.5 rounded-full bg-gold-500/30" />
+                        </div>
+                        <span className="text-[8px] text-text-muted">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Home indicator */}
+                <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-text-muted/30" />
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
