@@ -10,6 +10,7 @@ interface DashboardShellProps {
     firstName: string;
     lastName: string;
     email: string;
+    avatarUrl?: string | null;
   };
   unreadCount: number;
   children: React.ReactNode;

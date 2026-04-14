@@ -21,6 +21,7 @@ export default async function SettingsPage() {
       email: true,
       firstName: true,
       lastName: true,
+      avatarUrl: true,
       phone: true,
       address: true,
       city: true,

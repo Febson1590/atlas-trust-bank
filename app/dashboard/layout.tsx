@@ -27,6 +27,7 @@ export default async function DashboardLayout({
       firstName: true,
       lastName: true,
       email: true,
+      avatarUrl: true,
       status: true,
     },
   });
@@ -59,6 +60,7 @@ export default async function DashboardLayout({
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        avatarUrl: user.avatarUrl,
       }}
       unreadCount={unreadCount}
     >

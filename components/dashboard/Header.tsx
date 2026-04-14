@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Menu, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
@@ -12,6 +13,7 @@ interface HeaderProps {
     firstName: string;
     lastName: string;
     email: string;
+    avatarUrl?: string | null;
   };
   onMenuToggle: () => void;
   unreadCount: number;
@@ -95,9 +97,20 @@ export default function Header({
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-navy-800 transition-colors"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient text-xs font-bold text-navy-950">
-                {initials}
-              </div>
+              {user.avatarUrl ? (
+                <Image
+                  src={user.avatarUrl}
+                  alt={`${user.firstName} ${user.lastName}`}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient text-xs font-bold text-navy-950">
+                  {initials}
+                </div>
+              )}
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-text-primary leading-tight">
                   {user.firstName} {user.lastName}

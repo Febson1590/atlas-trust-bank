@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   User,
   Phone,
@@ -12,8 +14,10 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Camera,
+  Trash2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 
 interface Profile {
@@ -21,6 +25,7 @@ interface Profile {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -36,6 +41,67 @@ interface SettingsFormProps {
 }
 
 export default function SettingsForm({ profile }: SettingsFormProps) {
+  const router = useRouter();
+
+  // Avatar state
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl || null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setAvatarError("");
+
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError("Image must be under 2MB");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setAvatarError("Only JPG, PNG, or WEBP allowed");
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const res = await fetch("/api/user/avatar", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAvatarError(data.error || "Upload failed");
+        return;
+      }
+
+      setAvatarUrl(data.data.avatarUrl);
+      router.refresh();
+    } catch {
+      setAvatarError("Something went wrong");
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
+
+  async function handleAvatarRemove() {
+    setAvatarUploading(true);
+    setAvatarError("");
+    try {
+      const res = await fetch("/api/user/avatar", { method: "DELETE" });
+      if (res.ok) {
+        setAvatarUrl(null);
+        router.refresh();
+      }
+    } catch {
+      setAvatarError("Failed to remove photo");
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
   const [form, setForm] = useState({
     firstName: profile.firstName,
     lastName: profile.lastName,
@@ -92,6 +158,82 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
 
   return (
     <div className="space-y-6">
+      {/* ── Profile Photo ──────────────────────────────────── */}
+      <div className="rounded-xl bg-navy-800 border border-border-subtle overflow-hidden">
+        <div className="px-6 py-4 border-b border-border-subtle/50">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold-500/10">
+              <Camera className="h-4 w-4 text-gold-500" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Profile Photo</h3>
+              <p className="text-xs text-text-muted">JPG, PNG, or WEBP. Max 2MB.</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="flex items-center gap-5">
+            {/* Avatar preview */}
+            <div className="relative shrink-0">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt="Profile"
+                  width={72}
+                  height={72}
+                  className="h-[72px] w-[72px] rounded-full object-cover border-2 border-border-default"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full gold-gradient text-lg font-bold text-navy-950 border-2 border-gold-500/30">
+                  {getInitials(profile.firstName, profile.lastName)}
+                </div>
+              )}
+              {avatarUploading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-navy-950/60">
+                  <Loader2 className="h-5 w-5 text-gold-500 animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarUploading}
+                  className="rounded-lg bg-navy-700 border border-border-subtle px-4 py-2 text-xs font-medium text-text-primary hover:border-gold-500/30 transition-all disabled:opacity-50"
+                >
+                  {avatarUrl ? "Change Photo" : "Upload Photo"}
+                </button>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={handleAvatarRemove}
+                    disabled={avatarUploading}
+                    className="rounded-lg border border-error/20 px-3 py-2 text-xs font-medium text-error hover:bg-error/10 transition-all disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              {avatarError && (
+                <p className="text-xs text-error">{avatarError}</p>
+              )}
+            </div>
+
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* ── Personal Information ───────────────────────────── */}
       <form onSubmit={handleSubmit}>
         <div className="rounded-xl bg-navy-800 border border-border-subtle overflow-hidden">
