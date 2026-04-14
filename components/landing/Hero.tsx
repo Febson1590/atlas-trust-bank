@@ -78,7 +78,7 @@ export default function Hero() {
 
       {/* ── Content container ── */}
       <div className="relative z-10 mx-auto max-w-7xl px-6 sm:px-10 lg:px-16">
-        <div className="flex flex-col items-center gap-10 pb-20 pt-32 sm:pb-24 sm:pt-36 lg:flex-row lg:gap-14 lg:pb-28 lg:pt-40">
+        <div className="flex flex-col items-center gap-8 pb-16 pt-28 sm:gap-10 sm:pb-24 sm:pt-36 lg:flex-row lg:gap-14 lg:pb-28 lg:pt-40">
 
           {/* ── Left: Text ── */}
           <div className="flex-1 text-center lg:text-left animate-fade-in">
@@ -86,7 +86,7 @@ export default function Hero() {
               Secure Digital Banking
             </span>
 
-            <h1 className="text-3xl font-bold leading-[1.10] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.4rem] font-display italic">
+            <h1 className="text-[1.65rem] font-bold leading-[1.12] tracking-tight text-text-primary sm:text-4xl md:text-5xl lg:text-[3.4rem] font-display italic">
               Banking Without Limits.
               <br />
               <span className="gold-text">
@@ -96,13 +96,13 @@ export default function Hero() {
               </span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-text-secondary/80 sm:text-lg lg:mx-0">
+            <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-text-secondary/80 sm:text-base sm:mt-5 lg:mx-0 lg:text-lg">
               Secure digital banking designed for confidence and control.
               Manage accounts, send transfers, and track your finances
               — all in one place.
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+            <div className="mt-6 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 href="/register"
                 className="gold-gradient inline-flex items-center justify-center rounded-xl px-8 py-3.5 text-sm font-semibold text-navy-950 transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
@@ -213,9 +213,9 @@ export default function Hero() {
 
           {/* ── Mobile: Phone mockup (smaller, faded bottom) ── */}
           <div className="flex justify-center lg:hidden">
-            <div className="relative w-[190px] opacity-90">
+            <div className="relative w-[175px] opacity-85">
               {/* Bottom fade mask */}
-              <div className="absolute inset-x-0 bottom-0 h-16 z-10 bg-gradient-to-t from-[#020508] to-transparent rounded-b-[28px]" />
+              <div className="absolute inset-x-0 bottom-0 h-20 z-10 bg-gradient-to-t from-[#020508] to-transparent rounded-b-[24px]" />
               <div className="rounded-[24px] border-2 border-border-default bg-navy-900 p-1.5 shadow-xl shadow-black/50">
                 <div className="mx-auto mb-1.5 h-4 w-16 rounded-full bg-navy-950" />
                 <div className="rounded-[18px] bg-navy-950 px-3 py-3 space-y-2.5">
