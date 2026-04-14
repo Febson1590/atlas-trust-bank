@@ -204,7 +204,7 @@ const BANK_DB: BankEntry[] = [
 ];
 
 // Fallback for banks not in the list
-const DEFAULT_BANK_CONFIG: Omit<BankEntry, "name" | "region" | "flag" | "helperText"> = {
+const DEFAULT_BANK_CONFIG: Omit<BankEntry, "name" | "region" | "country" | "flag" | "helperText" | "aliases"> = {
   acctLabel: "Account Number / IBAN",
   acctPlaceholder: "Enter account number or IBAN",
   requireSwift: true,
