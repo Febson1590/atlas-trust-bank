@@ -184,31 +184,45 @@ export default function TransferWizard({
     inputRefs.current[focusIndex]?.focus();
   };
 
-  // ── Auto-submit OTP ────────────────────────────────────────
+  // ── Verify OTP + create transfer ────────────────────────────
   const verifyOtp = useCallback(
     async (code: string) => {
       setServerError("");
       setIsVerifying(true);
 
       try {
+        // Send OTP code + transfer data together for atomic verification + creation
+        const transferPayload: Record<string, unknown> = {
+          fromAccountId: watchAll.fromAccountId,
+          recipientName: watchAll.recipientName,
+          recipientBank: watchAll.recipientBank,
+          recipientAcct: watchAll.recipientAcct,
+          amount: watchAll.amount,
+          description: watchAll.description || undefined,
+        };
+
+        if (recipientMode === "beneficiary" && selectedBeneficiary) {
+          transferPayload.beneficiaryId = selectedBeneficiary;
+        }
+
         const res = await fetch("/api/transfers/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, transferData: transferPayload }),
         });
 
         const result = await res.json();
 
         if (!res.ok) {
-          setServerError(result.error || "Invalid verification code");
+          setServerError(result.error || "The code you entered is incorrect");
           setIsVerifying(false);
           return;
         }
 
-        // Move to processing step
+        // OTP valid + transfer created
+        setTransferResult(result.data);
         setCurrentStep(3);
 
-        // Auto-advance to result after 2 seconds
         setTimeout(() => {
           setCurrentStep(4);
         }, 2000);
@@ -217,7 +231,7 @@ export default function TransferWizard({
         setIsVerifying(false);
       }
     },
-    []
+    [watchAll, recipientMode, selectedBeneficiary]
   );
 
   useEffect(() => {
@@ -234,51 +248,21 @@ export default function TransferWizard({
     setCurrentStep(1);
   });
 
-  const handleCreateTransfer = async () => {
+  // Review step: only send OTP (no transfer creation yet)
+  const handleSendOtp = async () => {
     setServerError("");
     setIsSubmitting(true);
+    setIsSendingOtp(true);
 
     try {
-      // First create the transfer
-      const transferPayload: Record<string, unknown> = {
-        fromAccountId: watchAll.fromAccountId,
-        recipientName: watchAll.recipientName,
-        recipientBank: watchAll.recipientBank,
-        recipientAcct: watchAll.recipientAcct,
-        amount: watchAll.amount,
-        description: watchAll.description || undefined,
-      };
-
-      if (recipientMode === "beneficiary" && selectedBeneficiary) {
-        transferPayload.beneficiaryId = selectedBeneficiary;
-      }
-
-      const res = await fetch("/api/transfers", {
+      const res = await fetch("/api/transfers/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(transferPayload),
       });
-
-      const result = await res.json();
 
       if (!res.ok) {
-        setServerError(result.error || "Failed to create transfer");
-        setIsSubmitting(false);
-        return;
-      }
-
-      setTransferResult(result.data);
-
-      // Now send OTP
-      setIsSendingOtp(true);
-      const otpRes = await fetch("/api/transfers/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!otpRes.ok) {
-        const otpResult = await otpRes.json();
-        setServerError(otpResult.error || "Failed to send verification code");
+        const result = await res.json();
+        setServerError(result.error || "Failed to send verification code");
         setIsSubmitting(false);
         setIsSendingOtp(false);
         return;
@@ -288,7 +272,6 @@ export default function TransferWizard({
       setCooldown(RESEND_COOLDOWN);
       setCurrentStep(2);
 
-      // Focus first OTP input
       setTimeout(() => {
         inputRefs.current[0]?.focus();
       }, 100);
@@ -742,19 +725,19 @@ export default function TransferWizard({
             </button>
             <button
               type="button"
-              onClick={handleCreateTransfer}
+              onClick={handleSendOtp}
               disabled={isSubmitting}
               className="flex-1 gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {isSendingOtp ? "Sending OTP..." : "Processing..."}
+                  Sending code...
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-4 w-4" />
-                  Confirm &amp; Send OTP
+                  Send Verification Code
                 </>
               )}
             </button>
