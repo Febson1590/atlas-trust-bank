@@ -130,8 +130,23 @@ export async function POST(request: Request) {
     }
 
     if (sourceAccount.status !== "ACTIVE") {
+      // Calculate dormant days if applicable
+      const dormantDays = sourceAccount.status === "DORMANT"
+        ? Math.floor((Date.now() - new Date(sourceAccount.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+
       return NextResponse.json(
-        { success: false, error: "This account is not active." },
+        {
+          success: false,
+          error: "ACCOUNT_DORMANT",
+          data: {
+            status: sourceAccount.status,
+            dormantDays,
+            message: sourceAccount.status === "DORMANT"
+              ? `Your account is currently dormant. It has been inactive for ${dormantDays} ${dormantDays === 1 ? "day" : "days"}. Please contact support to reactivate your account.`
+              : "This account is not active. Please contact support.",
+          },
+        },
         { status: 403 }
       );
     }

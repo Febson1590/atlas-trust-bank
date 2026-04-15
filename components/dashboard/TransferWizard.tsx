@@ -20,7 +20,9 @@ import {
   CheckCircle2,
   Globe,
   Info,
+  XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { transferSchema, type TransferInput } from "@/lib/validations";
 import { cn, formatCurrency, maskAccountNumber } from "@/lib/utils";
 
@@ -254,6 +256,7 @@ export default function TransferWizard({
   // API states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [dormantError, setDormantError] = useState<{ message: string; dormantDays: number } | null>(null);
 
   // PIN + OTP state
   const [pin, setPin] = useState("");
@@ -417,6 +420,20 @@ export default function TransferWizard({
         const result = await res.json();
 
         if (!res.ok) {
+          // Dormant account — show processing then failure
+          if (result.error === "ACCOUNT_DORMANT") {
+            setCurrentStep(3); // Show processing animation
+            setTimeout(() => {
+              setDormantError({
+                message: result.data?.message || "Your account is dormant. Contact support.",
+                dormantDays: result.data?.dormantDays || 0,
+              });
+              setCurrentStep(5); // New step: failure
+              setIsVerifying(false);
+            }, 2000);
+            return;
+          }
+
           // High-risk: OTP required
           if (result.error === "OTP_REQUIRED") {
             setNeedsOtp(true);
@@ -1470,6 +1487,48 @@ export default function TransferWizard({
                 <Send className="h-4 w-4" />
                 New Transfer
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          STEP 6 — Dormant Failure
+          ═══════════════════════════════════════════════════════ */}
+      {currentStep === 5 && dormantError && (
+        <div className="space-y-6">
+          <div className="rounded-xl bg-navy-800 border border-error/20 p-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-error/10 border border-error/20 flex items-center justify-center mb-4">
+              <XCircle className="w-8 h-8 text-error" />
+            </div>
+
+            <h3 className="text-xl font-semibold text-text-primary mb-1">
+              Transaction Failed
+            </h3>
+            <p className="text-sm text-text-muted mb-6">
+              {dormantError.message}
+            </p>
+
+            <div className="rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-xs text-warning mb-6">
+              Your account has been inactive for {dormantError.dormantDays}{" "}
+              {dormantError.dormantDays === 1 ? "day" : "days"}.
+              No money was deducted from your account.
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="flex-1 bg-navy-700 border border-border-subtle text-text-primary font-semibold py-3 px-6 rounded-lg hover:bg-navy-600 transition"
+              >
+                Back to Dashboard
+              </button>
+              <Link
+                href="/dashboard/support"
+                className="flex-1 gold-gradient text-navy-950 font-semibold py-3 px-6 rounded-lg hover:opacity-90 transition text-center"
+              >
+                Contact Support
+              </Link>
             </div>
           </div>
         </div>

@@ -88,58 +88,54 @@ export default async function TransferPage() {
     );
   }
 
-  // ── Check for dormant accounts ─────────────────────────────
+  // ── No active accounts — check if dormant ones exist ───────
   if (user.accounts.length === 0) {
-    // Check if user has dormant accounts
-    const dormantCount = await prisma.account.count({
-      where: { userId: session.userId, status: "DORMANT" },
+    // Load ALL accounts (including dormant) so user can fill the form
+    const allAccounts = await prisma.account.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, accountNumber: true, label: true, balance: true, currency: true, type: true },
     });
 
-    const isDormant = dormantCount > 0;
+    if (allAccounts.length === 0) {
+      // Truly no accounts at all
+      return (
+        <div className="animate-fade-in">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-text-primary">Transfer Funds</h2>
+            <p className="text-sm text-text-muted mt-1">Send money securely to any account</p>
+          </div>
+          <div className="rounded-xl bg-navy-800 border border-border-subtle p-8">
+            <div className="flex flex-col items-center text-center max-w-md mx-auto">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-navy-700 border border-border-subtle mb-4">
+                <AlertTriangle className="h-7 w-7 text-text-muted" />
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">No Accounts</h3>
+              <p className="text-sm text-text-muted mb-6">You need an account to make transfers. Contact support to get started.</p>
+              <Link href="/dashboard/support" className="gold-gradient rounded-lg px-6 py-2.5 text-sm font-semibold text-navy-950 transition-all hover:opacity-90">Contact Support</Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
-    // Find when accounts became dormant (earliest updatedAt)
-    const dormantAccount = isDormant
-      ? await prisma.account.findFirst({
-          where: { userId: session.userId, status: "DORMANT" },
-          select: { updatedAt: true },
-          orderBy: { updatedAt: "asc" },
-        })
-      : null;
-
-    const dormantDays = dormantAccount
-      ? Math.floor((Date.now() - new Date(dormantAccount.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
-      : 0;
+    // Has dormant accounts — let user fill the form; it will fail at submission
+    const accounts = allAccounts.map((acc) => ({
+      id: acc.id, accountNumber: acc.accountNumber, label: acc.label,
+      balance: Number(acc.balance), currency: acc.currency, type: acc.type,
+    }));
+    const beneficiaries = user.beneficiaries.map((b) => ({
+      id: b.id, name: b.name, bankName: b.bankName, accountNumber: b.accountNumber,
+      routingNumber: b.routingNumber, swiftCode: b.swiftCode, country: b.country,
+    }));
 
     return (
       <div className="animate-fade-in">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-text-primary">Transfer Funds</h2>
-          <p className="text-sm text-text-muted mt-1">
-            Send money securely to any account
-          </p>
+          <p className="text-sm text-text-muted mt-1">Send money securely to any account</p>
         </div>
-
-        <div className={`rounded-xl bg-navy-800 border ${isDormant ? "border-warning/20" : "border-border-subtle"} p-8`}>
-          <div className="flex flex-col items-center text-center max-w-md mx-auto">
-            <div className={`flex h-16 w-16 items-center justify-center rounded-full ${isDormant ? "bg-warning/10 border border-warning/20" : "bg-navy-700 border border-border-subtle"} mb-4`}>
-              <AlertTriangle className={`h-7 w-7 ${isDormant ? "text-warning" : "text-text-muted"}`} />
-            </div>
-            <h3 className="text-lg font-semibold text-text-primary mb-2">
-              {isDormant ? "Account Dormant" : "No Active Accounts"}
-            </h3>
-            <p className="text-sm text-text-muted mb-6">
-              {isDormant
-                ? `Your account is currently dormant. It has been inactive for ${dormantDays} ${dormantDays === 1 ? "day" : "days"}. Please contact support to reactivate your account.`
-                : "You need at least one active account to make a transfer. Please contact support to set up your account."}
-            </p>
-            <Link
-              href="/dashboard/support"
-              className="gold-gradient rounded-lg px-6 py-2.5 text-sm font-semibold text-navy-950 transition-all hover:opacity-90"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
+        <TransferWizard accounts={accounts} beneficiaries={beneficiaries} hasTransferPin={!!user.transferPin} />
       </div>
     );
   }
