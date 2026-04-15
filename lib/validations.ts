@@ -143,6 +143,7 @@ export const transactionGeneratorSchema = z.object({
   minAmount: z.number().positive(),
   maxAmount: z.number().positive(),
   types: z.array(z.enum(["CREDIT", "DEBIT"])).min(1),
+  targetBalance: z.number().min(0).optional(),
 });
 
 // ─── Types ──────────────────────────────────────────────

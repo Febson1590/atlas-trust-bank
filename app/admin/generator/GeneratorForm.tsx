@@ -28,6 +28,8 @@ interface GeneratorResult {
   accountNumber: string;
   accountLabel: string;
   userName: string;
+  previousBalance: number;
+  newBalance: number;
 }
 
 export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
@@ -39,6 +41,7 @@ export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
     minAmount: "10",
     maxAmount: "5000",
     types: ["CREDIT", "DEBIT"] as string[],
+    targetBalance: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -86,6 +89,7 @@ export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
           minAmount: parseFloat(form.minAmount),
           maxAmount: parseFloat(form.maxAmount),
           types: form.types,
+          ...(form.targetBalance ? { targetBalance: parseFloat(form.targetBalance) } : {}),
         }),
       });
 
@@ -248,6 +252,27 @@ export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
             </div>
           </div>
 
+          {/* Target Balance (optional) */}
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-2">
+              <DollarSign className="h-4 w-4 text-gold-500" />
+              Target Balance
+              <span className="text-text-muted font-normal">(optional)</span>
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.targetBalance}
+              onChange={(e) => setForm({ ...form, targetBalance: e.target.value })}
+              placeholder={selectedAccount ? `Current: $${selectedAccount.balance.toLocaleString()}` : "Leave empty for natural flow"}
+              className="w-full bg-navy-900/50 border border-border-default rounded-lg py-3 px-4 text-sm text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+            />
+            <p className="text-xs text-text-muted mt-1">
+              If set, transactions will adjust to reach this final balance.
+            </p>
+          </div>
+
           {error && (
             <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm flex items-center gap-2">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -313,7 +338,7 @@ export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-text-muted">Transactions Created</span>
+                <span className="text-text-muted">Transactions</span>
                 <span className="text-text-primary font-semibold">{result.count}</span>
               </div>
               <div className="flex justify-between">
@@ -323,6 +348,16 @@ export default function GeneratorForm({ accounts }: { accounts: Account[] }) {
               <div className="flex justify-between">
                 <span className="text-text-muted">User</span>
                 <span className="text-text-primary">{result.userName}</span>
+              </div>
+              <div className="border-t border-border-subtle/50 pt-2 mt-2">
+                <div className="flex justify-between">
+                  <span className="text-text-muted">Previous Balance</span>
+                  <span className="text-text-secondary">${result.previousBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className="text-text-muted">New Balance</span>
+                  <span className="text-text-primary font-semibold">${result.newBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                </div>
               </div>
             </div>
           </div>
