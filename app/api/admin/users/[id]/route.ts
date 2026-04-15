@@ -375,12 +375,42 @@ export async function DELETE(
       },
     });
 
-    // Delete user (cascades to accounts, transactions, etc.)
-    await prisma.user.delete({ where: { id } });
+    // Delete in correct order to avoid foreign key errors
+    const accountIds = (
+      await prisma.account.findMany({
+        where: { userId: id },
+        select: { id: true },
+      })
+    ).map((a) => a.id);
+
+    await prisma.$transaction(async (tx) => {
+      // Delete transfers referencing user's accounts
+      if (accountIds.length > 0) {
+        await tx.transfer.deleteMany({
+          where: {
+            OR: [
+              { fromAccountId: { in: accountIds } },
+              { toAccountId: { in: accountIds } },
+            ],
+          },
+        });
+        // Delete transactions
+        await tx.transaction.deleteMany({
+          where: { accountId: { in: accountIds } },
+        });
+        // Delete cards
+        await tx.card.deleteMany({
+          where: { accountId: { in: accountIds } },
+        });
+      }
+      // Delete user (cascades accounts, beneficiaries, kyc, notifications, tickets)
+      await tx.user.delete({ where: { id } });
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Admin user DELETE error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+import ResetSystem from "./ResetSystem";
 import {
   Settings,
   User,
@@ -190,6 +191,9 @@ export default async function AdminSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Reset System */}
+      <ResetSystem />
     </div>
   );
 }
