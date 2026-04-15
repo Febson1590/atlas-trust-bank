@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession, hashPassword, verifyPassword } from "@/lib/auth";
+import {
+  getSession,
+  hashPassword,
+  verifyPassword,
+  getCurrentSessionToken,
+  destroyOtherUserSessions,
+} from "@/lib/auth";
 
 // ─── PUT -- Change password ──────────────────────────────────────
 export async function PUT(request: Request) {
@@ -93,9 +99,21 @@ export async function PUT(request: Request) {
       data: { password: hashed },
     });
 
+    // Security: invalidate every OTHER active session for this user.
+    // The current device stays signed in (we keep its token), but any
+    // other logged-in browser/device gets kicked — so a stolen cookie
+    // becomes useless the moment the legitimate user rotates their password.
+    const currentToken = await getCurrentSessionToken();
+    if (currentToken) {
+      await destroyOtherUserSessions(session.userId, currentToken);
+    }
+
     return NextResponse.json({
       success: true,
-      data: { message: "Password changed successfully" },
+      data: {
+        message:
+          "Password changed successfully. Any other devices signed in with your old password have been logged out.",
+      },
     });
   } catch (error) {
     console.error("Change password error:", error);

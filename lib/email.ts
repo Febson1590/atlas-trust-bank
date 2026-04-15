@@ -10,8 +10,22 @@ function getResend() {
 
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "Atlas Trust Bank <noreply@atlastrust.com>";
+const SUPPORT_INBOX =
+  process.env.CONTACT_INBOX || "support@atlastrust.com";
 const APP_NAME = "Atlas Trust Bank";
 const LOGO_URL = "https://atlas-trust-bank.vercel.app/logo.png";
+
+// HTML-escape user-provided text before dropping it into an email template.
+// Prevents the contact form from being used to inject arbitrary markup into
+// our support inbox.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 // ─── Base Email Template ─────────────────────────────────
 // Premium dark + gold branded HTML email shell
@@ -259,6 +273,47 @@ export async function sendKycUpdateEmail(
     return true;
   } catch (error) {
     console.error("Failed to send KYC update email:", error);
+    return false;
+  }
+}
+
+export async function sendContactEmail(details: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}): Promise<boolean> {
+  const safeName = escapeHtml(details.name);
+  const safeEmail = escapeHtml(details.email);
+  const safeSubject = escapeHtml(details.subject);
+  const safeMessage = escapeHtml(details.message).replace(/\n/g, "<br>");
+
+  const html = baseTemplate(`
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">New Contact Form Message</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 20px;">
+      Someone just sent a message through the ${APP_NAME} contact form.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">From</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${safeName}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Email</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${safeEmail}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Subject</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${safeSubject}</td></tr>
+    </table>
+    <div style="background-color:#F4F6F8;border-radius:8px;padding:18px 20px;color:#0A1628;font-size:14px;line-height:1.7;white-space:pre-wrap;">
+      ${safeMessage}
+    </div>
+  `);
+
+  try {
+    await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: SUPPORT_INBOX,
+      replyTo: details.email,
+      subject: `[Contact] ${details.subject}`,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send contact email:", error);
     return false;
   }
 }

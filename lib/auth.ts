@@ -16,6 +16,7 @@ export const RATE_LIMITS = {
   otp: { max: 5, windowSeconds: 60 * 10 }, // 5 attempts per 10 min
   register: { max: 3, windowSeconds: 60 * 60 }, // 3 per hour
   passwordReset: { max: 3, windowSeconds: 60 * 60 }, // 3 per hour
+  contact: { max: 3, windowSeconds: 60 * 60 }, // 3 per hour, public contact form
 } as const;
 
 // ─── Password Helpers ────────────────────────────────────
@@ -54,6 +55,11 @@ export async function createSession(
     ex: SESSION_TTL,
   });
 
+  // Track this token in the user's reverse index so we can nuke every
+  // active session on password change / reset (see destroyAllUserSessions).
+  await redis.sadd(RK.userSessions(userId), token);
+  await redis.expire(RK.userSessions(userId), SESSION_TTL);
+
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -85,15 +91,67 @@ export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (token) {
+    // Also remove the token from the user's reverse-index set so it
+    // doesn't linger there forever.
+    const raw = await redis.get<string>(RK.session(token));
+    if (raw) {
+      try {
+        const data: SessionData =
+          typeof raw === "string" ? JSON.parse(raw) : (raw as SessionData);
+        await redis.srem(RK.userSessions(data.userId), token);
+      } catch {
+        // best-effort cleanup, ignore parse errors
+      }
+    }
     await redis.del(RK.session(token));
   }
   cookieStore.delete(SESSION_COOKIE);
 }
 
-export function getSessionToken(): string | undefined {
-  // For use in middleware (sync cookie read)
-  // This is a placeholder — middleware uses request.cookies directly
-  return undefined;
+/**
+ * Read the current session token from the cookie (without validating it).
+ * Used by password-change flows that want to keep the current device signed
+ * in while invalidating every other session.
+ */
+export async function getCurrentSessionToken(): Promise<string | undefined> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE)?.value;
+}
+
+/**
+ * Invalidate every active session for a user. Called on password reset
+ * (no signed-in device to keep) so every existing cookie becomes dead.
+ */
+export async function destroyAllUserSessions(userId: string): Promise<void> {
+  const tokens = (await redis.smembers(RK.userSessions(userId))) as
+    | string[]
+    | null;
+  if (tokens && tokens.length > 0) {
+    await Promise.all(tokens.map((t) => redis.del(RK.session(t))));
+  }
+  await redis.del(RK.userSessions(userId));
+}
+
+/**
+ * Invalidate every active session for a user EXCEPT the one the current
+ * request is riding on. Called on password change from a signed-in device
+ * so the user isn't logged out on the device they just changed the
+ * password on, but every other device is kicked.
+ */
+export async function destroyOtherUserSessions(
+  userId: string,
+  keepToken: string
+): Promise<void> {
+  const tokens = (await redis.smembers(RK.userSessions(userId))) as
+    | string[]
+    | null;
+  if (!tokens || tokens.length === 0) return;
+  const toDelete = tokens.filter((t) => t !== keepToken);
+  if (toDelete.length === 0) return;
+  await Promise.all([
+    ...toDelete.map((t) => redis.del(RK.session(t))),
+    ...toDelete.map((t) => redis.srem(RK.userSessions(userId), t)),
+  ]);
 }
 
 // ─── OTP Management ─────────────────────────────────────

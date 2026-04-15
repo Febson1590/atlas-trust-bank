@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { consumeResetToken, hashPassword } from "@/lib/auth";
+import {
+  consumeResetToken,
+  hashPassword,
+  destroyAllUserSessions,
+} from "@/lib/auth";
 import { resetPasswordSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -35,11 +39,17 @@ export async function POST(request: Request) {
     // Hash new password
     const hashedPassword = await hashPassword(password);
 
-    // Update user password
-    await prisma.user.update({
+    // Update user password and fetch the user id so we can nuke their sessions.
+    const updated = await prisma.user.update({
       where: { email },
       data: { password: hashedPassword },
+      select: { id: true },
     });
+
+    // Security: kill every active session for this user. If an attacker had
+    // somehow stolen a cookie, it's useless the moment the real user resets
+    // their password.
+    await destroyAllUserSessions(updated.id);
 
     return NextResponse.json(
       {

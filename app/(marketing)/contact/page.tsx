@@ -1,5 +1,6 @@
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import type { Metadata } from "next";
+import ContactForm from "@/components/landing/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us — Atlas Trust Bank",
@@ -88,91 +89,7 @@ export default function ContactPage() {
                 you within one business day.
               </p>
 
-              <form
-                action="/api/support"
-                method="POST"
-                className="space-y-6"
-              >
-                {/* Name */}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-text-secondary mb-2"
-                  >
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    placeholder="John Doe"
-                    className="w-full rounded-lg border border-border-default bg-navy-800 px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-text-secondary mb-2"
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    placeholder="john@example.com"
-                    className="w-full rounded-lg border border-border-default bg-navy-800 px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Subject */}
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block text-sm font-medium text-text-secondary mb-2"
-                  >
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    required
-                    placeholder="How can we help you?"
-                    className="w-full rounded-lg border border-border-default bg-navy-800 px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-colors"
-                  />
-                </div>
-
-                {/* Message */}
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-text-secondary mb-2"
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    required
-                    rows={5}
-                    placeholder="Tell us how we can help..."
-                    className="w-full rounded-lg border border-border-default bg-navy-800 px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold-500/50 focus:outline-none focus:ring-1 focus:ring-gold-500/50 transition-colors resize-none"
-                  />
-                </div>
-
-                {/* Submit */}
-                <button
-                  type="submit"
-                  className="gold-gradient w-full rounded-lg px-6 py-3.5 text-sm font-semibold text-navy-950 transition-all hover:opacity-90"
-                >
-                  Send Message
-                </button>
-              </form>
+              <ContactForm />
             </div>
 
             {/* ── Right: Contact Info Cards ──────────────────────── */}

@@ -420,17 +420,16 @@ export default function TransferWizard({
         const result = await res.json();
 
         if (!res.ok) {
-          // Dormant account — show processing then failure
+          // Dormant account — drop straight to the failure screen.
+          // Previously we stalled on a fake 2s processing animation which
+          // made the whole wizard feel broken on slow connections.
           if (result.error === "ACCOUNT_DORMANT") {
-            setCurrentStep(3); // Show processing animation
-            setTimeout(() => {
-              setDormantError({
-                message: result.data?.message || "Your account is dormant. Contact support.",
-                dormantDays: result.data?.dormantDays || 0,
-              });
-              setCurrentStep(5); // New step: failure
-              setIsVerifying(false);
-            }, 2000);
+            setDormantError({
+              message: result.data?.message || "Your account is dormant. Contact support.",
+              dormantDays: result.data?.dormantDays || 0,
+            });
+            setCurrentStep(5); // Dedicated failure screen (outside STEPS indicator)
+            setIsVerifying(false);
             return;
           }
 
@@ -474,10 +473,12 @@ export default function TransferWizard({
           return;
         }
 
-        // Success
+        // Success — the API has already confirmed the transfer, so there's
+        // no point in faking a 2-second "Processing..." screen. Drop straight
+        // to the completion step. If the backend actually takes a while to
+        // respond, the user sees the submit button's own loading state.
         setTransferResult(result.data);
-        setCurrentStep(3);
-        setTimeout(() => setCurrentStep(4), 2000);
+        setCurrentStep(4);
       } catch {
         setServerError("Something went wrong. Please try again.");
         setIsVerifying(false);
@@ -552,9 +553,15 @@ export default function TransferWizard({
 
   // ─── Render ───────────────────────────────────────────────
 
+  // Hide the step indicator on the dedicated failure screen (step 5) —
+  // the failure card has its own layout and the step bar would render
+  // nonsense (5 dots all marked "complete" with no active step).
+  const showStepIndicator = currentStep !== 5;
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* ── Progress Steps ──────────────────────────────────── */}
+      {showStepIndicator && (
       <div className="mb-8">
         <div className="flex items-center justify-between">
           {STEPS.map((step, index) => {
@@ -614,6 +621,7 @@ export default function TransferWizard({
           })}
         </div>
       </div>
+      )}
 
       {/* ── Server Error ────────────────────────────────────── */}
       {serverError && (

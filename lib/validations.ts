@@ -109,6 +109,25 @@ export const supportTicketSchema = z.object({
   priority: z.enum(["low", "medium", "high"]).default("medium"),
 });
 
+// ─── Public Contact Form Schema ──────────────────────────
+// Used by the unauthenticated contact form on the marketing site.
+
+export const contactSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Please tell us your name")
+    .max(100, "Name is too long"),
+  email: z.string().email("Enter a valid email address"),
+  subject: z
+    .string()
+    .min(3, "Subject must be at least 3 characters")
+    .max(120, "Subject is too long"),
+  message: z
+    .string()
+    .min(10, "Message must be at least 10 characters")
+    .max(4000, "Message is too long"),
+});
+
 // ─── Admin Schemas ───────────────────────────────────────
 
 export const adminCreditDebitSchema = z.object({
@@ -157,6 +176,7 @@ export type TransferInput = z.infer<typeof transferSchema>;
 export type BeneficiaryInput = z.infer<typeof beneficiarySchema>;
 export type ProfileInput = z.infer<typeof profileSchema>;
 export type SupportTicketInput = z.infer<typeof supportTicketSchema>;
+export type ContactInput = z.infer<typeof contactSchema>;
 export type AdminCreditDebitInput = z.infer<typeof adminCreditDebitSchema>;
 export type AdminTransferActionInput = z.infer<typeof adminTransferActionSchema>;
 export type TransactionGeneratorInput = z.infer<typeof transactionGeneratorSchema>;

@@ -4,14 +4,38 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2, Trash2, X } from "lucide-react";
 
+// Typed confirmation phrase. User must type this exactly (case-sensitive)
+// before the Reset button is enabled. Stops stray clicks from wiping the
+// entire demo database during a client presentation.
+const CONFIRM_PHRASE = "RESET ATLAS TRUST BANK";
+
 export default function ResetSystem() {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmInput, setConfirmInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const canSubmit = confirmInput === CONFIRM_PHRASE && !loading;
+
+  function openConfirm() {
+    setShowConfirm(true);
+    setConfirmInput("");
+    setError("");
+  }
+
+  function closeConfirm() {
+    setShowConfirm(false);
+    setConfirmInput("");
+    setError("");
+  }
+
   async function handleReset() {
+    if (confirmInput !== CONFIRM_PHRASE) {
+      setError(`Type "${CONFIRM_PHRASE}" exactly to confirm`);
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -24,6 +48,7 @@ export default function ResetSystem() {
       }
       setSuccess(true);
       setShowConfirm(false);
+      setConfirmInput("");
       router.refresh();
     } catch {
       setError("Something went wrong");
@@ -51,7 +76,7 @@ export default function ResetSystem() {
 
         <button
           type="button"
-          onClick={() => setShowConfirm(true)}
+          onClick={openConfirm}
           className="inline-flex items-center gap-2 rounded-lg bg-error/10 border border-error/20 px-4 py-2.5 text-sm font-medium text-error hover:bg-error/20 transition-colors"
         >
           <Trash2 className="h-4 w-4" />
@@ -62,14 +87,14 @@ export default function ResetSystem() {
       {/* Confirmation modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowConfirm(false)} />
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={closeConfirm} />
           <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-error">
                 <AlertTriangle className="h-5 w-5" />
                 <h3 className="text-lg font-semibold">Reset All Data</h3>
               </div>
-              <button onClick={() => setShowConfirm(false)} className="text-text-muted hover:text-text-primary transition-colors">
+              <button onClick={closeConfirm} className="text-text-muted hover:text-text-primary transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -83,9 +108,34 @@ export default function ResetSystem() {
               <li>All cards, KYC documents, and notifications</li>
               <li>All support tickets and audit logs</li>
             </ul>
-            <p className="text-xs text-error mb-5">
+            <p className="text-xs text-error mb-4">
               Only admin accounts will be preserved. This cannot be undone.
             </p>
+
+            {/* Typed confirmation — prevents stray clicks from nuking the demo database */}
+            <div className="mb-5">
+              <label
+                htmlFor="reset-confirm"
+                className="block text-xs font-medium text-text-secondary mb-2"
+              >
+                To confirm, type{" "}
+                <span className="font-mono text-error">{CONFIRM_PHRASE}</span>
+              </label>
+              <input
+                id="reset-confirm"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={confirmInput}
+                onChange={(e) => setConfirmInput(e.target.value)}
+                placeholder={CONFIRM_PHRASE}
+                className="w-full rounded-lg border border-error/30 bg-navy-900 px-4 py-2.5 text-sm font-mono text-text-primary placeholder:text-text-muted/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/50 transition-colors"
+                aria-describedby="reset-confirm-hint"
+              />
+              <p id="reset-confirm-hint" className="mt-1.5 text-xs text-text-muted">
+                Case-sensitive. Must match exactly.
+              </p>
+            </div>
 
             {error && (
               <div className="mb-4 rounded-lg bg-error/10 border border-error/20 px-4 py-2.5 text-sm text-error">
@@ -96,7 +146,7 @@ export default function ResetSystem() {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setShowConfirm(false)}
+                onClick={closeConfirm}
                 className="flex-1 py-2.5 text-sm border border-border-default rounded-lg text-text-secondary hover:bg-navy-800/50 transition-colors"
               >
                 Cancel
@@ -104,8 +154,8 @@ export default function ResetSystem() {
               <button
                 type="button"
                 onClick={handleReset}
-                disabled={loading}
-                className="flex-1 rounded-lg py-2.5 text-sm font-semibold bg-error/20 text-error border border-error/30 hover:bg-error/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={!canSubmit}
+                className="flex-1 rounded-lg py-2.5 text-sm font-semibold bg-error/20 text-error border border-error/30 hover:bg-error/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 Reset Everything

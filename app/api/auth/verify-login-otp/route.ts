@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyOTP, createSession, checkRateLimit, getClientIP } from "@/lib/auth";
+import { verifyOTP, createSession, checkRateLimit } from "@/lib/auth";
 import { otpSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -19,9 +19,10 @@ export async function POST(request: Request) {
 
     const { email, code } = result.data;
 
-    // Rate limiting
-    const ip = getClientIP(request);
-    const rateLimit = await checkRateLimit("otp", ip);
+    // Rate limit by email, not IP. Keying on IP lets attackers cycle
+    // across email addresses on the same IP, and keying on IP alone also
+    // blocks legitimate users behind a shared NAT/office network.
+    const rateLimit = await checkRateLimit("otp", email.toLowerCase());
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {

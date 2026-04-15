@@ -25,6 +25,10 @@ export const RK = {
   // Sessions
   session: (token: string) => `session:${token}`,
 
+  // Reverse index: user → set of session tokens. Used to invalidate every
+  // session for a user on password change / reset.
+  userSessions: (userId: string) => `user_sessions:${userId}`,
+
   // OTP codes
   otp: (email: string, purpose: string) => `otp:${purpose}:${email}`,
 

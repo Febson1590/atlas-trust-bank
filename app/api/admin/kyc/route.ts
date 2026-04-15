@@ -122,32 +122,39 @@ export async function PUT(request: Request) {
     const ipAddress = getClientIP(request);
 
     if (action === "approve") {
-      // Update document status
-      await prisma.kycDocument.update({
-        where: { id: documentId },
-        data: {
-          status: "VERIFIED",
-          adminNote: adminNote || null,
-          reviewedBy: session.userId,
-          reviewedAt: new Date(),
-        },
-      });
-
-      // Check if ALL user documents are now verified
-      const allDocs = await prisma.kycDocument.findMany({
-        where: { userId: document.userId },
-      });
-
-      const allVerified = allDocs.every((d) =>
-        d.id === documentId ? true : d.status === "VERIFIED"
-      );
-
-      if (allVerified && allDocs.length >= 1) {
-        await prisma.user.update({
-          where: { id: document.userId },
-          data: { kycStatus: "VERIFIED" },
+      // Atomic: flip the doc to VERIFIED, check every doc for this user,
+      // and promote the user's overall kycStatus if they're all verified.
+      // Previously these three steps ran outside a transaction so a DB
+      // blip between them could leave doc + user state inconsistent.
+      const allVerified = await prisma.$transaction(async (tx) => {
+        await tx.kycDocument.update({
+          where: { id: documentId },
+          data: {
+            status: "VERIFIED",
+            adminNote: adminNote || null,
+            reviewedBy: session.userId,
+            reviewedAt: new Date(),
+          },
         });
-      }
+
+        // Re-read inside the transaction so we see the just-written row.
+        const allDocs = await tx.kycDocument.findMany({
+          where: { userId: document.userId },
+        });
+
+        const verified =
+          allDocs.length > 0 &&
+          allDocs.every((d) => d.status === "VERIFIED");
+
+        if (verified) {
+          await tx.user.update({
+            where: { id: document.userId },
+            data: { kycStatus: "VERIFIED" },
+          });
+        }
+
+        return verified;
+      });
 
       // Audit log
       await prisma.auditLog.create({
