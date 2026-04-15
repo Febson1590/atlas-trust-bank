@@ -2,8 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   Wallet,
-  PiggyBank,
-  TrendingUp,
   Send,
   ArrowDownLeft,
   ArrowUpRight,
@@ -13,37 +11,13 @@ import {
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, maskAccountNumber, cn } from "@/lib/utils";
+import { getAccountDisplay } from "@/lib/accountConfig";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
-import type { AccountType } from "@/generated/prisma";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Accounts",
-};
-
-const typeConfig: Record<
-  AccountType,
-  { icon: typeof Wallet; label: string; accent: string; bgAccent: string }
-> = {
-  CHECKING: {
-    icon: Wallet,
-    label: "Main Account",
-    accent: "text-gold-500",
-    bgAccent: "bg-gold-500/10 border-gold-500/20",
-  },
-  SAVINGS: {
-    icon: PiggyBank,
-    label: "Savings",
-    accent: "text-success",
-    bgAccent: "bg-success/10 border-success/20",
-  },
-  INVESTMENT: {
-    icon: TrendingUp,
-    label: "Investment",
-    accent: "text-blue-400",
-    bgAccent: "bg-blue-400/10 border-blue-400/20",
-  },
 };
 
 export default async function AccountsPage() {
@@ -124,7 +98,7 @@ export default async function AccountsPage() {
       {accounts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {accounts.map((account) => {
-            const config = typeConfig[account.type];
+            const config = getAccountDisplay(account.type, account.currency);
             const Icon = config.icon;
 
             return (

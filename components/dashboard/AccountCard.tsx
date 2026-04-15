@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Wallet, PiggyBank, TrendingUp } from "lucide-react";
 import { cn, formatCurrency, maskAccountNumber } from "@/lib/utils";
+import { getAccountDisplay } from "@/lib/accountConfig";
 import StatusBadge from "@/components/ui/StatusBadge";
 import type { AccountType, AccountStatus } from "@/generated/prisma";
 
@@ -14,27 +14,6 @@ interface AccountCardProps {
   status: AccountStatus;
 }
 
-const typeConfig: Record<
-  AccountType,
-  { icon: typeof Wallet; label: string; accent: string }
-> = {
-  CHECKING: {
-    icon: Wallet,
-    label: "Main Account",
-    accent: "text-gold-500",
-  },
-  SAVINGS: {
-    icon: PiggyBank,
-    label: "Savings",
-    accent: "text-success",
-  },
-  INVESTMENT: {
-    icon: TrendingUp,
-    label: "Investment",
-    accent: "text-blue-400",
-  },
-};
-
 export default function AccountCard({
   id,
   type,
@@ -44,7 +23,7 @@ export default function AccountCard({
   currency,
   status,
 }: AccountCardProps) {
-  const config = typeConfig[type];
+  const config = getAccountDisplay(type, currency);
   const Icon = config.icon;
 
   return (

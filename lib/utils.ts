@@ -7,12 +7,28 @@ export function formatCurrency(
   currency: string = "USD"
 ): string {
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(num);
+
+  // BTC is not an ISO 4217 code — Intl.NumberFormat throws on it. Format
+  // manually with the Bitcoin symbol and a few more decimals of precision.
+  if (currency === "BTC") {
+    const formatted = num.toLocaleString("en-US", {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 8,
+    });
+    return `\u20BF ${formatted}`;
+  }
+
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  } catch {
+    // Unknown / unsupported currency — fall back to "CODE 0.00" form.
+    return `${currency} ${num.toFixed(2)}`;
+  }
 }
 
 // ─── Reference / ID Generation ───────────────────────────
