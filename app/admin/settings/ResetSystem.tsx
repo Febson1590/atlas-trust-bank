@@ -40,12 +40,12 @@ export default function ResetSystem() {
           Danger Zone
         </h2>
         <p className="text-sm text-text-muted mb-4">
-          Reset all user data including accounts, transactions, balances, KYC, and cards. Admin accounts are preserved.
+          Delete all users and data from the system. Only admin accounts are preserved.
         </p>
 
         {success && (
           <div className="mb-4 rounded-lg bg-success/10 border border-success/20 px-4 py-3 text-sm text-success">
-            System reset complete. All user data has been cleared.
+            System reset complete. All users and data have been deleted.
           </div>
         )}
 
@@ -78,13 +78,13 @@ export default function ResetSystem() {
               This will permanently delete:
             </p>
             <ul className="text-sm text-text-muted mb-5 space-y-1 list-disc list-inside">
-              <li>All user accounts and balances</li>
-              <li>All transactions and transfers</li>
+              <li>All non-admin users</li>
+              <li>All accounts, transactions, and transfers</li>
               <li>All cards, KYC documents, and notifications</li>
-              <li>All support tickets</li>
+              <li>All support tickets and audit logs</li>
             </ul>
             <p className="text-xs text-error mb-5">
-              User login accounts and admin accounts will be preserved. This cannot be undone.
+              Only admin accounts will be preserved. This cannot be undone.
             </p>
 
             {error && (

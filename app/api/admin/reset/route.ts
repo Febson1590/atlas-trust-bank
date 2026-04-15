@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Delete everything in correct order
+    // Delete EVERYTHING in correct order (keep only admin users)
     await prisma.$transaction(async (tx) => {
       // Delete transfers first (references accounts)
       await tx.transfer.deleteMany({});
@@ -30,25 +30,28 @@ export async function POST(request: NextRequest) {
       // Delete support messages then tickets
       await tx.ticketMessage.deleteMany({});
       await tx.supportTicket.deleteMany({});
-      // Reset all user KYC status and transfer PINs (keep user accounts)
-      await tx.user.updateMany({
-        where: { role: "USER" },
-        data: {
-          kycStatus: "NOT_STARTED",
-          transferPin: null,
-          avatarUrl: null,
-        },
+      // Delete all audit logs (the single record of this reset will be
+      // recreated after the transaction below, so there's always a forensic
+      // trail of the most recent reset)
+      await tx.auditLog.deleteMany({});
+      // Delete all non-admin users entirely
+      await tx.user.deleteMany({
+        where: { role: { not: "ADMIN" } },
       });
     });
 
-    // Audit log
+    // Forensic record of the reset (recreated after the transaction cleared
+    // all historical audit logs)
     await prisma.auditLog.create({
       data: {
         adminId: session.userId,
         action: "SYSTEM_RESET",
         targetType: "SYSTEM",
         targetId: "all",
-        details: { message: "Full system data reset performed" },
+        details: {
+          message:
+            "Full system reset: deleted all non-admin users, accounts, transactions, transfers, cards, KYC, notifications, support, and audit logs",
+        },
         ipAddress: getClientIP(request),
       },
     });

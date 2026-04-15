@@ -32,11 +32,11 @@ const navItems = [
   { label: "Accounts", href: "/admin/accounts", icon: Wallet },
   { label: "Transactions", href: "/admin/transactions", icon: ArrowLeftRight },
   { label: "Transfers", href: "/admin/transfers", icon: Send },
-  { label: "KYC Review", href: "/admin/kyc", icon: ShieldCheck },
+  { label: "Identity Review", href: "/admin/kyc", icon: ShieldCheck },
   { label: "Cards", href: "/admin/cards", icon: CreditCard },
   { label: "Notifications", href: "/admin/notifications", icon: Bell },
   { label: "Transaction Generator", href: "/admin/generator", icon: Zap },
-  { label: "Audit Logs", href: "/admin/audit-logs", icon: ScrollText },
+  { label: "Activity Logs", href: "/admin/audit-logs", icon: ScrollText },
   { label: "Support Tickets", href: "/admin/support", icon: HelpCircle },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
