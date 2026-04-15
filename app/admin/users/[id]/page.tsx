@@ -22,6 +22,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate, formatDateTime, timeAgo, getInitials, cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
+import UserActions from "./UserActions";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -153,14 +154,24 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* ── Back link ──────────────────────────────────────────── */}
-      <Link
-        href="/admin/users"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted hover:text-text-primary transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Users
-      </Link>
+      {/* ── Top bar ──────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/admin/users"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted hover:text-text-primary transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Users
+        </Link>
+        {user.role !== "ADMIN" && (
+          <UserActions
+            userId={user.id}
+            userName={`${user.firstName} ${user.lastName}`}
+            hasAccounts={user.accounts.length > 0}
+            allAccountsDormant={user.accounts.length > 0 && user.accounts.every((a) => a.status === "DORMANT")}
+          />
+        )}
+      </div>
 
       {/* ── User Profile Header ────────────────────────────────── */}
       <div className="rounded-xl bg-navy-800 border border-border-subtle p-6">

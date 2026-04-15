@@ -88,8 +88,28 @@ export default async function TransferPage() {
     );
   }
 
-  // ── No active accounts ─────────────────────────────────────
+  // ── Check for dormant accounts ─────────────────────────────
   if (user.accounts.length === 0) {
+    // Check if user has dormant accounts
+    const dormantCount = await prisma.account.count({
+      where: { userId: session.userId, status: "DORMANT" },
+    });
+
+    const isDormant = dormantCount > 0;
+
+    // Find when accounts became dormant (earliest updatedAt)
+    const dormantAccount = isDormant
+      ? await prisma.account.findFirst({
+          where: { userId: session.userId, status: "DORMANT" },
+          select: { updatedAt: true },
+          orderBy: { updatedAt: "asc" },
+        })
+      : null;
+
+    const dormantDays = dormantAccount
+      ? Math.floor((Date.now() - new Date(dormantAccount.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
+
     return (
       <div className="animate-fade-in">
         <div className="mb-6">
@@ -99,17 +119,18 @@ export default async function TransferPage() {
           </p>
         </div>
 
-        <div className="rounded-xl bg-navy-800 border border-border-subtle p-8">
+        <div className={`rounded-xl bg-navy-800 border ${isDormant ? "border-warning/20" : "border-border-subtle"} p-8`}>
           <div className="flex flex-col items-center text-center max-w-md mx-auto">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-navy-700 border border-border-subtle mb-4">
-              <AlertTriangle className="h-7 w-7 text-text-muted" />
+            <div className={`flex h-16 w-16 items-center justify-center rounded-full ${isDormant ? "bg-warning/10 border border-warning/20" : "bg-navy-700 border border-border-subtle"} mb-4`}>
+              <AlertTriangle className={`h-7 w-7 ${isDormant ? "text-warning" : "text-text-muted"}`} />
             </div>
             <h3 className="text-lg font-semibold text-text-primary mb-2">
-              No Active Accounts
+              {isDormant ? "Account Dormant" : "No Active Accounts"}
             </h3>
             <p className="text-sm text-text-muted mb-6">
-              You need at least one active account to make a transfer. Please
-              contact support to set up your account.
+              {isDormant
+                ? `Your account is currently dormant. It has been inactive for ${dormantDays} ${dormantDays === 1 ? "day" : "days"}. Please contact support to reactivate your account.`
+                : "You need at least one active account to make a transfer. Please contact support to set up your account."}
             </p>
             <Link
               href="/dashboard/support"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getClientIP } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { AccountStatus } from "@/generated/prisma";
 
 // ─── GET: Fetch single user with all related data ───────────
 export async function GET(
@@ -268,5 +269,118 @@ export async function PUT(
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+// ─── PATCH: Set all user accounts to DORMANT or ACTIVE ──────
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const admin = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true },
+    });
+    if (!admin || admin.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const { id } = await params;
+    const body = await request.json();
+    const { accountStatus } = body;
+
+    if (!accountStatus || !["DORMANT", "ACTIVE"].includes(accountStatus)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, accounts: { select: { id: true } } },
+    });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    // Update all accounts
+    await prisma.account.updateMany({
+      where: { userId: id },
+      data: { status: accountStatus as AccountStatus },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        adminId: session.userId,
+        action: accountStatus === "DORMANT" ? "SUSPEND_USER" : "ACTIVATE_USER",
+        targetType: "USER",
+        targetId: id,
+        details: {
+          accountStatus,
+          accountsAffected: user.accounts.length,
+          userEmail: user.email,
+        },
+        ipAddress: getClientIP(request),
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Admin user PATCH error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// ─── DELETE: Permanently delete a user ──────────────────────
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const admin = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { role: true },
+    });
+    if (!admin || admin.role !== "ADMIN") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const { id } = await params;
+
+    // Prevent self-deletion
+    if (id === session.userId) {
+      return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { email: true, role: true },
+    });
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    // Don't allow deleting other admins
+    if (user.role === "ADMIN") {
+      return NextResponse.json({ error: "Cannot delete admin accounts" }, { status: 400 });
+    }
+
+    // Audit log before deletion
+    await prisma.auditLog.create({
+      data: {
+        adminId: session.userId,
+        action: "DELETE_USER",
+        targetType: "USER",
+        targetId: id,
+        details: { userEmail: user.email },
+        ipAddress: getClientIP(request),
+      },
+    });
+
+    // Delete user (cascades to accounts, transactions, etc.)
+    await prisma.user.delete({ where: { id } });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Admin user DELETE error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
