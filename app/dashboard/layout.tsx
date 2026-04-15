@@ -14,9 +14,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   // ── Validate session ──────────────────────────────────────
+  // NOTE: we redirect with `?redirect=/dashboard` so that `proxy.ts` can
+  // detect a bounce from a protected route and clear a stale session cookie,
+  // instead of looping back here forever.
   const session = await getSession();
   if (!session) {
-    redirect("/login");
+    redirect("/login?redirect=/dashboard");
   }
 
   // ── Fetch user ────────────────────────────────────────────
@@ -33,7 +36,7 @@ export default async function DashboardLayout({
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?redirect=/dashboard");
   }
 
   // Handle restricted account states

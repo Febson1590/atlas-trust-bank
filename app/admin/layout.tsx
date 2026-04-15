@@ -14,9 +14,11 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // ── Validate session ──────────────────────────────────────
+  // Use `?redirect=/admin` so proxy.ts can detect the bounce and clear
+  // a stale session cookie instead of looping forever.
   const session = await getSession();
   if (!session) {
-    redirect("/login");
+    redirect("/login?redirect=/admin");
   }
 
   // ── Fetch user ────────────────────────────────────────────
@@ -33,7 +35,7 @@ export default async function AdminLayout({
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?redirect=/admin");
   }
 
   // ── Admin role check ──────────────────────────────────────
