@@ -183,6 +183,11 @@ export async function POST(request: Request) {
       });
 
       const txnReference = generateReference("TXN");
+      // balanceAfter records the PROJECTED post-debit balance. Previously
+      // we stored the current pre-debit balance here, which made the
+      // balance chart render a flat line across pending transfers and
+      // confused the per-transaction "running balance" display.
+      const projectedBalance = balance - amount;
       await tx.transaction.create({
         data: {
           accountId: fromAccountId,
@@ -192,7 +197,7 @@ export async function POST(request: Request) {
           reference: txnReference,
           description: `Transfer to ${recipientName} — ${reference}`,
           category: "Transfer",
-          balanceAfter: new Prisma.Decimal(balance),
+          balanceAfter: new Prisma.Decimal(projectedBalance),
           metadata: {
             transferId: newTransfer.id,
             transferReference: reference,

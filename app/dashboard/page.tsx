@@ -30,8 +30,11 @@ export default async function DashboardPage() {
     select: {
       firstName: true,
       lastName: true,
+      // Load ALL accounts the user owns (ACTIVE, DORMANT, RESTRICTED, FROZEN).
+      // Hiding non-ACTIVE accounts from the overview made their balances
+      // disappear from the total and made it look like accounts were missing.
+      // The AccountCard renders a status badge so users can see per-account state.
       accounts: {
-        where: { status: "ACTIVE" },
         orderBy: { createdAt: "asc" },
       },
     },

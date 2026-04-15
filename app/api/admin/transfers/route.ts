@@ -188,34 +188,46 @@ export async function PUT(request: Request) {
           data: { balance: new Prisma.Decimal(newSourceBalance) },
         });
 
-        // Create COMPLETED debit transaction
-        await tx.transaction.create({
-          data: {
-            accountId: transfer.fromAccountId,
-            type: "DEBIT",
-            amount: new Prisma.Decimal(amount),
-            status: "COMPLETED",
-            reference: generateReference("TXN"),
-            description: `Transfer to ${transfer.recipientName || "recipient"} — ${transfer.reference}`,
-            category: "Transfer",
-            balanceAfter: new Prisma.Decimal(newSourceBalance),
-            metadata: {
-              transferId: transfer.id,
-              transferReference: transfer.reference,
-              approvedBy: session.userId,
-            },
-          },
-        });
-
-        // Mark any existing PENDING transactions for this transfer as COMPLETED
-        await tx.transaction.updateMany({
+        // Flip the existing PENDING debit (created at submit time) to
+        // COMPLETED and record the actual post-debit balance. Previously
+        // the approve handler *also* inserted a brand-new COMPLETED debit,
+        // which meant every approved transfer showed up twice in the
+        // user's transaction history.
+        const pendingDebits = await tx.transaction.updateMany({
           where: {
             accountId: transfer.fromAccountId,
             status: "PENDING",
             metadata: { path: ["transferId"], equals: transfer.id },
           },
-          data: { status: "COMPLETED" },
+          data: {
+            status: "COMPLETED",
+            balanceAfter: new Prisma.Decimal(newSourceBalance),
+          },
         });
+
+        // Safety net: if no pending debit was found (e.g. manual DB edit
+        // or data integrity issue), create the debit tx now so there's
+        // always exactly one COMPLETED record of this transfer.
+        if (pendingDebits.count === 0) {
+          await tx.transaction.create({
+            data: {
+              accountId: transfer.fromAccountId,
+              type: "DEBIT",
+              amount: new Prisma.Decimal(amount),
+              status: "COMPLETED",
+              reference: generateReference("TXN"),
+              description: `Transfer to ${transfer.recipientName || "recipient"} — ${transfer.reference}`,
+              category: "Transfer",
+              balanceAfter: new Prisma.Decimal(newSourceBalance),
+              metadata: {
+                transferId: transfer.id,
+                transferReference: transfer.reference,
+                approvedBy: session.userId,
+                reconstructed: true,
+              },
+            },
+          });
+        }
 
         // If toAccountId exists, credit that account
         if (transfer.toAccountId && transfer.toAccount) {

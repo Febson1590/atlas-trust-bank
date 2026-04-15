@@ -132,6 +132,9 @@ export async function POST(request: Request) {
       });
 
       const txnReference = generateReference("TXN");
+      // Projected post-debit balance (see matching comment in
+      // /api/transfers/submit — same bug, both entry points).
+      const projectedBalance = balance - amount;
       await tx.transaction.create({
         data: {
           accountId: fromAccountId,
@@ -141,7 +144,7 @@ export async function POST(request: Request) {
           reference: txnReference,
           description: `Transfer to ${recipientName} — ${reference}`,
           category: "Transfer",
-          balanceAfter: new Prisma.Decimal(balance),
+          balanceAfter: new Prisma.Decimal(projectedBalance),
           metadata: {
             transferId: newTransfer.id,
             transferReference: reference,
