@@ -75,11 +75,11 @@ export default function Header({
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Notification bell */}
           <Link
             href="/dashboard/notifications"
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-navy-800 transition-colors"
+            className="relative flex h-10 w-10 items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-navy-800 transition-colors"
             aria-label="Notifications"
           >
             <Bell className="h-5 w-5" />
@@ -95,19 +95,19 @@ export default function Header({
             <button
               type="button"
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-navy-800 transition-colors"
+              className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-navy-800 transition-colors"
             >
               {user.avatarUrl ? (
                 <Image
                   src={user.avatarUrl}
                   alt={`${user.firstName} ${user.lastName}`}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-full object-cover"
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 rounded-full object-cover ring-2 ring-gold-500/30"
                   unoptimized
                 />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full gold-gradient text-xs font-bold text-navy-950">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full gold-gradient text-sm font-bold text-navy-950 ring-2 ring-gold-500/30">
                   {initials}
                 </div>
               )}

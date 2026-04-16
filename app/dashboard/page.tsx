@@ -14,6 +14,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import AccountCard from "@/components/dashboard/AccountCard";
 import TransactionTable from "@/components/dashboard/TransactionTable";
 import BalanceChart from "@/components/dashboard/BalanceChart";
+import KycBanner, { KycVerifiedBadge } from "@/components/dashboard/KycBanner";
 import EmptyState from "@/components/ui/EmptyState";
 import type { Metadata } from "next";
 
@@ -30,10 +31,8 @@ export default async function DashboardPage() {
     select: {
       firstName: true,
       lastName: true,
+      kycStatus: true,
       // Load ALL accounts the user owns (ACTIVE, DORMANT, RESTRICTED, FROZEN).
-      // Hiding non-ACTIVE accounts from the overview made their balances
-      // disappear from the total and made it look like accounts were missing.
-      // The AccountCard renders a status badge so users can see per-account state.
       accounts: {
         orderBy: { createdAt: "asc" },
       },
@@ -122,11 +121,16 @@ export default async function DashboardPage() {
       <div>
         <h2 className="text-2xl font-bold text-text-primary">
           Hey, {user.firstName}
+          <KycVerifiedBadge status={user.kycStatus} />
         </h2>
         <p className="text-sm text-text-muted mt-1">
           Here&apos;s a quick look at your account.
         </p>
       </div>
+
+      {/* KYC status banner — shown for NOT_STARTED, PENDING, REJECTED.
+          Hidden for VERIFIED users (they just get the badge above). */}
+      <KycBanner status={user.kycStatus} />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
