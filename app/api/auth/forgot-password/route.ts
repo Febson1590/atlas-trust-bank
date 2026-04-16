@@ -59,8 +59,11 @@ export async function POST(request: Request) {
     // Create reset token
     const token = await createResetToken(user.email);
 
-    // Build reset URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // Build reset URL. Falls back to the production canonical so a missing
+    // env var on Vercel doesn't ship localhost links to real users — local
+    // dev gets the right value via .env.
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL || "https://atlastrustcore.com";
     const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
     // Send password reset email

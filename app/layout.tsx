@@ -14,8 +14,10 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+// Production canonical URL. metadataBase + OG + Twitter all use this.
+// Override via NEXT_PUBLIC_APP_URL on Vercel for non-prod deploys.
 const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://atlas-trust-bank.vercel.app";
+  process.env.NEXT_PUBLIC_APP_URL || "https://atlastrustcore.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

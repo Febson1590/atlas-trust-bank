@@ -8,12 +8,19 @@ function getResend() {
   return _resend;
 }
 
+// Production canonical URL. Centralized so every email link points at the
+// same place. Override via NEXT_PUBLIC_APP_URL in Vercel for non-prod
+// deploys (preview, staging, etc).
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "https://atlastrustcore.com";
+
 const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL || "Atlas Trust Bank <noreply@atlastrust.com>";
+  process.env.RESEND_FROM_EMAIL ||
+  "Atlas Trust Bank <noreply@atlastrustcore.com>";
 const SUPPORT_INBOX =
-  process.env.CONTACT_INBOX || "support@atlastrust.com";
+  process.env.CONTACT_INBOX || "support@atlastrustcore.com";
 const APP_NAME = "Atlas Trust Bank";
-const LOGO_URL = "https://atlas-trust-bank.vercel.app/logo.png";
+const LOGO_URL = `${APP_URL}/logo.png`;
 
 // HTML-escape user-provided text before dropping it into an email template.
 // Prevents the contact form from being used to inject arbitrary markup into
@@ -138,7 +145,7 @@ export async function sendWelcomeEmail(
       To unlock all features, please verify your identity first.
     </p>
     <div style="text-align:center;margin:0 0 24px;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
+      <a href="${APP_URL}/dashboard" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
         Go to Your Dashboard
       </a>
     </div>
@@ -257,7 +264,7 @@ export async function sendKycUpdateEmail(
       ${statusText}
     </p>
     <div style="text-align:center;margin:0 0 24px;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/kyc" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
+      <a href="${APP_URL}/dashboard/kyc" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:600;font-size:15px;">
         Check Status
       </a>
     </div>
