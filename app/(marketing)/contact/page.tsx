@@ -12,8 +12,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    primary: "support@atlastrust.com",
-    secondary: "corporate@atlastrust.com",
+    primary: "support@atlastrustcore.com",
+    secondary: "",
     note: "We usually reply within 24 hours",
   },
   {
@@ -119,12 +119,16 @@ export default function ContactPage() {
                         <p className="mt-1 text-sm text-text-secondary">
                           {item.primary}
                         </p>
-                        <p className="text-sm text-text-secondary">
-                          {item.secondary}
-                        </p>
-                        <p className="mt-2 text-xs text-text-muted">
-                          {item.note}
-                        </p>
+                        {item.secondary && (
+                          <p className="text-sm text-text-secondary">
+                            {item.secondary}
+                          </p>
+                        )}
+                        {item.note && (
+                          <p className="mt-2 text-xs text-text-muted">
+                            {item.note}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

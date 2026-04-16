@@ -69,7 +69,7 @@ export default function DashboardPreview() {
               <div className="h-2.5 w-2.5 rounded-full bg-warning/60" />
               <div className="h-2.5 w-2.5 rounded-full bg-success/60" />
               <span className="ml-3 text-[11px] text-text-muted">
-                dashboard.atlastrust.com
+                dashboard.atlastrustcore.com
               </span>
             </div>
 

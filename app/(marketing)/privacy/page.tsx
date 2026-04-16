@@ -78,7 +78,7 @@ const sections = [
       "Right to Restriction: You have the right to request that we restrict the processing of your personal information in certain circumstances, such as when you contest its accuracy or object to our processing.",
       "Right to Data Portability: Where technically feasible, you have the right to receive your personal information in a structured, commonly used, and machine-readable format, and to transmit it to another data controller.",
       "Right to Object: You have the right to object to processing based on legitimate interests or for direct marketing purposes. Where you object to direct marketing, we will cease such processing immediately.",
-      "To exercise any of these rights, please contact our Data Protection Officer at privacy@atlastrust.com or through your account settings. We will respond to your request within 30 days, in accordance with applicable law.",
+      "To exercise any of these rights, please contact our support team at support@atlastrustcore.com or through your account settings. We will respond to your request within 30 days, in accordance with applicable law.",
     ],
   },
   {
@@ -96,7 +96,7 @@ const sections = [
     title: "8. Contact Us",
     content: [
       "If you have any questions, concerns, or requests regarding this Privacy Policy or our data processing practices, please contact us:",
-      "Data Protection Officer: Atlas Trust Bank AG, Bahnhofstrasse 42, 8001 Zurich, Switzerland. Email: privacy@atlastrust.com. Telephone: +1 (800) 482-7878 (US) / +44 20 7946 0958 (International).",
+      "Atlas Trust Bank AG, Bahnhofstrasse 42, 8001 Zurich, Switzerland. Email: support@atlastrustcore.com. Telephone: +1 (800) 482-7878 (US) / +44 20 7946 0958 (International).",
       "For residents of the European Economic Area, you also have the right to lodge a complaint with your local supervisory authority if you believe that our processing of your personal information violates applicable data protection law.",
       "For residents of Switzerland, complaints may be directed to the Federal Data Protection and Information Commissioner (FDPIC).",
     ],

@@ -77,7 +77,7 @@ const sections = [
     title: "8. Contact Information",
     content: [
       "If you have any questions, concerns, or complaints regarding these Terms or our services, please contact us through the following channels:",
-      "Atlas Trust Bank AG, Legal Department, Bahnhofstrasse 42, 8001 Zurich, Switzerland. Email: legal@atlastrust.com. Telephone: +1 (800) 482-7878 (US) / +44 20 7946 0958 (International).",
+      "Atlas Trust Bank AG, Bahnhofstrasse 42, 8001 Zurich, Switzerland. Email: support@atlastrustcore.com. Telephone: +1 (800) 482-7878 (US) / +44 20 7946 0958 (International).",
       "For formal complaints, please submit a written complaint through our secure client portal or by registered mail to our Legal Department. We will acknowledge receipt within five (5) business days and endeavor to resolve the matter within thirty (30) business days.",
       "These Terms are governed by and construed in accordance with the laws of Switzerland. Any disputes arising under these Terms shall be submitted to the exclusive jurisdiction of the courts of Zurich, Switzerland, unless otherwise required by applicable consumer protection laws in your jurisdiction.",
     ],
