@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CheckCircle,
-  XCircle,
-  X,
-  Loader2,
-} from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 interface KycDocument {
   id: string;
@@ -21,20 +16,50 @@ interface KycDocument {
   };
 }
 
+/**
+ * Inline approve/reject UI for a KYC document row.
+ *
+ * This component used to open a `fixed inset-0` modal. On iPhone Safari —
+ * especially with the on-screen keyboard up, viewport meta + `100dvh`
+ * edge cases, and every other known iOS `fixed`-positioning footgun —
+ * the Confirm button frequently ended up below the fold with no way to
+ * scroll inside the modal to reach it.
+ *
+ * The rewrite ditches the modal entirely. Clicking Approve / Reject
+ * unfolds a confirmation block directly below the button row, inside the
+ * normal document flow. The user just scrolls the page to see the
+ * Confirm button if the keyboard pushes it down — no viewport math,
+ * no z-index stacking, no transformed-ancestor clipping, no keyboard
+ * jitter. Full-width stacked buttons on mobile, side-by-side on desktop.
+ */
 export default function KycActions({ document }: { document: KycDocument }) {
   const router = useRouter();
-  const [showModal, setShowModal] = useState(false);
   const [action, setAction] = useState<"approve" | "reject" | null>(null);
   const [adminNote, setAdminNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleAction(e: React.FormEvent) {
+  function cancel() {
+    setAction(null);
+    setAdminNote("");
+    setError("");
+  }
+
+  function pick(next: "approve" | "reject") {
+    setAction(next);
+    setAdminNote("");
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!action) return;
+    if (action === "reject" && adminNote.trim().length === 0) {
+      setError("Please provide a reason for rejection.");
+      return;
+    }
     setLoading(true);
     setError("");
-
     try {
       const res = await fetch("/api/admin/kyc", {
         method: "PUT",
@@ -42,7 +67,7 @@ export default function KycActions({ document }: { document: KycDocument }) {
         body: JSON.stringify({
           documentId: document.id,
           action,
-          adminNote: adminNote || undefined,
+          adminNote: adminNote.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -50,104 +75,151 @@ export default function KycActions({ document }: { document: KycDocument }) {
         setError(data.error || "Action failed");
         return;
       }
-      setShowModal(false);
-      setAdminNote("");
+      // Success — collapse the form and refresh the page so the doc
+      // updates to its new status.
       setAction(null);
+      setAdminNote("");
       router.refresh();
     } catch {
-      setError("An error occurred");
+      setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <>
-      <div className="flex items-center gap-2">
+    <div className="w-full">
+      {/* Action buttons row — full-width stacked on mobile, inline on desktop */}
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
         <button
-          onClick={() => { setAction("approve"); setShowModal(true); setError(""); }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-success/10 border border-success/20 text-success text-xs font-medium hover:bg-success/20 transition-colors"
+          type="button"
+          onClick={() => pick("approve")}
+          disabled={loading || action !== null}
+          aria-pressed={action === "approve"}
+          className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto ${
+            action === "approve"
+              ? "bg-success/30 text-success border border-success/40"
+              : "bg-success/10 text-success border border-success/20 hover:bg-success/20"
+          }`}
         >
-          <CheckCircle className="h-3.5 w-3.5" />
+          <CheckCircle className="h-4 w-4" />
           Approve
         </button>
         <button
-          onClick={() => { setAction("reject"); setShowModal(true); setError(""); }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-error/10 border border-error/20 text-error text-xs font-medium hover:bg-error/20 transition-colors"
+          type="button"
+          onClick={() => pick("reject")}
+          disabled={loading || action !== null}
+          aria-pressed={action === "reject"}
+          className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto ${
+            action === "reject"
+              ? "bg-error/30 text-error border border-error/40"
+              : "bg-error/10 text-error border border-error/20 hover:bg-error/20"
+          }`}
         >
-          <XCircle className="h-3.5 w-3.5" />
+          <XCircle className="h-4 w-4" />
           Reject
         </button>
       </div>
 
-      {showModal && action && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowModal(false); setAction(null); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className={`text-lg font-semibold flex items-center gap-2 ${action === "approve" ? "text-success" : "text-error"}`}>
-                {action === "approve" ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                {action === "approve" ? "Approve Document" : "Reject Document"}
-              </h2>
-              <button onClick={() => { setShowModal(false); setAction(null); }} className="text-text-muted hover:text-text-primary transition-colors">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+      {/* Inline confirmation panel — renders in normal document flow
+          directly below the action row. No fixed positioning, no z-index,
+          no viewport math. Always reachable by scrolling.
+          No `animate-fade-in` on purpose: the parent user card has
+          `overflow-hidden` to clip its rounded corners, and the fade-in
+          keyframe briefly uses translateY(16px) which would get clipped
+          at animation start. Instant render is cleaner anyway. */}
+      {action && (
+        <div
+          className={`mt-3 rounded-lg border p-4 ${
+            action === "approve"
+              ? "bg-success/5 border-success/20"
+              : "bg-error/5 border-error/20"
+          }`}
+        >
+          <div
+            className={`flex items-center gap-2 text-sm font-semibold mb-3 ${
+              action === "approve" ? "text-success" : "text-error"
+            }`}
+          >
+            {action === "approve" ? (
+              <CheckCircle className="h-4 w-4" />
+            ) : (
+              <XCircle className="h-4 w-4" />
+            )}
+            {action === "approve" ? "Approve this document?" : "Reject this document?"}
+          </div>
 
-            <div className="mb-4 p-3 rounded-lg bg-navy-900/50 border border-border-default">
-              <p className="text-sm text-text-muted">Document</p>
-              <p className="text-text-primary text-sm font-medium">{document.type} — {document.fileName}</p>
-              <p className="text-text-muted text-xs mt-1">
-                {document.user.firstName} {document.user.lastName} ({document.user.email})
-              </p>
+          <p className="text-xs text-text-muted mb-3 break-words">
+            {document.user.firstName} {document.user.lastName} — {document.type}
+            <br />
+            <span className="text-text-muted/70">{document.fileName}</span>
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label
+                htmlFor={`admin-note-${document.id}`}
+                className="block text-xs font-medium text-text-secondary mb-1.5"
+              >
+                {action === "approve" ? (
+                  <>
+                    Note <span className="text-text-muted">(optional)</span>
+                  </>
+                ) : (
+                  <>
+                    Reason <span className="text-error">*</span>
+                  </>
+                )}
+              </label>
+              <textarea
+                id={`admin-note-${document.id}`}
+                value={adminNote}
+                onChange={(e) => setAdminNote(e.target.value)}
+                required={action === "reject"}
+                rows={3}
+                placeholder={
+                  action === "approve"
+                    ? "Add a note for the audit log (optional)..."
+                    : "Tell the customer why this was rejected..."
+                }
+                className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 resize-none"
+              />
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm">
+              <div className="rounded-lg bg-error/10 border border-error/20 px-3 py-2 text-xs text-error">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleAction} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                  Note {action === "approve" && <span className="text-text-muted">(optional)</span>}
-                </label>
-                <textarea
-                  value={adminNote}
-                  onChange={(e) => setAdminNote(e.target.value)}
-                  required={action === "reject"}
-                  rows={3}
-                  placeholder={action === "reject" ? "Reason for rejection (required)..." : "Add a note (optional)..."}
-                  className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20 resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => { setShowModal(false); setAction(null); }}
-                  className="flex-1 py-2.5 text-sm border border-border-default rounded-lg text-text-secondary hover:bg-navy-800/50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 ${
-                    action === "approve"
-                      ? "bg-success/20 text-success border border-success/30 hover:bg-success/30"
-                      : "bg-error/20 text-error border border-error/30 hover:bg-error/30"
-                  }`}
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Confirm {action === "approve" ? "Approval" : "Rejection"}
-                </button>
-              </div>
-            </form>
-          </div>
+            {/* Confirm / Cancel — stacked full-width on mobile, side-by-side
+                on desktop. In the stacked layout the PRIMARY confirm button
+                comes first so it's always the most prominent control. */}
+            <div className="flex flex-col sm:flex-row-reverse gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 sm:py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50 ${
+                  action === "approve"
+                    ? "bg-success/20 text-success border border-success/30 hover:bg-success/30"
+                    : "bg-error/20 text-error border border-error/30 hover:bg-error/30"
+                }`}
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Confirm {action === "approve" ? "Approval" : "Rejection"}
+              </button>
+              <button
+                type="button"
+                onClick={cancel}
+                disabled={loading}
+                className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center rounded-lg px-4 py-3 sm:py-2.5 text-sm font-medium border border-border-default text-text-secondary hover:bg-navy-800/50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
       )}
-    </>
+    </div>
   );
 }
