@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Zap,
@@ -11,10 +11,14 @@ import {
   TrendingUp,
   TrendingDown,
   Calendar,
+  Hash,
+  DollarSign,
   Wallet,
   Euro,
   PoundSterling,
   Bitcoin,
+  Settings2,
+  FileText,
 } from "lucide-react";
 
 interface GeneratorUser {
@@ -27,48 +31,38 @@ interface GeneratorUser {
 }
 
 interface GeneratorResult {
-  userId: string;
   userName: string;
   totalCredit: number;
   totalDebit: number;
   finalBalanceUsd: number;
-  shares: {
-    primary: number;
-    eur: number;
-    gbp: number;
-    btc: number;
-  };
-  fxRates?: {
-    btcUsdSpot: number;
-    btcPriceSource: "live" | "fallback";
-  };
-  accounts: {
-    primaryChecking: { currency: string; balance: number };
-    eur: { currency: string; balance: number };
-    gbp: { currency: string; balance: number };
-    btc: { currency: string; balance: number };
-  };
+  mode: string;
+  pattern: string;
+  fxRates?: { btcUsdSpot: number; btcPriceSource: string };
+  shares: Record<string, number>;
+  accounts: Record<string, number>;
   transactionCount: number;
 }
 
-function formatNumber(n: number, currency: string): string {
-  if (currency === "BTC") {
-    return `₿ ${n.toLocaleString("en-US", {
-      minimumFractionDigits: 4,
-      maximumFractionDigits: 8,
-    })}`;
-  }
+function fmt(n: number, cur: string): string {
+  if (cur === "BTC")
+    return `₿ ${n.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 8 })}`;
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency,
+      currency: cur,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(n);
   } catch {
-    return `${currency} ${n.toFixed(2)}`;
+    return `${cur} ${n.toFixed(2)}`;
   }
 }
+
+const PATTERNS = [
+  { value: "random", label: "Random", hint: "Evenly distributed" },
+  { value: "highActivity", label: "High Activity", hint: "More transactions, wider spread" },
+  { value: "salaryBased", label: "Salary-based", hint: "Credits cluster around 1st/15th" },
+] as const;
 
 export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
   const router = useRouter();
@@ -76,21 +70,72 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
     userId: "",
     totalCredit: "25000",
     totalDebit: "8000",
-    months: "6",
+    startDate: "",
+    endDate: "",
+    txCount: "40",
+    minAmount: "10",
+    maxAmount: "5000",
+    pattern: "random",
+    primaryMinPct: "65",
+    primaryMaxPct: "75",
+    creditDescs: "",
+    debitDescs: "",
+    mode: "replace",
   });
+
+  // Default dates: 6 months ago → today
+  useEffect(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setMonth(start.getMonth() - 6);
+    setForm((p) => ({
+      ...p,
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+    }));
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<GeneratorResult | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const creditNum = parseFloat(form.totalCredit) || 0;
   const debitNum = parseFloat(form.totalDebit) || 0;
-  const projectedBalance = creditNum - debitNum;
+  const projBal = creditNum - debitNum;
+  const minPct = parseFloat(form.primaryMinPct) || 65;
+  const maxPct = parseFloat(form.primaryMaxPct) || 75;
+  const midPct = (minPct + maxPct) / 2 / 100;
+  const restPct = 1 - midPct;
+
+  // Projected distribution preview (USD base)
+  const projPrimary = projBal * midPct;
+  const projRest = projBal * restPct;
+  const projEach = projRest / 3;
+
+  const canSubmit =
+    form.userId &&
+    creditNum >= 0 &&
+    debitNum >= 0 &&
+    projBal >= 0 &&
+    form.startDate &&
+    form.endDate &&
+    minPct <= maxPct;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     setResult(null);
+
+    const creditDescs = form.creditDescs
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const debitDescs = form.debitDescs
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     try {
       const res = await fetch("/api/admin/generator", {
@@ -100,7 +145,17 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
           userId: form.userId,
           totalCredit: creditNum,
           totalDebit: debitNum,
-          months: parseInt(form.months, 10) || 6,
+          startDate: form.startDate,
+          endDate: form.endDate,
+          txCount: parseInt(form.txCount, 10) || undefined,
+          minAmount: parseFloat(form.minAmount) || undefined,
+          maxAmount: parseFloat(form.maxAmount) || undefined,
+          pattern: form.pattern,
+          primaryMinPct: minPct,
+          primaryMaxPct: maxPct,
+          ...(creditDescs.length > 0 ? { creditDescriptions: creditDescs } : {}),
+          ...(debitDescs.length > 0 ? { debitDescriptions: debitDescs } : {}),
+          mode: form.mode,
         }),
       });
       const data = await res.json();
@@ -108,7 +163,7 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
         setError(data.error || "Generation failed");
         return;
       }
-      setResult(data.data as GeneratorResult);
+      setResult(data.data);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
@@ -118,8 +173,10 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
   }
 
   const selectedUser = users.find((u) => u.id === form.userId);
-  const canSubmit =
-    form.userId && creditNum >= 0 && debitNum >= 0 && projectedBalance >= 0;
+
+  const inputCls =
+    "w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20";
+  const labelCls = "flex items-center gap-2 text-sm font-medium text-text-secondary mb-1.5";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -131,15 +188,14 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
         >
           {/* User */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-2">
-              <UserIcon className="h-4 w-4 text-gold-500" />
-              Fund target user
+            <label className={labelCls}>
+              <UserIcon className="h-4 w-4 text-gold-500" /> Target user
             </label>
             <select
               value={form.userId}
               onChange={(e) => setForm({ ...form, userId: e.target.value })}
               required
-              className="w-full bg-navy-900/50 border border-border-default rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+              className={inputCls}
             >
               <option value="">Choose a user...</option>
               {users.map((u) => (
@@ -148,19 +204,14 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-text-muted mt-1.5">
-              The four default accounts (Primary Checking, EUR, GBP, BTC
-              Wallet) will be funded for this user. Existing transaction
-              history on those accounts will be replaced.
-            </p>
           </div>
 
           {/* Credit + Debit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-2">
-                <TrendingUp className="h-4 w-4 text-success" />
-                Total credit (USD)
+              <label className={labelCls}>
+                <TrendingUp className="h-4 w-4 text-success" /> Total credit
+                (USD)
               </label>
               <input
                 type="number"
@@ -171,16 +222,13 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
                   setForm({ ...form, totalCredit: e.target.value })
                 }
                 required
-                className="w-full bg-navy-900/50 border border-border-default rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+                className={inputCls}
               />
-              <p className="text-xs text-text-muted mt-1">
-                Sum of all generated credit transactions
-              </p>
             </div>
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-2">
-                <TrendingDown className="h-4 w-4 text-error" />
-                Total debit (USD)
+              <label className={labelCls}>
+                <TrendingDown className="h-4 w-4 text-error" /> Total debit
+                (USD)
               </label>
               <input
                 type="number"
@@ -191,61 +239,266 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
                   setForm({ ...form, totalDebit: e.target.value })
                 }
                 required
-                className="w-full bg-navy-900/50 border border-border-default rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+                className={inputCls}
               />
-              <p className="text-xs text-text-muted mt-1">
-                Sum of all generated debit transactions
-              </p>
             </div>
           </div>
 
-          {/* Months */}
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-2">
-              <Calendar className="h-4 w-4 text-gold-500" />
-              History length (months)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="36"
-              value={form.months}
-              onChange={(e) => setForm({ ...form, months: e.target.value })}
-              className="w-full bg-navy-900/50 border border-border-default rounded-lg py-3 px-4 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
-            />
-            <p className="text-xs text-text-muted mt-1">
-              Transactions will be spread across the last N months
-            </p>
+          {/* Date range */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                <Calendar className="h-4 w-4 text-gold-500" /> Start date
+              </label>
+              <input
+                type="date"
+                value={form.startDate}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
+                required
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>
+                <Calendar className="h-4 w-4 text-gold-500" /> End date
+              </label>
+              <input
+                type="date"
+                value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                required
+                className={inputCls}
+              />
+            </div>
           </div>
 
-          {/* Projected balance preview */}
-          <div className="rounded-lg bg-navy-900/50 border border-border-default px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-text-muted">
-              Projected final USD balance
-            </span>
-            <span
-              className={`text-base font-semibold ${
-                projectedBalance >= 0 ? "gold-text" : "text-error"
-              }`}
-            >
-              {formatNumber(projectedBalance, "USD")}
-            </span>
+          {/* Tx count + amount range */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className={labelCls}>
+                <Hash className="h-4 w-4 text-gold-500" /> Transactions
+              </label>
+              <input
+                type="number"
+                min="4"
+                max="500"
+                value={form.txCount}
+                onChange={(e) => setForm({ ...form, txCount: e.target.value })}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>
+                <DollarSign className="h-4 w-4 text-gold-500" /> Min amount
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={form.minAmount}
+                onChange={(e) =>
+                  setForm({ ...form, minAmount: e.target.value })
+                }
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>
+                <DollarSign className="h-4 w-4 text-gold-500" /> Max amount
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                value={form.maxAmount}
+                onChange={(e) =>
+                  setForm({ ...form, maxAmount: e.target.value })
+                }
+                className={inputCls}
+              />
+            </div>
           </div>
 
-          {projectedBalance < 0 && (
-            <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-              <span>
-                Final balance cannot be negative. Total credit must be at
-                least total debit.
-              </span>
+          {/* Pattern + Mode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                <Settings2 className="h-4 w-4 text-gold-500" /> Pattern
+              </label>
+              <select
+                value={form.pattern}
+                onChange={(e) => setForm({ ...form, pattern: e.target.value })}
+                className={inputCls}
+              >
+                {PATTERNS.map((p) => (
+                  <option key={p.value} value={p.value}>
+                    {p.label} — {p.hint}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>
+                <FileText className="h-4 w-4 text-gold-500" /> Mode
+              </label>
+              <select
+                value={form.mode}
+                onChange={(e) => setForm({ ...form, mode: e.target.value })}
+                className={inputCls}
+              >
+                <option value="replace">Replace existing history</option>
+                <option value="append">Append to existing history</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Primary allocation */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>
+                <Wallet className="h-4 w-4 text-gold-500" /> Primary min %
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={form.primaryMinPct}
+                onChange={(e) =>
+                  setForm({ ...form, primaryMinPct: e.target.value })
+                }
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>
+                <Wallet className="h-4 w-4 text-gold-500" /> Primary max %
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={form.primaryMaxPct}
+                onChange={(e) =>
+                  setForm({ ...form, primaryMaxPct: e.target.value })
+                }
+                className={inputCls}
+              />
+            </div>
+          </div>
+
+          {/* Projected distribution */}
+          {projBal > 0 && (
+            <div className="rounded-lg bg-navy-900/40 border border-border-subtle/50 p-4 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                Projected distribution (approx.)
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <Wallet className="h-4 w-4 text-gold-500 shrink-0" />
+                  <div>
+                    <p className="text-text-muted text-xs">USD</p>
+                    <p className="text-text-primary font-semibold">
+                      {fmt(projPrimary, "USD")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Euro className="h-4 w-4 text-blue-400 shrink-0" />
+                  <div>
+                    <p className="text-text-muted text-xs">EUR</p>
+                    <p className="text-text-primary font-semibold">
+                      {fmt(projEach * 0.92, "EUR")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PoundSterling className="h-4 w-4 text-purple-400 shrink-0" />
+                  <div>
+                    <p className="text-text-muted text-xs">GBP</p>
+                    <p className="text-text-primary font-semibold">
+                      {fmt(projEach * 0.79, "GBP")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Bitcoin className="h-4 w-4 text-orange-400 shrink-0" />
+                  <div>
+                    <p className="text-text-muted text-xs">BTC</p>
+                    <p className="text-text-primary font-semibold">
+                      {fmt(projEach / 65000, "BTC")}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
+          {/* Advanced: custom descriptions */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-xs font-medium text-gold-500 hover:text-gold-400 transition-colors"
+            >
+              {showAdvanced
+                ? "▾ Hide custom descriptions"
+                : "▸ Custom descriptions (optional)"}
+            </button>
+            {showAdvanced && (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Credit descriptions</label>
+                  <textarea
+                    value={form.creditDescs}
+                    onChange={(e) =>
+                      setForm({ ...form, creditDescs: e.target.value })
+                    }
+                    rows={5}
+                    placeholder={"One per line, e.g.:\nSalary deposit\nClient payment\nDividend"}
+                    className={inputCls + " resize-none"}
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Leave blank for default business descriptions
+                  </p>
+                </div>
+                <div>
+                  <label className={labelCls}>Debit descriptions</label>
+                  <textarea
+                    value={form.debitDescs}
+                    onChange={(e) =>
+                      setForm({ ...form, debitDescs: e.target.value })
+                    }
+                    rows={5}
+                    placeholder={"One per line, e.g.:\nOffice supplies\nVendor payment\nRent"}
+                    className={inputCls + " resize-none"}
+                  />
+                  <p className="text-xs text-text-muted mt-1">
+                    Leave blank for default business descriptions
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Validation warnings */}
+          {projBal < 0 && (
+            <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              Debit cannot exceed credit.
+            </div>
+          )}
+          {minPct > maxPct && (
+            <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              Primary min % cannot exceed max %.
+            </div>
+          )}
           {error && (
             <div className="p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              {error}
             </div>
           )}
 
@@ -256,13 +509,11 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
           >
             {loading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Generating...
+                <Loader2 className="h-4 w-4 animate-spin" /> Generating...
               </>
             ) : (
               <>
-                <Zap className="h-4 w-4" />
-                Generate Transactions
+                <Zap className="h-4 w-4" /> Generate Transactions
               </>
             )}
           </button>
@@ -271,7 +522,6 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
 
       {/* Sidebar */}
       <div className="space-y-6">
-        {/* Selected user card */}
         {selectedUser && (
           <div className="glass glass-border rounded-xl p-5 card-shine">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
@@ -284,14 +534,12 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
               {selectedUser.email}
             </p>
             <p className="text-text-muted text-xs mt-2">
-              {selectedUser.accountCount} existing account
-              {selectedUser.accountCount === 1 ? "" : "s"} · missing defaults
-              (USD / EUR / GBP / BTC) will be created automatically
+              {selectedUser.accountCount} account
+              {selectedUser.accountCount === 1 ? "" : "s"}
             </p>
           </div>
         )}
 
-        {/* Result */}
         {result && (
           <div className="glass glass-border rounded-xl p-5 border-success/20 bg-success/5">
             <div className="flex items-center gap-2 mb-4">
@@ -300,14 +548,7 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
                 Generation complete
               </h3>
             </div>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-text-muted">User</span>
-                <span className="text-text-primary font-medium break-all text-right">
-                  {result.userName}
-                </span>
-              </div>
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-text-muted">Transactions</span>
                 <span className="text-text-primary font-semibold">
@@ -315,117 +556,81 @@ export default function GeneratorForm({ users }: { users: GeneratorUser[] }) {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-muted">Total credit</span>
-                <span className="text-success">
-                  {formatNumber(result.totalCredit, "USD")}
+                <span className="text-text-muted">Mode</span>
+                <span className="text-text-secondary capitalize">
+                  {result.mode}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-muted">Total debit</span>
-                <span className="text-error">
-                  {formatNumber(result.totalDebit, "USD")}
+                <span className="text-text-muted">Pattern</span>
+                <span className="text-text-secondary capitalize">
+                  {result.pattern}
                 </span>
               </div>
               <div className="flex justify-between border-t border-border-subtle/50 pt-2">
                 <span className="text-text-muted">Final USD base</span>
                 <span className="gold-text font-semibold">
-                  {formatNumber(result.finalBalanceUsd, "USD")}
+                  {fmt(result.finalBalanceUsd, "USD")}
                 </span>
               </div>
-
               {result.fxRates && (
                 <div className="flex justify-between text-xs">
                   <span className="text-text-muted">BTC spot</span>
                   <span className="text-text-secondary">
-                    {formatNumber(result.fxRates.btcUsdSpot, "USD")}
-                    <span className="text-text-muted ml-1">
-                      ({result.fxRates.btcPriceSource})
-                    </span>
+                    {fmt(result.fxRates.btcUsdSpot, "USD")} (
+                    {result.fxRates.btcPriceSource})
                   </span>
                 </div>
               )}
             </div>
-
-            {/* Per-account breakdown */}
-            <div className="mt-5 space-y-2">
+            <div className="mt-4 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Final balances
               </p>
-              <div className="flex items-center justify-between rounded-lg bg-navy-900/40 px-3 py-2 border border-border-subtle/40">
-                <span className="flex items-center gap-2 text-text-secondary">
-                  <Wallet className="h-4 w-4 text-gold-500" />
-                  Primary Checking
-                </span>
-                <span className="text-text-primary font-semibold">
-                  {formatNumber(
-                    result.accounts.primaryChecking.balance,
-                    result.accounts.primaryChecking.currency
-                  )}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-navy-900/40 px-3 py-2 border border-border-subtle/40">
-                <span className="flex items-center gap-2 text-text-secondary">
-                  <Euro className="h-4 w-4 text-blue-400" />
-                  EUR Account
-                </span>
-                <span className="text-text-primary font-semibold">
-                  {formatNumber(
-                    result.accounts.eur.balance,
-                    result.accounts.eur.currency
-                  )}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-navy-900/40 px-3 py-2 border border-border-subtle/40">
-                <span className="flex items-center gap-2 text-text-secondary">
-                  <PoundSterling className="h-4 w-4 text-purple-400" />
-                  GBP Account
-                </span>
-                <span className="text-text-primary font-semibold">
-                  {formatNumber(
-                    result.accounts.gbp.balance,
-                    result.accounts.gbp.currency
-                  )}
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg bg-navy-900/40 px-3 py-2 border border-border-subtle/40">
-                <span className="flex items-center gap-2 text-text-secondary">
-                  <Bitcoin className="h-4 w-4 text-orange-400" />
-                  BTC Wallet
-                </span>
-                <span className="text-text-primary font-semibold">
-                  {formatNumber(
-                    result.accounts.btc.balance,
-                    result.accounts.btc.currency
-                  )}
-                </span>
-              </div>
+              {[
+                { icon: Wallet, color: "text-gold-500", label: "USD", cur: "USD" },
+                { icon: Euro, color: "text-blue-400", label: "EUR", cur: "EUR" },
+                { icon: PoundSterling, color: "text-purple-400", label: "GBP", cur: "GBP" },
+                { icon: Bitcoin, color: "text-orange-400", label: "BTC", cur: "BTC" },
+              ].map((row) => {
+                const Icon = row.icon;
+                const bal = result.accounts[row.cur] ?? 0;
+                const share = result.shares[row.cur] ?? 0;
+                return (
+                  <div
+                    key={row.cur}
+                    className="flex items-center justify-between rounded-lg bg-navy-900/40 px-3 py-2 border border-border-subtle/40"
+                  >
+                    <span className="flex items-center gap-2 text-text-secondary text-sm">
+                      <Icon className={`h-4 w-4 ${row.color}`} />
+                      {row.label}
+                      <span className="text-text-muted text-xs">
+                        ({share}%)
+                      </span>
+                    </span>
+                    <span className="text-text-primary font-semibold text-sm">
+                      {fmt(bal, row.cur)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* How it works */}
         <div className="glass glass-border rounded-xl p-5">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-3">
             How it works
           </h3>
-          <ol className="space-y-2 text-sm text-text-secondary list-decimal list-inside">
-            <li>Choose a user and enter total credit + total debit in USD</li>
+          <ol className="space-y-1.5 text-sm text-text-secondary list-decimal list-inside">
+            <li>Select user + enter credit and debit totals</li>
             <li>
               Primary Checking gets{" "}
-              <span className="text-gold-500">65–75%</span> of the final USD
-              balance
+              <span className="text-gold-500">{form.primaryMinPct}–{form.primaryMaxPct}%</span>
             </li>
-            <li>
-              The rest is split randomly across EUR, GBP, and BTC accounts
-            </li>
-            <li>
-              USD values are converted via hardcoded EUR/GBP rates and the{" "}
-              <span className="text-gold-500">live CoinGecko BTC spot</span>
-            </li>
-            <li>
-              Per-account transactions are interleaved across the history
-              window with a running balance that never dips below zero
-            </li>
+            <li>Rest splits randomly across EUR, GBP, BTC</li>
+            <li>BTC rate fetched live from CoinGecko</li>
+            <li>Transactions spread across the date range by pattern</li>
           </ol>
         </div>
       </div>

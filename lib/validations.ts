@@ -154,10 +154,10 @@ export const adminUserStatusSchema = z.object({
   status: z.enum(["ACTIVE", "SUSPENDED", "FROZEN"]),
 });
 
-// The transaction generator funds a specific user's four default accounts
-// (Primary Checking USD, EUR, GBP, BTC Wallet) from a single pair of totals.
-// Admin enters total credit and total debit in USD; the API derives the
-// per-account balances and transaction history.
+// Full admin control system for funding a user's four default accounts
+// with realistic transaction history. Admin specifies totals, date range,
+// transaction count, amount bounds, description lists, distribution
+// parameters, generation pattern, and replace/append mode.
 export const transactionGeneratorSchema = z.object({
   userId: z.string().min(1, "Select a user"),
   totalCredit: z
@@ -168,7 +168,17 @@ export const transactionGeneratorSchema = z.object({
     .number({ message: "Total debit must be a number" })
     .min(0, "Total debit cannot be negative")
     .max(10_000_000, "Total debit too large"),
-  months: z.number().int().min(1).max(36).optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  txCount: z.number().int().min(4).max(500).optional(),
+  minAmount: z.number().min(0.01).optional(),
+  maxAmount: z.number().min(0.01).optional(),
+  pattern: z.enum(["random", "highActivity", "salaryBased"]).optional(),
+  primaryMinPct: z.number().min(0).max(100).optional(),
+  primaryMaxPct: z.number().min(0).max(100).optional(),
+  creditDescriptions: z.array(z.string().min(1)).optional(),
+  debitDescriptions: z.array(z.string().min(1)).optional(),
+  mode: z.enum(["replace", "append"]).optional(),
 });
 
 // ─── Types ──────────────────────────────────────────────

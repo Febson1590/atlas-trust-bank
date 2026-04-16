@@ -57,26 +57,50 @@ export default async function DashboardPage() {
         })
       : [];
 
-  // Build balance chart data
+  // Build balance chart from REAL transaction history.
+  // For each transaction (sorted chronologically across all accounts),
+  // compute a running per-account balance then aggregate to a total.
+  // This gives the chart the same number the user sees in the "Total
+  // Balance" card, tracked over time. Face values are summed (mixing
+  // currencies matches the Total Balance card behavior).
   const chartData: { date: string; balance: number }[] = [];
 
-  if (recentTransactions.length > 0) {
-    const chartTransactions = await prisma.transaction.findMany({
-      where: { accountId: { in: accountIds } },
+  if (accountIds.length > 0) {
+    const allChartTxs = await prisma.transaction.findMany({
+      where: { accountId: { in: accountIds }, status: "COMPLETED" },
       orderBy: { createdAt: "asc" },
-      take: 30,
-      select: { createdAt: true, balanceAfter: true },
+      select: {
+        accountId: true,
+        type: true,
+        amount: true,
+        createdAt: true,
+      },
     });
 
-    const seenDates = new Set<string>();
-    for (const tx of chartTransactions) {
-      const dateStr = formatDate(tx.createdAt);
-      if (!seenDates.has(dateStr)) {
-        seenDates.add(dateStr);
-        chartData.push({
-          date: dateStr,
-          balance: Number(tx.balanceAfter),
-        });
+    if (allChartTxs.length > 0) {
+      const acctBals: Record<string, number> = {};
+      for (const id of accountIds) acctBals[id] = 0;
+
+      const seenDates = new Set<string>();
+      for (const tx of allChartTxs) {
+        const delta =
+          tx.type === "CREDIT" ? Number(tx.amount) : -Number(tx.amount);
+        acctBals[tx.accountId] = (acctBals[tx.accountId] || 0) + delta;
+
+        const total = Object.values(acctBals).reduce((s, v) => s + v, 0);
+        const dateStr = formatDate(tx.createdAt);
+
+        // Keep only the latest data-point per date to avoid huge arrays.
+        if (seenDates.has(dateStr)) {
+          chartData[chartData.length - 1].balance =
+            Math.round(total * 100) / 100;
+        } else {
+          seenDates.add(dateStr);
+          chartData.push({
+            date: dateStr,
+            balance: Math.round(total * 100) / 100,
+          });
+        }
       }
     }
   }
