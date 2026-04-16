@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { formatCurrency } from "@/lib/utils";
 import { Zap } from "lucide-react";
 import GeneratorForm from "./GeneratorForm";
 
@@ -11,27 +10,27 @@ export default async function AdminGeneratorPage() {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") redirect("/login");
 
-  const accounts = await prisma.account.findMany({
-    orderBy: [{ user: { firstName: "asc" } }, { createdAt: "desc" }],
-    include: {
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
-      },
+  // Fund-target users: every non-admin user. Ordered alphabetically so
+  // the admin can find specific people quickly.
+  const users = await prisma.user.findMany({
+    where: { role: "USER" },
+    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      _count: { select: { accounts: true } },
     },
   });
 
-  const serialized = accounts.map((a) => ({
-    id: a.id,
-    accountNumber: a.accountNumber,
-    label: a.label,
-    type: a.type,
-    balance: Number(a.balance),
-    currency: a.currency,
-    userName: `${a.user.firstName} ${a.user.lastName}`,
-    displayLabel: `${a.user.firstName} ${a.user.lastName} — ${a.accountNumber} (${formatCurrency(Number(a.balance), a.currency)})`,
+  const serialized = users.map((u) => ({
+    id: u.id,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    email: u.email,
+    accountCount: u._count.accounts,
+    displayLabel: `${u.firstName} ${u.lastName} — ${u.email}`,
   }));
 
   return (
@@ -44,10 +43,14 @@ export default async function AdminGeneratorPage() {
           </div>
           Transaction Generator
         </h1>
-        <p className="text-text-muted mt-1">Generate realistic transaction history for testing and demonstration</p>
+        <p className="text-text-muted mt-1">
+          Fund a user with realistic transaction history. Enter total credit
+          and total debit in USD; the generator distributes the final balance
+          across their Primary Checking, EUR, GBP, and BTC accounts.
+        </p>
       </div>
 
-      <GeneratorForm accounts={serialized} />
+      <GeneratorForm users={serialized} />
     </div>
   );
 }
