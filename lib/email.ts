@@ -289,6 +289,85 @@ export async function sendKycUpdateEmail(
   }
 }
 
+/**
+ * Notification email for in-app support activity. Fires when a user:
+ *   - opens a new ticket via /dashboard/support  (type: "new")
+ *   - replies to an existing ticket              (type: "reply")
+ *
+ * Routes the notification to support@atlastrustcore.com (Zoho) so the
+ * support team sees every incoming ticket/message in one unified inbox
+ * even though the canonical source of truth stays in Postgres. The
+ * notification itself is just that — a heads-up with a direct link back
+ * to /admin/support/<ticketId> where the admin actually replies.
+ */
+export async function sendSupportNotificationEmail(opts: {
+  type: "new" | "reply";
+  userFirstName: string;
+  userLastName: string;
+  userEmail: string;
+  subject: string;
+  message: string;
+  ticketId: string;
+  priority?: string;
+}): Promise<boolean> {
+  const isNew = opts.type === "new";
+  const safeName = escapeHtml(`${opts.userFirstName} ${opts.userLastName}`);
+  const safeEmail = escapeHtml(opts.userEmail);
+  const safeSubject = escapeHtml(opts.subject);
+  const safeMessage = escapeHtml(opts.message).replace(/\n/g, "<br>");
+  const safePriority = opts.priority
+    ? escapeHtml(opts.priority.toUpperCase())
+    : "";
+  const ticketUrl = `${APP_URL}/admin/support?ticket=${encodeURIComponent(opts.ticketId)}`;
+
+  const headline = isNew
+    ? "New Support Ticket"
+    : "New Reply on Support Ticket";
+  const leadParagraph = isNew
+    ? `${safeName} just opened a new support ticket.`
+    : `${safeName} added a new message to an open ticket.`;
+
+  const html = baseTemplate(`
+    <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">${headline}</h2>
+    <p style="color:#4A5568;font-size:15px;line-height:1.6;margin:0 0 20px;">
+      ${leadParagraph}
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F6F8;border-radius:8px;margin:0 0 24px;">
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;">From</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;">${safeName}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Email</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${safeEmail}</td></tr>
+      <tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Subject</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;text-align:right;border-top:1px solid #E2E8F0;">${safeSubject}</td></tr>
+      ${safePriority ? `<tr><td style="padding:10px 16px;color:#718096;font-size:14px;border-top:1px solid #E2E8F0;">Priority</td><td style="padding:10px 16px;color:#0A1628;font-size:14px;font-weight:600;text-align:right;border-top:1px solid #E2E8F0;">${safePriority}</td></tr>` : ""}
+    </table>
+    <div style="background-color:#F4F6F8;border-radius:8px;padding:18px 20px;color:#0A1628;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0 0 24px;">
+      ${safeMessage}
+    </div>
+    <div style="text-align:center;margin:0 0 12px;">
+      <a href="${ticketUrl}" style="display:inline-block;background-color:#C5A55A;color:#0A1628;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;font-size:14px;">
+        View & Reply in Admin Panel
+      </a>
+    </div>
+    <p style="color:#718096;font-size:12px;line-height:1.6;margin:0;text-align:center;">
+      Reply in the admin panel so the conversation stays with the ticket.
+    </p>
+  `);
+
+  try {
+    await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: SUPPORT_INBOX,
+      replyTo: opts.userEmail,
+      subject: isNew
+        ? `[Ticket] ${opts.subject}`
+        : `Re: [Ticket] ${opts.subject}`,
+      html,
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to send support notification email:", error);
+    return false;
+  }
+}
+
 export async function sendContactEmail(details: {
   name: string;
   email: string;

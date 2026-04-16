@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { sendSupportNotificationEmail } from "@/lib/email";
 
 // ─── GET -- Fetch single ticket with all messages ────────────────
 export async function GET(
@@ -143,6 +144,29 @@ export async function POST(
 
       return msg;
     });
+
+    // Fire-and-forget: notify support@atlastrustcore.com so every new
+    // user message on an open ticket lands in the unified Zoho inbox.
+    // Failure doesn't fail the message post — it's still saved in DB.
+    (async () => {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { firstName: true, lastName: true, email: true },
+      });
+      if (!user) return;
+      await sendSupportNotificationEmail({
+        type: "reply",
+        userFirstName: user.firstName,
+        userLastName: user.lastName,
+        userEmail: user.email,
+        subject: ticket.subject,
+        message: message.trim(),
+        ticketId: ticket.id,
+        priority: ticket.priority,
+      });
+    })().catch((err) =>
+      console.error("support notification (reply) failed:", err)
+    );
 
     return NextResponse.json(
       {

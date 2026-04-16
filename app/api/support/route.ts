@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { supportTicketSchema } from "@/lib/validations";
+import { sendSupportNotificationEmail } from "@/lib/email";
 
 // ─── GET -- Fetch user's support tickets ─────────────────────────
 export async function GET() {
@@ -92,6 +93,30 @@ export async function POST(request: Request) {
 
       return newTicket;
     });
+
+    // Fire-and-forget: notify support@atlastrustcore.com so the unified
+    // Zoho inbox sees every incoming ticket alongside contact-form
+    // submissions. Failure doesn't fail the ticket creation — the ticket
+    // still exists in the DB and shows up in /admin/support either way.
+    (async () => {
+      const user = await prisma.user.findUnique({
+        where: { id: session.userId },
+        select: { firstName: true, lastName: true, email: true },
+      });
+      if (!user) return;
+      await sendSupportNotificationEmail({
+        type: "new",
+        userFirstName: user.firstName,
+        userLastName: user.lastName,
+        userEmail: user.email,
+        subject: ticket.subject,
+        message: ticket.message,
+        ticketId: ticket.id,
+        priority: ticket.priority,
+      });
+    })().catch((err) =>
+      console.error("support notification (new) failed:", err)
+    );
 
     return NextResponse.json(
       {
