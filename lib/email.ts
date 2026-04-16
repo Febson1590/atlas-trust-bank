@@ -1,11 +1,30 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 
-let _resend: Resend | null = null;
-function getResend() {
-  if (!_resend) {
-    _resend = new Resend(process.env.RESEND_API_KEY || "placeholder");
+// Zoho SMTP transport. The `support@atlastrustcore.com` mailbox has
+// `noreply@atlastrustcore.com` as a verified alias, so we can authenticate
+// as support@ but send FROM noreply@. Any replies to noreply@ still land
+// in the same inbox we actually read.
+//
+// Env vars (set on Vercel):
+//   SMTP_HOST      smtppro.zoho.com
+//   SMTP_PORT      465
+//   SMTP_USER      support@atlastrustcore.com
+//   SMTP_PASSWORD  <Zoho application-specific password>
+//   FROM_EMAIL     Atlas Trust Bank <noreply@atlastrustcore.com>
+let _transporter: Transporter | null = null;
+function getTransporter(): Transporter {
+  if (!_transporter) {
+    _transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtppro.zoho.com",
+      port: parseInt(process.env.SMTP_PORT || "465", 10),
+      secure: true, // port 465 = implicit TLS
+      auth: {
+        user: process.env.SMTP_USER || "",
+        pass: process.env.SMTP_PASSWORD || "",
+      },
+    });
   }
-  return _resend;
+  return _transporter;
 }
 
 // Production canonical URL. Centralized so every email link points at the
@@ -15,7 +34,7 @@ const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || "https://atlastrustcore.com";
 
 const FROM_EMAIL =
-  process.env.RESEND_FROM_EMAIL ||
+  process.env.FROM_EMAIL ||
   "Atlas Trust Bank <noreply@atlastrustcore.com>";
 const SUPPORT_INBOX =
   process.env.CONTACT_INBOX || "support@atlastrustcore.com";
@@ -116,7 +135,7 @@ export async function sendOTPEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
@@ -153,7 +172,7 @@ export async function sendWelcomeEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
@@ -187,7 +206,7 @@ export async function sendPasswordResetEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
@@ -232,7 +251,7 @@ export async function sendTransferAlertEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
@@ -275,7 +294,7 @@ export async function sendKycUpdateEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
@@ -352,7 +371,7 @@ export async function sendSupportNotificationEmail(opts: {
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       to: SUPPORT_INBOX,
       replyTo: opts.userEmail,
@@ -395,7 +414,7 @@ export async function sendContactEmail(details: {
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       to: SUPPORT_INBOX,
       replyTo: details.email,
@@ -431,7 +450,7 @@ export async function sendSecurityAlertEmail(
   `);
 
   try {
-    await getResend().emails.send({
+    await getTransporter().sendMail({
       from: FROM_EMAIL,
       replyTo: SUPPORT_INBOX,
       to: email,
