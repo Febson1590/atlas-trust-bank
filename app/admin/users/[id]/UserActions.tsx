@@ -139,7 +139,7 @@ export default function UserActions({
       {confirmAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setConfirmAction(null); setError(""); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in">
+          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <AlertTriangle className={`h-5 w-5 ${confirmAction === "delete" ? "text-error" : confirmAction === "dormant" ? "text-warning" : "text-success"}`} />

@@ -83,7 +83,7 @@ export default function KycActions({ document }: { document: KycDocument }) {
       {showModal && action && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowModal(false); setAction(null); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in">
+          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className={`text-lg font-semibold flex items-center gap-2 ${action === "approve" ? "text-success" : "text-error"}`}>
                 {action === "approve" ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}

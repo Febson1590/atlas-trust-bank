@@ -170,7 +170,7 @@ export default function AccountActions({ mode, users, account }: AccountActionsP
         {showCreateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreateModal(false)} />
-            <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in">
+            <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-gold-500" />
@@ -347,7 +347,7 @@ export default function AccountActions({ mode, users, account }: AccountActionsP
       {showActionModal && account && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowActionModal(false); setActionType(null); setError(""); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in">
+          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-text-primary">
                 {actionType === "CREDIT" && "Credit Account"}

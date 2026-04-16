@@ -243,7 +243,7 @@ export default function BeneficiaryList({
           />
 
           {/* Modal */}
-          <div className="relative w-full max-w-lg rounded-xl bg-navy-800 border border-border-subtle p-6 animate-fade-in">
+          <div className="relative w-full max-w-lg rounded-xl bg-navy-800 border border-border-subtle p-6 animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-text-primary">
@@ -407,7 +407,7 @@ export default function BeneficiaryList({
             className="absolute inset-0 bg-navy-950/80 backdrop-blur-sm"
             onClick={() => setDeletingId(null)}
           />
-          <div className="relative w-full max-w-sm rounded-xl bg-navy-800 border border-border-subtle p-6 animate-fade-in text-center">
+          <div className="relative w-full max-w-sm rounded-xl bg-navy-800 border border-border-subtle p-6 animate-fade-in text-center max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <div className="mx-auto w-14 h-14 rounded-full bg-error/10 border border-error/20 flex items-center justify-center mb-4">
               <AlertTriangle className="w-6 h-6 text-error" />
             </div>
