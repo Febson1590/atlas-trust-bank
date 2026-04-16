@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import TawkWidget from "@/components/TawkWidget";
 import "./globals.css";
 
 const inter = Inter({
@@ -98,7 +99,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`h-full antialiased ${inter.variable} ${playfair.variable}`}>
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        {children}
+        {/* Tawk.to livechat widget — visible on public/marketing/auth pages,
+            hidden on /dashboard and /admin (users there have in-app support). */}
+        <TawkWidget />
+      </body>
     </html>
   );
 }
