@@ -118,6 +118,7 @@ export async function sendOTPEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `${APP_NAME} — Your Code`,
       html,
@@ -154,6 +155,7 @@ export async function sendWelcomeEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `Welcome to ${APP_NAME}`,
       html,
@@ -187,6 +189,7 @@ export async function sendPasswordResetEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `${APP_NAME} — Password Reset`,
       html,
@@ -231,6 +234,7 @@ export async function sendTransferAlertEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `${APP_NAME} — Transfer ${details.status === "completed" ? "Done" : "Update"}`,
       html,
@@ -273,6 +277,7 @@ export async function sendKycUpdateEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `${APP_NAME} — Identity Check ${status === "VERIFIED" ? "Approved" : "Update"}`,
       html,
@@ -349,6 +354,7 @@ export async function sendSecurityAlertEmail(
   try {
     await getResend().emails.send({
       from: FROM_EMAIL,
+      replyTo: SUPPORT_INBOX,
       to: email,
       subject: `${APP_NAME} — Security Alert`,
       html,
