@@ -213,7 +213,6 @@ export default function AccountActions({ mode, users, account }: AccountActionsP
                     className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
                   >
                     <option value="CHECKING">Checking</option>
-                    <option value="SAVINGS">Savings</option>
                     <option value="INVESTMENT">Investment</option>
                   </select>
                 </div>

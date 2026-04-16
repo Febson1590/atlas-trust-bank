@@ -12,13 +12,16 @@ import type { AccountType } from "@/generated/prisma";
 /**
  * Visual config for an account row (icon + color + fallback label).
  *
- * A new user registers with 5 default accounts — Primary Checking (USD),
- * Savings (USD), EUR Account (EUR), GBP Account (GBP), and BTC Wallet
- * (BTC). The Prisma `AccountType` enum only has `CHECKING | SAVINGS |
- * INVESTMENT`, so the multi-currency accounts are distinguished at the
- * UI layer by currency, not by a new type. Adding a `CRYPTO` enum value
- * would require a Prisma migration against production — not worth the
- * risk for a visual change.
+ * A new user registers with 4 default accounts — Primary Checking (USD),
+ * EUR Account (EUR), GBP Account (GBP), and BTC Wallet (BTC). Savings
+ * was removed from the default issuance set and from the admin create
+ * form, but the `SAVINGS` enum value is kept in the schema (and in the
+ * switch below as a defensive fallback) so any legacy rows still render
+ * sensibly if they slip through.
+ *
+ * The Prisma `AccountType` enum only has `CHECKING | SAVINGS | INVESTMENT`,
+ * so the multi-currency accounts are distinguished at the UI layer by
+ * currency, not by a new type.
  *
  * Call sites: `components/dashboard/AccountCard.tsx`,
  * `app/dashboard/accounts/page.tsx`, `app/dashboard/accounts/[id]/page.tsx`.

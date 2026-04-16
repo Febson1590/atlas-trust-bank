@@ -50,28 +50,24 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Default accounts issued to every new user. All 5 are created in a
+    // Default accounts issued to every new user. All 4 are created in a
     // single nested `create` so the user + accounts land atomically in
     // Postgres — if account creation fails for any reason, no user row is
     // left behind. Each account gets its own unique accountNumber via
     // generateAccountNumber() so the `@unique` constraint is never hit.
     //
-    // Prisma's AccountType enum only has CHECKING | SAVINGS | INVESTMENT,
-    // so the multi-currency accounts use CHECKING as the type and are
-    // distinguished by the `currency` field. The dashboard UI resolves
-    // icon + branding from (type, currency) via lib/accountConfig.ts.
+    // The AccountType enum in the schema has CHECKING | SAVINGS | INVESTMENT,
+    // but Savings was removed from the default issuance set per product
+    // direction — new users get Primary Checking + three multi-currency
+    // checking accounts (EUR, GBP, BTC). The SAVINGS enum value is kept in
+    // the schema for legacy / admin-created accounts but is no longer
+    // offered in the admin create form (see app/admin/accounts/AccountActions.tsx)
+    // and is rejected server-side (see app/api/admin/accounts/route.ts).
     const defaultAccounts = [
       {
         accountNumber: generateAccountNumber(),
         type: "CHECKING" as const,
         label: "Primary Checking",
-        balance: 0,
-        currency: "USD",
-      },
-      {
-        accountNumber: generateAccountNumber(),
-        type: "SAVINGS" as const,
-        label: "Savings",
         balance: 0,
         currency: "USD",
       },

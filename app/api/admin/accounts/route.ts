@@ -103,6 +103,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Only these account types are accepted for new-account creation.
+    // SAVINGS is kept in the Prisma enum for legacy data but is no longer
+    // an allowed value on new accounts (product direction — Savings was
+    // removed from the default issuance set and the admin create form).
+    const ALLOWED_TYPES = ["CHECKING", "INVESTMENT"] as const;
+    type AllowedType = (typeof ALLOWED_TYPES)[number];
+    if (!ALLOWED_TYPES.includes(type as AllowedType)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Invalid account type. Allowed: ${ALLOWED_TYPES.join(", ")}`,
+        },
+        { status: 400 }
+      );
+    }
+
     // Verify user exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -122,7 +138,7 @@ export async function POST(request: Request) {
       data: {
         userId,
         accountNumber,
-        type: type as "CHECKING" | "SAVINGS" | "INVESTMENT",
+        type: type as AllowedType,
         label: label || `${type.charAt(0)}${type.slice(1).toLowerCase()} Account`,
         currency: currency || "USD",
         status: "ACTIVE",
