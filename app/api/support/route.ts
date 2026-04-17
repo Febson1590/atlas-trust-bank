@@ -94,29 +94,33 @@ export async function POST(request: Request) {
       return newTicket;
     });
 
-    // Fire-and-forget: notify support@atlastrustcore.com so the unified
-    // Zoho inbox sees every incoming ticket alongside contact-form
-    // submissions. Failure doesn't fail the ticket creation — the ticket
-    // still exists in the DB and shows up in /admin/support either way.
-    (async () => {
+    // Notify support@atlastrustcore.com so the unified Zoho inbox sees every
+    // incoming ticket alongside contact-form submissions. We AWAIT this even
+    // though it looks fire-and-forget-shaped — Vercel freezes the serverless
+    // function the moment we return the response, which kills any background
+    // promise mid-flight (that's why tickets pre-this-fix saved to the DB but
+    // never emailed). Failure of the email alone still returns 201 — the
+    // ticket is already durably saved and visible in /admin/support.
+    try {
       const user = await prisma.user.findUnique({
         where: { id: session.userId },
         select: { firstName: true, lastName: true, email: true },
       });
-      if (!user) return;
-      await sendSupportNotificationEmail({
-        type: "new",
-        userFirstName: user.firstName,
-        userLastName: user.lastName,
-        userEmail: user.email,
-        subject: ticket.subject,
-        message: ticket.message,
-        ticketId: ticket.id,
-        priority: ticket.priority,
-      });
-    })().catch((err) =>
-      console.error("support notification (new) failed:", err)
-    );
+      if (user) {
+        await sendSupportNotificationEmail({
+          type: "new",
+          userFirstName: user.firstName,
+          userLastName: user.lastName,
+          userEmail: user.email,
+          subject: ticket.subject,
+          message: ticket.message,
+          ticketId: ticket.id,
+          priority: ticket.priority,
+        });
+      }
+    } catch (err) {
+      console.error("support notification (new) failed:", err);
+    }
 
     return NextResponse.json(
       {

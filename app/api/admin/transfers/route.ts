@@ -290,8 +290,9 @@ export async function PUT(request: Request) {
         },
       });
 
-      // Send email notification (non-blocking)
-      sendTransferAlertEmail(
+      // Send completion email. Awaited (Vercel kills background promises
+      // after the response returns, which is why these were silently dropping).
+      await sendTransferAlertEmail(
         transfer.fromAccount.user.email,
         transfer.fromAccount.user.firstName,
         {
@@ -344,7 +345,7 @@ export async function PUT(request: Request) {
         },
       });
 
-      sendTransferAlertEmail(
+      await sendTransferAlertEmail(
         transfer.fromAccount.user.email,
         transfer.fromAccount.user.firstName,
         {
@@ -383,7 +384,7 @@ export async function PUT(request: Request) {
         },
       });
 
-      sendTransferAlertEmail(
+      await sendTransferAlertEmail(
         transfer.fromAccount.user.email,
         transfer.fromAccount.user.firstName,
         {

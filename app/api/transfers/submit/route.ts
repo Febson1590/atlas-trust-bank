@@ -208,8 +208,10 @@ export async function POST(request: Request) {
       return newTransfer;
     });
 
-    // Send pending email
-    sendTransferAlertEmail(user.email, user.firstName, {
+    // Send pending email. Awaited (see support/route.ts for why: Vercel
+    // freezes serverless functions immediately after the response returns,
+    // killing detached promises before SMTP can complete).
+    await sendTransferAlertEmail(user.email, user.firstName, {
       amount: formatCurrency(amount, sourceAccount.currency),
       recipient: recipientName,
       reference,

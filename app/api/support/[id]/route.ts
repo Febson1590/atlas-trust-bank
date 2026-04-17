@@ -145,28 +145,31 @@ export async function POST(
       return msg;
     });
 
-    // Fire-and-forget: notify support@atlastrustcore.com so every new
-    // user message on an open ticket lands in the unified Zoho inbox.
-    // Failure doesn't fail the message post — it's still saved in DB.
-    (async () => {
+    // Notify support@atlastrustcore.com so every new user reply lands in the
+    // unified Zoho inbox. Awaited (not fire-and-forget) because Vercel's
+    // serverless runtime freezes the function the instant we return — any
+    // detached promise gets killed before SMTP completes. Email failure
+    // alone still returns 201 since the reply is already saved in Postgres.
+    try {
       const user = await prisma.user.findUnique({
         where: { id: session.userId },
         select: { firstName: true, lastName: true, email: true },
       });
-      if (!user) return;
-      await sendSupportNotificationEmail({
-        type: "reply",
-        userFirstName: user.firstName,
-        userLastName: user.lastName,
-        userEmail: user.email,
-        subject: ticket.subject,
-        message: message.trim(),
-        ticketId: ticket.id,
-        priority: ticket.priority,
-      });
-    })().catch((err) =>
-      console.error("support notification (reply) failed:", err)
-    );
+      if (user) {
+        await sendSupportNotificationEmail({
+          type: "reply",
+          userFirstName: user.firstName,
+          userLastName: user.lastName,
+          userEmail: user.email,
+          subject: ticket.subject,
+          message: message.trim(),
+          ticketId: ticket.id,
+          priority: ticket.priority,
+        });
+      }
+    } catch (err) {
+      console.error("support notification (reply) failed:", err);
+    }
 
     return NextResponse.json(
       {

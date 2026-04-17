@@ -173,9 +173,10 @@ export async function PUT(request: Request) {
         },
       });
 
-      // Send email notification (non-blocking)
+      // Send KYC approval email. Awaited because Vercel freezes the function
+      // the moment we return; a detached promise gets killed mid-SMTP.
       const emailStatus = allVerified ? "VERIFIED" : "PENDING";
-      sendKycUpdateEmail(
+      await sendKycUpdateEmail(
         document.user.email,
         document.user.firstName,
         emailStatus,
@@ -223,7 +224,7 @@ export async function PUT(request: Request) {
         },
       });
 
-      sendKycUpdateEmail(
+      await sendKycUpdateEmail(
         document.user.email,
         document.user.firstName,
         "REJECTED",
