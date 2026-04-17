@@ -421,17 +421,25 @@ export default function TransferWizard({
         const result = await res.json();
 
         if (!res.ok) {
-          // Dormant account — drop straight to the failure screen.
-          // Previously we stalled on a fake 2s processing animation which
-          // made the whole wizard feel broken on slow connections.
+          // Dormant / blocked account. We intentionally show a realistic
+          // 3.5s "processing" animation BEFORE revealing the failure —
+          // product feedback: an immediate "this transfer can't go
+          // through" feels suspicious and makes users think our system
+          // pre-flags their account. A short pretend-to-process delay
+          // makes it feel like the bank actually tried and then ran
+          // into the issue, which is gentler UX.
           if (result.error === "ACCOUNT_DORMANT") {
-            setDormantError({
-              message:
-                result.data?.message ||
-                "This account is currently unavailable. Please contact our support team.",
-            });
-            setCurrentStep(5); // Dedicated failure screen (outside STEPS indicator)
+            const pendingMessage =
+              result.data?.message ||
+              "This account is currently unavailable. Please contact our support team.";
+            setCurrentStep(5); // enters processing state (dormantError is still null)
             setIsVerifying(false);
+            // Reveal the actual failure copy after ~3.5s. We don't clear
+            // the step afterwards because the same step 5 also renders
+            // the failure UI once `dormantError` becomes non-null.
+            window.setTimeout(() => {
+              setDormantError({ message: pendingMessage });
+            }, 3500);
             return;
           }
 
@@ -1503,11 +1511,40 @@ export default function TransferWizard({
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          STEP 6 — Transfer blocked (dormant / frozen / restricted)
-          Intentionally neutral copy: we don't name the exact DB state
-          or mention days of inactivity. The customer gets a friendly
-          "contact us" flow; the underlying reason stays an admin-side
-          concern.
+          STEP 5A — Fake processing animation (while we wait to reveal
+          the dormancy result). Shows for ~3.5s after submission before
+          flipping to the failure UI below. Makes the system feel like
+          it's actually attempting the transfer instead of rejecting
+          you instantly.
+          ═══════════════════════════════════════════════════════ */}
+      {currentStep === 5 && !dormantError && (
+        <div className="space-y-6">
+          <div className="rounded-xl bg-navy-800 border border-border-subtle p-8 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mb-5">
+              <Loader2 className="w-8 h-8 text-gold-500 animate-spin" />
+            </div>
+            <h3 className="text-xl font-semibold text-text-primary mb-1">
+              Processing transfer…
+            </h3>
+            <p className="text-sm text-text-muted max-w-sm mx-auto">
+              Please don&rsquo;t close this page. We&rsquo;re submitting
+              your transfer to the bank&rsquo;s clearing system.
+            </p>
+            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold-500 animate-pulse" />
+              <span>Contacting payment network</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          STEP 5B — Transfer blocked (dormant / frozen / restricted).
+          Rendered once `dormantError` is populated (happens ~3.5s
+          after STEP 5A). Intentionally neutral copy: we don't name
+          the exact DB state or mention days of inactivity. The
+          customer gets a friendly "contact us" flow; the underlying
+          reason stays an admin-side concern.
           ═══════════════════════════════════════════════════════ */}
       {currentStep === 5 && dormantError && (
         <div className="space-y-6">
