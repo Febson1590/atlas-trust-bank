@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, ShieldAlert } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sortAccountsForDisplay } from "@/lib/utils";
 import TransferWizard from "@/components/dashboard/TransferWizard";
 import type { Metadata } from "next";
 
@@ -33,6 +34,7 @@ export default async function TransferPage() {
           balance: true,
           currency: true,
           type: true,
+          createdAt: true, // required by sortAccountsForDisplay
         },
       },
       beneficiaries: {
@@ -94,7 +96,7 @@ export default async function TransferPage() {
     const allAccounts = await prisma.account.findMany({
       where: { userId: session.userId },
       orderBy: { createdAt: "asc" },
-      select: { id: true, accountNumber: true, label: true, balance: true, currency: true, type: true },
+      select: { id: true, accountNumber: true, label: true, balance: true, currency: true, type: true, createdAt: true },
     });
 
     if (allAccounts.length === 0) {
@@ -120,7 +122,7 @@ export default async function TransferPage() {
     }
 
     // Has dormant accounts — let user fill the form; it will fail at submission
-    const accounts = allAccounts.map((acc) => ({
+    const accounts = sortAccountsForDisplay(allAccounts).map((acc) => ({
       id: acc.id, accountNumber: acc.accountNumber, label: acc.label,
       balance: Number(acc.balance), currency: acc.currency, type: acc.type,
     }));
@@ -141,7 +143,10 @@ export default async function TransferPage() {
   }
 
   // ── Serialize for client component ─────────────────────────
-  const accounts = user.accounts.map((acc) => ({
+  // Primary Checking (USD) leads so the account picker defaults to the
+  // user's main account instead of whatever Postgres happened to index
+  // first.
+  const accounts = sortAccountsForDisplay(user.accounts).map((acc) => ({
     id: acc.id,
     accountNumber: acc.accountNumber,
     label: acc.label,

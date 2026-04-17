@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, formatDate, userFacingAccountStatus } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDate,
+  userFacingAccountStatus,
+  sortAccountsForDisplay,
+} from "@/lib/utils";
 import AccountCard from "@/components/dashboard/AccountCard";
 import TransactionTable from "@/components/dashboard/TransactionTable";
 import BalanceChart from "@/components/dashboard/BalanceChart";
@@ -40,6 +45,12 @@ export default async function DashboardPage() {
   });
 
   if (!user) redirect("/login");
+
+  // All default accounts are created in a single nested insert, which
+  // means their createdAt timestamps are effectively tied. Re-sort by
+  // currency priority (USD first) so the Primary Checking always leads
+  // regardless of how Postgres stored the insert order.
+  user.accounts = sortAccountsForDisplay(user.accounts);
 
   const totalBalance = user.accounts.reduce(
     (sum, acc) => sum + Number(acc.balance),

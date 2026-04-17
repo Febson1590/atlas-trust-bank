@@ -10,7 +10,13 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, maskAccountNumber, cn, userFacingAccountStatus } from "@/lib/utils";
+import {
+  formatCurrency,
+  maskAccountNumber,
+  cn,
+  userFacingAccountStatus,
+  sortAccountsForDisplay,
+} from "@/lib/utils";
 import { getAccountDisplay } from "@/lib/accountConfig";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
@@ -24,10 +30,13 @@ export default async function AccountsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const accounts = await prisma.account.findMany({
+  const rawAccounts = await prisma.account.findMany({
     where: { userId: session.userId },
     orderBy: { createdAt: "asc" },
   });
+  // Primary Checking (USD) always leads, regardless of insert-time
+  // ambiguity across the nested-create at registration.
+  const accounts = sortAccountsForDisplay(rawAccounts);
 
   const totalBalance = accounts.reduce(
     (sum, acc) => sum + Number(acc.balance),

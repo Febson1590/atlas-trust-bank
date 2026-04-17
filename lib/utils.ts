@@ -138,3 +138,33 @@ export function userFacingAccountStatus<T extends string>(dbStatus: T): T {
   if (dbStatus === "DORMANT") return "ACTIVE" as T;
   return dbStatus;
 }
+
+/**
+ * Canonical display order for the 4 default account currencies.
+ *
+ * Primary Checking (USD) is intentionally first — it's the account
+ * users identify with, and putting it last (as a raw `orderBy: createdAt asc`
+ * sometimes did, because all 4 default accounts are inserted in a single
+ * nested-create and Postgres isn't required to preserve array order) was
+ * confusing for customers who expected their main account to lead.
+ *
+ * Any exotic currency (from a custom admin-created account) sorts after
+ * these four, by its own creation time.
+ */
+const CURRENCY_PRIORITY: Record<string, number> = {
+  USD: 0,
+  EUR: 1,
+  GBP: 2,
+  BTC: 3,
+};
+
+export function sortAccountsForDisplay<
+  T extends { currency: string; createdAt: string | Date }
+>(accounts: T[]): T[] {
+  return [...accounts].sort((a, b) => {
+    const aRank = CURRENCY_PRIORITY[a.currency] ?? 99;
+    const bRank = CURRENCY_PRIORITY[b.currency] ?? 99;
+    if (aRank !== bRank) return aRank - bRank;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
+}

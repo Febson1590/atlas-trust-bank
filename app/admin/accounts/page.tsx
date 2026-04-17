@@ -5,6 +5,7 @@ import { Landmark, Search, Users } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import AccountActions from "./AccountActions";
 import UserAccountsGroup from "./UserAccountsGroup";
+import { sortAccountsForDisplay } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,9 @@ export default async function AdminAccountsPage({ searchParams }: PageProps) {
 
   const totalPages = Math.ceil(total / limit);
 
-  // Serialize Decimal balances and Date fields.
+  // Serialize Decimal balances and Date fields. `sortAccountsForDisplay`
+  // ensures Primary Checking (USD) appears first within each user's
+  // expanded list, matching what the user sees on their own dashboard.
   const serializedUsers = users
     .filter((u) => u.accounts.length > 0) // hide users with no accounts
     .map((u) => ({
@@ -81,7 +84,7 @@ export default async function AdminAccountsPage({ searchParams }: PageProps) {
       firstName: u.firstName,
       lastName: u.lastName,
       email: u.email,
-      accounts: u.accounts.map((a) => ({
+      accounts: sortAccountsForDisplay(u.accounts).map((a) => ({
         id: a.id,
         accountNumber: a.accountNumber,
         type: a.type,
