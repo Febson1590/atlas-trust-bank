@@ -354,11 +354,8 @@ export default function LanguageSwitcher() {
             className="absolute bottom-full left-0 mb-2 flex w-72 flex-col overflow-hidden rounded-xl border border-gold-500/25 bg-navy-900/95 shadow-2xl backdrop-blur-sm"
             style={{ maxHeight: "min(70vh, 520px)" }}
           >
-            {/* Header: title + search */}
-            <div className="border-b border-gold-500/10 px-4 pb-3 pt-3">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-gold-500">
-                Choose Language · {LANGUAGES.length}
-              </p>
+            {/* Header: search only */}
+            <div className="border-b border-gold-500/10 px-4 py-3">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
                 <input
