@@ -241,13 +241,22 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
     );
   }
 
-  // Row actions
+  // Row actions — inline expansion (same pattern as KycActions)
+  function cancelRowAction() {
+    setActionType(null);
+    setNewStatus("");
+    setNewLimit("");
+    setError("");
+  }
+
   return (
-    <>
-      <div className="relative">
+    <div className="w-full sm:w-auto">
+      <div className="relative inline-block">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="p-2 rounded-lg hover:bg-navy-800/50 text-text-muted hover:text-text-primary transition-colors"
+          disabled={showActionModal || actionType !== null}
+          className="p-2 rounded-lg hover:bg-navy-800/50 text-text-muted hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Card actions"
         >
           <MoreVertical className="h-4 w-4" />
         </button>
@@ -262,7 +271,6 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
                     setNewStatus("ACTIVE");
                     setActionType("status");
                     setShowDropdown(false);
-                    setShowActionModal(true);
                   }}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-success hover:bg-navy-800/50 transition-colors"
                 >
@@ -276,7 +284,6 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
                     setNewStatus("FROZEN");
                     setActionType("status");
                     setShowDropdown(false);
-                    setShowActionModal(true);
                   }}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-blue-400 hover:bg-navy-800/50 transition-colors"
                 >
@@ -290,7 +297,6 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
                     setNewStatus("CANCELLED");
                     setActionType("status");
                     setShowDropdown(false);
-                    setShowActionModal(true);
                   }}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-navy-800/50 transition-colors"
                 >
@@ -304,7 +310,6 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
                   setNewLimit(card?.dailyLimit?.toString() || "5000");
                   setActionType("limit");
                   setShowDropdown(false);
-                  setShowActionModal(true);
                 }}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-navy-800/50 transition-colors"
               >
@@ -316,92 +321,100 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
         )}
       </div>
 
-      {showActionModal && card && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowActionModal(false); setActionType(null); setError(""); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-text-primary">
-                {actionType === "status" ? `Set Card ${newStatus}` : "Edit Daily Limit"}
-              </h2>
-              <button onClick={() => { setShowActionModal(false); setActionType(null); setError(""); }} className="text-text-muted hover:text-text-primary transition-colors">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mb-4 p-3 rounded-lg bg-navy-900/50 border border-border-default">
-              <p className="text-sm text-text-muted">Card</p>
-              <p className="text-text-primary font-mono">**** **** **** {card.lastFour}</p>
-              <p className="text-xs text-text-muted mt-1">{card.cardholderName} — {card.type}</p>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm">
-                {error}
-              </div>
-            )}
-
-            {actionType === "status" && (
-              <div className="space-y-4">
-                <p className="text-sm text-text-secondary">
-                  Set card status to <span className="font-semibold text-text-primary">{newStatus}</span>?
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setShowActionModal(false); setActionType(null); }}
-                    className="flex-1 py-2.5 text-sm border border-border-default rounded-lg text-text-secondary hover:bg-navy-800/50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleStatusUpdate}
-                    disabled={loading}
-                    className="flex-1 gold-gradient rounded-lg py-2.5 text-sm font-semibold text-navy-950 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Confirm
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {actionType === "limit" && (
-              <form onSubmit={handleLimitUpdate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1.5">New Daily Limit ($)</label>
-                  <input
-                    type="number"
-                    step="100"
-                    min="100"
-                    value={newLimit}
-                    onChange={(e) => setNewLimit(e.target.value)}
-                    required
-                    className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => { setShowActionModal(false); setActionType(null); }}
-                    className="flex-1 py-2.5 text-sm border border-border-default rounded-lg text-text-secondary hover:bg-navy-800/50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 gold-gradient rounded-lg py-2.5 text-sm font-semibold text-navy-950 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Update Limit
-                  </button>
-                </div>
-              </form>
-            )}
+      {/* Inline confirmation panel — same pattern as KycActions */}
+      {actionType && card && (
+        <div className="mt-3 rounded-lg border border-gold-500/20 bg-gold-500/5 p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold mb-3 text-gold-400">
+            {actionType === "status" && <Snowflake className="h-4 w-4" />}
+            {actionType === "limit" && <Edit className="h-4 w-4" />}
+            {actionType === "status" ? `Set card status to ${newStatus}?` : "Edit daily limit"}
           </div>
+
+          <div className="mb-3 rounded-lg bg-navy-900/50 border border-border-default p-3">
+            <p className="text-xs text-text-muted">Card</p>
+            <p className="text-text-primary font-mono text-sm">
+              **** **** **** {card.lastFour}
+            </p>
+            <p className="text-xs text-text-muted mt-1 break-words">
+              {card.cardholderName} — {card.type}
+            </p>
+          </div>
+
+          {error && (
+            <div className="mb-3 rounded-lg bg-error/10 border border-error/20 px-3 py-2 text-xs text-error">
+              {error}
+            </div>
+          )}
+
+          {actionType === "status" && (
+            <div className="space-y-3">
+              <p className="text-sm text-text-secondary">
+                Confirm setting card status to{" "}
+                <span className="font-semibold text-text-primary">
+                  {newStatus}
+                </span>
+                ?
+              </p>
+              <div className="flex flex-col sm:flex-row-reverse gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleStatusUpdate}
+                  disabled={loading}
+                  className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 sm:py-2.5 text-sm font-semibold gold-gradient text-navy-950 hover:opacity-90 disabled:opacity-50"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelRowAction}
+                  disabled={loading}
+                  className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center rounded-lg px-4 py-3 sm:py-2.5 text-sm font-medium border border-border-default text-text-secondary hover:bg-navy-800/50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {actionType === "limit" && (
+            <form onSubmit={handleLimitUpdate} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
+                  New Daily Limit ($)
+                </label>
+                <input
+                  type="number"
+                  step="100"
+                  min="100"
+                  value={newLimit}
+                  onChange={(e) => setNewLimit(e.target.value)}
+                  required
+                  className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row-reverse gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 sm:py-2.5 text-sm font-semibold gold-gradient text-navy-950 hover:opacity-90 disabled:opacity-50"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Update Limit
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelRowAction}
+                  disabled={loading}
+                  className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center rounded-lg px-4 py-3 sm:py-2.5 text-sm font-medium border border-border-default text-text-secondary hover:bg-navy-800/50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   Power,
   PowerOff,
   Trash2,
-  X,
   Loader2,
   AlertTriangle,
 } from "lucide-react";
@@ -19,6 +18,17 @@ interface UserActionsProps {
   allAccountsDormant: boolean;
 }
 
+/**
+ * Admin actions for a single user: set accounts dormant, reactivate them,
+ * or delete the user entirely.
+ *
+ * Previously this used a `fixed inset-0` confirmation modal. Same mobile
+ * bug we hit on the KYC + Transfers pages — on iPhone Safari the Confirm
+ * button could end up below the fold with no way to scroll to it.
+ *
+ * Rewritten to unfold the confirmation panel inline directly below the
+ * actions button. Normal document flow, no viewport math, always reachable.
+ */
 export default function UserActions({
   userId,
   userName,
@@ -27,9 +37,22 @@ export default function UserActions({
 }: UserActionsProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<"dormant" | "activate" | "delete" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    "dormant" | "activate" | "delete" | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  function cancel() {
+    setConfirmAction(null);
+    setError("");
+  }
+
+  function pick(next: "dormant" | "activate" | "delete") {
+    setConfirmAction(next);
+    setMenuOpen(false);
+    setError("");
+  }
 
   async function handleAction() {
     if (!confirmAction) return;
@@ -38,14 +61,19 @@ export default function UserActions({
 
     try {
       if (confirmAction === "delete") {
-        const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/users/${userId}`, {
+          method: "DELETE",
+        });
         const data = await res.json();
-        if (!res.ok) { setError(data.error || "Failed to delete user"); setLoading(false); return; }
+        if (!res.ok) {
+          setError(data.error || "Failed to delete user");
+          setLoading(false);
+          return;
+        }
         router.push("/admin/users");
         return;
       }
 
-      // Set dormant or activate accounts
       const newStatus = confirmAction === "dormant" ? "DORMANT" : "ACTIVE";
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
@@ -53,7 +81,11 @@ export default function UserActions({
         body: JSON.stringify({ accountStatus: newStatus }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Action failed"); setLoading(false); return; }
+      if (!res.ok) {
+        setError(data.error || "Action failed");
+        setLoading(false);
+        return;
+      }
 
       setConfirmAction(null);
       router.refresh();
@@ -68,31 +100,45 @@ export default function UserActions({
     dormant: {
       title: "Set Accounts to Dormant",
       desc: `This will mark all of ${userName}'s accounts as dormant. They can still log in but won't be able to send money or make transactions.`,
-      btnClass: "bg-warning/20 text-warning border border-warning/30 hover:bg-warning/30",
+      icon: PowerOff,
+      panel: "bg-warning/5 border-warning/20",
+      header: "text-warning",
+      btnClass:
+        "bg-warning/20 text-warning border border-warning/30 hover:bg-warning/30",
       btnText: "Set Dormant",
     },
     activate: {
       title: "Activate Accounts",
       desc: `This will reactivate all of ${userName}'s accounts. They will be able to send money and make transactions again.`,
-      btnClass: "bg-success/20 text-success border border-success/30 hover:bg-success/30",
+      icon: Power,
+      panel: "bg-success/5 border-success/20",
+      header: "text-success",
+      btnClass:
+        "bg-success/20 text-success border border-success/30 hover:bg-success/30",
       btnText: "Activate",
     },
     delete: {
       title: "Delete User Permanently",
-      desc: `This will permanently delete ${userName}'s account and all associated data. This action cannot be undone.`,
-      btnClass: "bg-error/20 text-error border border-error/30 hover:bg-error/30",
+      desc: `This will permanently delete ${userName}'s account and ALL associated data (accounts, transactions, cards, KYC, tickets). This action cannot be undone.`,
+      icon: Trash2,
+      panel: "bg-error/5 border-error/20",
+      header: "text-error",
+      btnClass:
+        "bg-error/20 text-error border border-error/30 hover:bg-error/30",
       btnText: "Delete Permanently",
     },
-  };
+  } as const;
 
   return (
-    <>
-      {/* Dropdown trigger */}
-      <div className="relative">
+    <div className="w-full sm:w-auto">
+      {/* Dropdown trigger (disabled while a confirmation is showing, to
+          keep focus on the current action) */}
+      <div className="relative inline-block">
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center gap-1.5 rounded-lg bg-navy-700 border border-border-subtle px-3 py-2 text-sm font-medium text-text-primary hover:border-gold-500/30 transition-all"
+          disabled={confirmAction !== null}
+          className="flex items-center gap-1.5 rounded-lg bg-navy-700 border border-border-subtle px-3 py-2 text-sm font-medium text-text-primary hover:border-gold-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <MoreVertical className="h-4 w-4" />
           <span className="hidden sm:inline">Actions</span>
@@ -100,12 +146,15 @@ export default function UserActions({
 
         {menuOpen && (
           <>
-            <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setMenuOpen(false)}
+            />
             <div className="absolute right-0 top-full mt-2 z-40 w-48 rounded-lg bg-navy-800 border border-border-default shadow-xl overflow-hidden animate-fade-in">
               {hasAccounts && !allAccountsDormant && (
                 <button
                   type="button"
-                  onClick={() => { setConfirmAction("dormant"); setMenuOpen(false); }}
+                  onClick={() => pick("dormant")}
                   className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-warning hover:bg-navy-700 transition-colors"
                 >
                   <PowerOff className="h-4 w-4" />
@@ -115,7 +164,7 @@ export default function UserActions({
               {hasAccounts && allAccountsDormant && (
                 <button
                   type="button"
-                  onClick={() => { setConfirmAction("activate"); setMenuOpen(false); }}
+                  onClick={() => pick("activate")}
                   className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-success hover:bg-navy-700 transition-colors"
                 >
                   <Power className="h-4 w-4" />
@@ -124,7 +173,7 @@ export default function UserActions({
               )}
               <button
                 type="button"
-                onClick={() => { setConfirmAction("delete"); setMenuOpen(false); }}
+                onClick={() => pick("delete")}
                 className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-error hover:bg-navy-700 transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
@@ -135,54 +184,54 @@ export default function UserActions({
         )}
       </div>
 
-      {/* Confirmation modal */}
+      {/* Inline confirmation panel — same pattern as KycActions /
+          TransferActions. Renders in normal document flow directly
+          below the dropdown trigger, so the Confirm button is always
+          reachable by scrolling on mobile. */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setConfirmAction(null); setError(""); }} />
-          <div className="relative glass glass-border rounded-2xl p-6 w-full max-w-md animate-fade-in max-h-[calc(100dvh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className={`h-5 w-5 ${confirmAction === "delete" ? "text-error" : confirmAction === "dormant" ? "text-warning" : "text-success"}`} />
-                <h3 className="text-lg font-semibold text-text-primary">
-                  {actionConfig[confirmAction].title}
-                </h3>
-              </div>
-              <button onClick={() => { setConfirmAction(null); setError(""); }} className="text-text-muted hover:text-text-primary transition-colors">
-                <X className="h-5 w-5" />
-              </button>
+        <div
+          className={`mt-3 rounded-lg border p-4 ${actionConfig[confirmAction].panel}`}
+        >
+          <div
+            className={`flex items-center gap-2 text-sm font-semibold mb-2 ${actionConfig[confirmAction].header}`}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            {actionConfig[confirmAction].title}
+          </div>
+
+          <p className="text-sm text-text-secondary mb-4 break-words">
+            {actionConfig[confirmAction].desc}
+          </p>
+
+          {error && (
+            <div className="mb-3 rounded-lg bg-error/10 border border-error/20 px-3 py-2 text-xs text-error">
+              {error}
             </div>
+          )}
 
-            <p className="text-sm text-text-secondary mb-5">
-              {actionConfig[confirmAction].desc}
-            </p>
-
-            {error && (
-              <div className="mb-4 rounded-lg bg-error/10 border border-error/20 px-4 py-2.5 text-sm text-error">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => { setConfirmAction(null); setError(""); }}
-                className="flex-1 py-2.5 text-sm border border-border-default rounded-lg text-text-secondary hover:bg-navy-800/50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleAction}
-                disabled={loading}
-                className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 ${actionConfig[confirmAction].btnClass}`}
-              >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {actionConfig[confirmAction].btnText}
-              </button>
-            </div>
+          {/* Confirm / Cancel — stacked full-width on mobile, primary
+              button first so it's the most prominent control */}
+          <div className="flex flex-col sm:flex-row-reverse gap-2">
+            <button
+              type="button"
+              onClick={handleAction}
+              disabled={loading}
+              className={`w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 sm:py-2.5 text-sm font-semibold transition-opacity disabled:opacity-50 ${actionConfig[confirmAction].btnClass}`}
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {actionConfig[confirmAction].btnText}
+            </button>
+            <button
+              type="button"
+              onClick={cancel}
+              disabled={loading}
+              className="w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center rounded-lg px-4 py-3 sm:py-2.5 text-sm font-medium border border-border-default text-text-secondary hover:bg-navy-800/50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
