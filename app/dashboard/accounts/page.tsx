@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, maskAccountNumber, cn } from "@/lib/utils";
+import { formatCurrency, maskAccountNumber, cn, userFacingAccountStatus } from "@/lib/utils";
 import { getAccountDisplay } from "@/lib/accountConfig";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
@@ -128,7 +128,7 @@ export default async function AccountsPage() {
                         </p>
                       </div>
                     </div>
-                    <StatusBadge status={account.status} />
+                    <StatusBadge status={userFacingAccountStatus(account.status)} />
                   </div>
 
                   {/* Balance + View Details */}

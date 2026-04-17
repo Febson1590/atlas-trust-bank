@@ -71,9 +71,14 @@ export default function AccountActions({
     currency: "USD",
   });
 
+  // `transactionDate` is optional — empty string = "use right now". When
+  // set, admin is back-dating the transaction so it appears in the user's
+  // history on that date. The live account balance is still updated
+  // immediately either way.
   const [cdForm, setCdForm] = useState({
     amount: "",
     description: "",
+    transactionDate: "",
   });
 
   const [newStatus, setNewStatus] = useState("");
@@ -106,7 +111,7 @@ export default function AccountActions({
   function cancelRowAction() {
     setActionType(null);
     setNewStatus("");
-    setCdForm({ amount: "", description: "" });
+    setCdForm({ amount: "", description: "", transactionDate: "" });
     setError("");
   }
 
@@ -116,7 +121,7 @@ export default function AccountActions({
   ) {
     setActionType(next);
     setNewStatus(statusValue || "");
-    setCdForm({ amount: "", description: "" });
+    setCdForm({ amount: "", description: "", transactionDate: "" });
     setError("");
   }
 
@@ -126,6 +131,14 @@ export default function AccountActions({
     setLoading(true);
     setError("");
     try {
+      // If admin picked a date, convert the YYYY-MM-DD from the native
+      // <input type="date"> to an ISO datetime at noon UTC on that day.
+      // Noon avoids timezone edge cases where midnight in one timezone
+      // lands on the previous day in another.
+      const isoDate = cdForm.transactionDate
+        ? new Date(`${cdForm.transactionDate}T12:00:00.000Z`).toISOString()
+        : undefined;
+
       const res = await fetch("/api/admin/accounts", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -134,6 +147,7 @@ export default function AccountActions({
           type: actionType,
           amount: parseFloat(cdForm.amount),
           description: cdForm.description,
+          ...(isoDate && { transactionDate: isoDate }),
         }),
       });
       const data = await res.json();
@@ -465,6 +479,47 @@ export default function AccountActions({
                   }
                   className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
                 />
+              </div>
+
+              {/* Optional back-dated transaction date — leave blank to
+                  record with today's timestamp. When filled, the
+                  transaction appears in the user's history on that day
+                  (useful for reconciling offline deposits, or for demos
+                  that need a realistic spread of transaction dates).
+                  Live balance updates immediately either way. */}
+              <div>
+                <label className="flex items-center justify-between gap-2 text-xs font-medium text-text-secondary mb-1.5">
+                  <span>
+                    Transaction date{" "}
+                    <span className="text-text-muted font-normal">
+                      (optional)
+                    </span>
+                  </span>
+                  {cdForm.transactionDate && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCdForm({ ...cdForm, transactionDate: "" })
+                      }
+                      className="text-[11px] text-gold-500 hover:text-gold-400 transition-colors"
+                    >
+                      Use today
+                    </button>
+                  )}
+                </label>
+                <input
+                  type="date"
+                  value={cdForm.transactionDate}
+                  max={new Date().toISOString().split("T")[0]}
+                  onChange={(e) =>
+                    setCdForm({ ...cdForm, transactionDate: e.target.value })
+                  }
+                  className="w-full bg-navy-900/50 border border-border-default rounded-lg py-2.5 px-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold-500/50 focus:ring-1 focus:ring-gold-500/20"
+                />
+                <p className="text-[11px] text-text-muted mt-1">
+                  Leave blank to record at the current time. Back-dated
+                  entries still update the live account balance.
+                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row-reverse gap-2 pt-1">

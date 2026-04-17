@@ -247,7 +247,33 @@ export async function PUT(request: Request) {
         );
       }
 
-      const { accountId, type, amount, description, category } = result.data;
+      const { accountId, type, amount, description, category, transactionDate } =
+        result.data;
+
+      // Back-dating support — admin can nominate a specific date for the
+      // transaction so it slots into the user's history as if it happened
+      // on that day (useful for reconciling offline deposits, or just
+      // building a realistic transaction trail for demos). Reject future
+      // dates because the UI can't meaningfully represent "a transaction
+      // that hasn't happened yet" and it would confuse downstream queries
+      // that order by createdAt DESC.
+      let effectiveCreatedAt: Date | undefined;
+      if (transactionDate) {
+        const parsed = new Date(transactionDate);
+        if (isNaN(parsed.getTime())) {
+          return NextResponse.json(
+            { success: false, error: "Invalid transaction date" },
+            { status: 400 }
+          );
+        }
+        if (parsed.getTime() > Date.now() + 60_000) {
+          return NextResponse.json(
+            { success: false, error: "Transaction date can't be in the future" },
+            { status: 400 }
+          );
+        }
+        effectiveCreatedAt = parsed;
+      }
 
       // Use Prisma $transaction for atomic balance update
       const updatedAccount = await prisma.$transaction(async (tx) => {
@@ -271,13 +297,19 @@ export async function PUT(request: Request) {
           newBalance = currentBalance - amount;
         }
 
-        // Update balance
+        // Update live balance (regardless of the transaction's nominal
+        // date — we want the current balance to reflect the change now).
         const updated = await tx.account.update({
           where: { id: accountId },
           data: { balance: new Prisma.Decimal(newBalance) },
         });
 
-        // Create transaction record
+        // Create transaction record. If admin back-dated it, use their
+        // chosen createdAt so it sorts into the right spot in the user's
+        // history. balanceAfter is the *post-change* balance as of now,
+        // which is a slight simplification — rewriting the full running
+        // balance of every intermediate transaction would be much more
+        // invasive and is not what admins actually need for reconciliation.
         await tx.transaction.create({
           data: {
             accountId,
@@ -288,9 +320,13 @@ export async function PUT(request: Request) {
             description,
             category: category || "Admin",
             balanceAfter: new Prisma.Decimal(newBalance),
+            ...(effectiveCreatedAt && { createdAt: effectiveCreatedAt }),
             metadata: {
               adminAction: true,
               adminId: session.userId,
+              ...(effectiveCreatedAt && {
+                backDatedTo: effectiveCreatedAt.toISOString(),
+              }),
             },
           },
         });

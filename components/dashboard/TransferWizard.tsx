@@ -21,6 +21,7 @@ import {
   Globe,
   Info,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import { transferSchema, type TransferInput } from "@/lib/validations";
@@ -256,7 +257,7 @@ export default function TransferWizard({
   // API states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
-  const [dormantError, setDormantError] = useState<{ message: string; dormantDays: number } | null>(null);
+  const [dormantError, setDormantError] = useState<{ message: string } | null>(null);
 
   // PIN + OTP state
   const [pin, setPin] = useState("");
@@ -425,8 +426,9 @@ export default function TransferWizard({
           // made the whole wizard feel broken on slow connections.
           if (result.error === "ACCOUNT_DORMANT") {
             setDormantError({
-              message: result.data?.message || "Your account is dormant. Contact support.",
-              dormantDays: result.data?.dormantDays || 0,
+              message:
+                result.data?.message ||
+                "This account is currently unavailable. Please contact our support team.",
             });
             setCurrentStep(5); // Dedicated failure screen (outside STEPS indicator)
             setIsVerifying(false);
@@ -1501,29 +1503,33 @@ export default function TransferWizard({
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          STEP 6 — Dormant Failure
+          STEP 6 — Transfer blocked (dormant / frozen / restricted)
+          Intentionally neutral copy: we don't name the exact DB state
+          or mention days of inactivity. The customer gets a friendly
+          "contact us" flow; the underlying reason stays an admin-side
+          concern.
           ═══════════════════════════════════════════════════════ */}
       {currentStep === 5 && dormantError && (
         <div className="space-y-6">
-          <div className="rounded-xl bg-navy-800 border border-error/20 p-6 text-center">
-            <div className="mx-auto w-16 h-16 rounded-full bg-error/10 border border-error/20 flex items-center justify-center mb-4">
-              <XCircle className="w-8 h-8 text-error" />
+          <div className="rounded-xl bg-navy-800 border border-warning/20 p-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-warning/10 border border-warning/20 flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-warning" />
             </div>
 
-            <h3 className="text-xl font-semibold text-text-primary mb-1">
-              Transaction Failed
+            <h3 className="text-xl font-semibold text-text-primary mb-2">
+              We couldn&rsquo;t complete this transfer
             </h3>
-            <p className="text-sm text-text-muted mb-6">
+            <p className="text-sm text-text-muted leading-relaxed max-w-md mx-auto mb-6">
               {dormantError.message}
             </p>
 
-            <div className="rounded-lg bg-warning/5 border border-warning/20 px-4 py-3 text-xs text-warning mb-6">
-              Your account has been inactive for {dormantError.dormantDays}{" "}
-              {dormantError.dormantDays === 1 ? "day" : "days"}.
-              No money was deducted from your account.
+            <div className="rounded-lg bg-navy-900/50 border border-border-default px-4 py-3 text-xs text-text-secondary mb-6">
+              Don&rsquo;t worry — no money has been moved or deducted. Once
+              our team verifies your account, you&rsquo;ll be able to
+              transfer again right away.
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 type="button"
                 onClick={() => router.push("/dashboard")}

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, userFacingAccountStatus } from "@/lib/utils";
 import AccountCard from "@/components/dashboard/AccountCard";
 import TransactionTable from "@/components/dashboard/TransactionTable";
 import BalanceChart from "@/components/dashboard/BalanceChart";
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
                 label={account.label}
                 balance={Number(account.balance)}
                 currency={account.currency}
-                status={account.status}
+                status={userFacingAccountStatus(account.status)}
               />
             ))}
           </div>

@@ -112,3 +112,29 @@ export function cn(...classes: (string | undefined | false | null)[]): string {
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Translate a raw DB account status into what we SHOW the account holder
+ * on their own dashboard. Admins still see the truth — this is for
+ * customer-facing views only.
+ *
+ * Why: product decision — when an account is marked DORMANT by an admin,
+ * we don't want the user to see a "Dormant" label on their account card.
+ * Instead the account looks Active to them, and only when they try to
+ * actually move money does the system surface a friendly "inactive for
+ * a long time, please contact support" message. This avoids alarming
+ * users who might not know what dormant means, and keeps the lock-down
+ * decision an admin-side concern.
+ *
+ * FROZEN / RESTRICTED stay visible because those are usually triggered
+ * by explicit security actions (e.g. user reported their card lost) and
+ * the user already knows about them.
+ */
+// Uses a loose generic instead of the Prisma AccountStatus enum so this
+// helper can be used both where the enum type is in scope and where we
+// just have a plain string (e.g. serialized JSON props). Callers keep
+// their original typing — DORMANT → ACTIVE swap happens transparently.
+export function userFacingAccountStatus<T extends string>(dbStatus: T): T {
+  if (dbStatus === "DORMANT") return "ACTIVE" as T;
+  return dbStatus;
+}

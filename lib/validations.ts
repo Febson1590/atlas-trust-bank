@@ -136,6 +136,14 @@ export const adminCreditDebitSchema = z.object({
   amount: z.number().positive("Amount must be greater than 0"),
   description: z.string().min(3, "Description is required"),
   category: z.string().optional(),
+  // Optional back-dated transaction date. Route-level checks reject
+  // future dates; Zod just guards the wire shape. Empty string from the
+  // HTML date input is coerced to undefined.
+  transactionDate: z
+    .string()
+    .datetime()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
 export const adminTransferActionSchema = z.object({

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, maskAccountNumber, formatDate, cn } from "@/lib/utils";
+import { formatCurrency, maskAccountNumber, formatDate, cn, userFacingAccountStatus } from "@/lib/utils";
 import { getAccountDisplay } from "@/lib/accountConfig";
 import StatusBadge from "@/components/ui/StatusBadge";
 import TransactionTable from "@/components/dashboard/TransactionTable";
@@ -81,7 +81,7 @@ export default async function AccountDetailPage({ params }: PageProps) {
                 <h2 className="text-xl font-bold text-text-primary">
                   {account.label || config.label}
                 </h2>
-                <StatusBadge status={account.status} />
+                <StatusBadge status={userFacingAccountStatus(account.status)} />
               </div>
               <p className="text-sm text-text-muted mt-0.5">
                 {account.currency} · {config.label}
@@ -157,7 +157,7 @@ export default async function AccountDetailPage({ params }: PageProps) {
           </div>
           <div>
             <p className="text-xs text-text-muted mb-1">Status</p>
-            <StatusBadge status={account.status} />
+            <StatusBadge status={userFacingAccountStatus(account.status)} />
           </div>
           <div>
             <p className="text-xs text-text-muted mb-1">Opened</p>

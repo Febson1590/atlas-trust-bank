@@ -130,21 +130,21 @@ export async function POST(request: Request) {
     }
 
     if (sourceAccount.status !== "ACTIVE") {
-      // Calculate dormant days if applicable
-      const dormantDays = sourceAccount.status === "DORMANT"
-        ? Math.floor((Date.now() - new Date(sourceAccount.updatedAt).getTime()) / (1000 * 60 * 60 * 24))
-        : 0;
-
+      // We deliberately don't leak the exact DB status to the user — every
+      // non-ACTIVE state (dormant, frozen, restricted) gets the same soft
+      // "please contact support" message. The raw status is still returned
+      // in `data.status` for the wizard to pick a slightly different UI
+      // but the customer-facing `message` stays neutral and non-alarming.
       return NextResponse.json(
         {
           success: false,
           error: "ACCOUNT_DORMANT",
           data: {
             status: sourceAccount.status,
-            dormantDays,
-            message: sourceAccount.status === "DORMANT"
-              ? `Your account is currently dormant. It has been inactive for ${dormantDays} ${dormantDays === 1 ? "day" : "days"}. Please contact support to reactivate your account.`
-              : "This account is not active. Please contact support.",
+            message:
+              sourceAccount.status === "DORMANT"
+                ? "This account has been inactive for some time. To keep your funds safe we've paused outgoing transactions until our team can verify it. Please reach out to our support team so we can reactivate it for you."
+                : "This account is currently unavailable for transfers. Please contact our support team for assistance.",
           },
         },
         { status: 403 }
