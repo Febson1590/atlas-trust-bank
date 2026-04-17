@@ -31,142 +31,152 @@ import { Globe, ChevronDown, Check, Search, X } from "lucide-react";
 //
 // `starred: true` marks the most-spoken languages we float to the top of
 // the list when no search filter is active.
-type Language = { code: string; label: string; english: string; starred?: boolean };
+type Language = {
+  code: string;
+  label: string;
+  english: string;
+  flag: string;
+  starred?: boolean;
+};
 
+// Flag choices explained: one language ↔ many countries, so we pick the
+// country MOST associated with the language. English → 🇬🇧 (origin) rather
+// than 🇺🇸 (preference, not universal). Portuguese → 🇵🇹 for the same reason.
+// Languages without a single country (Latin, Esperanto) get 🌐.
 const LANGUAGES: Language[] = [
-  { code: "en",     label: "English",           english: "English",           starred: true },
-  { code: "es",     label: "Español",           english: "Spanish",           starred: true },
-  { code: "fr",     label: "Français",          english: "French",            starred: true },
-  { code: "de",     label: "Deutsch",           english: "German",            starred: true },
-  { code: "pt",     label: "Português",         english: "Portuguese",        starred: true },
-  { code: "it",     label: "Italiano",          english: "Italian",           starred: true },
-  { code: "nl",     label: "Nederlands",        english: "Dutch",             starred: true },
-  { code: "ru",     label: "Русский",           english: "Russian",           starred: true },
-  { code: "zh-CN",  label: "中文 (简体)",        english: "Chinese (Simplified)", starred: true },
-  { code: "zh-TW",  label: "中文 (繁體)",        english: "Chinese (Traditional)" },
-  { code: "ja",     label: "日本語",             english: "Japanese",          starred: true },
-  { code: "ko",     label: "한국어",             english: "Korean",            starred: true },
-  { code: "ar",     label: "العربية",           english: "Arabic",            starred: true },
-  { code: "hi",     label: "हिन्दी",             english: "Hindi",             starred: true },
-  { code: "bn",     label: "বাংলা",              english: "Bengali",           starred: true },
-  { code: "tr",     label: "Türkçe",            english: "Turkish" },
-  { code: "pl",     label: "Polski",            english: "Polish" },
-  { code: "vi",     label: "Tiếng Việt",        english: "Vietnamese" },
-  { code: "th",     label: "ไทย",                english: "Thai" },
-  { code: "id",     label: "Bahasa Indonesia",  english: "Indonesian" },
-  { code: "ms",     label: "Bahasa Melayu",     english: "Malay" },
-  { code: "fil",    label: "Filipino",          english: "Filipino" },
-  { code: "sw",     label: "Kiswahili",         english: "Swahili" },
-  { code: "am",     label: "አማርኛ",               english: "Amharic" },
-  { code: "af",     label: "Afrikaans",         english: "Afrikaans" },
-  { code: "sq",     label: "Shqip",             english: "Albanian" },
-  { code: "hy",     label: "Հայերեն",           english: "Armenian" },
-  { code: "as",     label: "অসমীয়া",             english: "Assamese" },
-  { code: "ay",     label: "Aymar",             english: "Aymara" },
-  { code: "az",     label: "Azərbaycan",        english: "Azerbaijani" },
-  { code: "bm",     label: "Bamanankan",        english: "Bambara" },
-  { code: "eu",     label: "Euskara",           english: "Basque" },
-  { code: "be",     label: "Беларуская",        english: "Belarusian" },
-  { code: "bho",    label: "भोजपुरी",            english: "Bhojpuri" },
-  { code: "bs",     label: "Bosanski",          english: "Bosnian" },
-  { code: "bg",     label: "Български",         english: "Bulgarian" },
-  { code: "ca",     label: "Català",            english: "Catalan" },
-  { code: "ceb",    label: "Cebuano",           english: "Cebuano" },
-  { code: "ny",     label: "Chichewa",          english: "Chichewa" },
-  { code: "co",     label: "Corsu",             english: "Corsican" },
-  { code: "hr",     label: "Hrvatski",          english: "Croatian" },
-  { code: "cs",     label: "Čeština",           english: "Czech" },
-  { code: "da",     label: "Dansk",             english: "Danish" },
-  { code: "dv",     label: "ދިވެހި",              english: "Dhivehi" },
-  { code: "doi",    label: "डोगरी",              english: "Dogri" },
-  { code: "eo",     label: "Esperanto",         english: "Esperanto" },
-  { code: "et",     label: "Eesti",             english: "Estonian" },
-  { code: "ee",     label: "Eʋegbe",            english: "Ewe" },
-  { code: "fi",     label: "Suomi",             english: "Finnish" },
-  { code: "fy",     label: "Frysk",             english: "Frisian" },
-  { code: "gl",     label: "Galego",            english: "Galician" },
-  { code: "ka",     label: "ქართული",           english: "Georgian" },
-  { code: "el",     label: "Ελληνικά",          english: "Greek" },
-  { code: "gn",     label: "Avañe'ẽ",           english: "Guarani" },
-  { code: "gu",     label: "ગુજરાતી",            english: "Gujarati" },
-  { code: "ht",     label: "Kreyòl ayisyen",    english: "Haitian Creole" },
-  { code: "ha",     label: "Hausa",             english: "Hausa" },
-  { code: "haw",    label: "ʻŌlelo Hawaiʻi",    english: "Hawaiian" },
-  { code: "iw",     label: "עברית",             english: "Hebrew" },
-  { code: "hmn",    label: "Hmoob",             english: "Hmong" },
-  { code: "hu",     label: "Magyar",            english: "Hungarian" },
-  { code: "is",     label: "Íslenska",          english: "Icelandic" },
-  { code: "ig",     label: "Igbo",              english: "Igbo" },
-  { code: "ilo",    label: "Ilokano",           english: "Ilocano" },
-  { code: "ga",     label: "Gaeilge",           english: "Irish" },
-  { code: "jw",     label: "Basa Jawa",         english: "Javanese" },
-  { code: "kn",     label: "ಕನ್ನಡ",              english: "Kannada" },
-  { code: "kk",     label: "Қазақ",             english: "Kazakh" },
-  { code: "km",     label: "ខ្មែរ",               english: "Khmer" },
-  { code: "rw",     label: "Kinyarwanda",       english: "Kinyarwanda" },
-  { code: "gom",    label: "कोंकणी",             english: "Konkani" },
-  { code: "kri",    label: "Krio",              english: "Krio" },
-  { code: "ku",     label: "Kurdî",             english: "Kurdish (Kurmanji)" },
-  { code: "ckb",    label: "کوردی",             english: "Kurdish (Sorani)" },
-  { code: "ky",     label: "Кыргызча",          english: "Kyrgyz" },
-  { code: "lo",     label: "ລາວ",                english: "Lao" },
-  { code: "la",     label: "Latina",            english: "Latin" },
-  { code: "lv",     label: "Latviešu",          english: "Latvian" },
-  { code: "ln",     label: "Lingála",           english: "Lingala" },
-  { code: "lt",     label: "Lietuvių",          english: "Lithuanian" },
-  { code: "lg",     label: "Luganda",           english: "Luganda" },
-  { code: "lb",     label: "Lëtzebuergesch",    english: "Luxembourgish" },
-  { code: "mk",     label: "Македонски",        english: "Macedonian" },
-  { code: "mai",    label: "मैथिली",              english: "Maithili" },
-  { code: "mg",     label: "Malagasy",          english: "Malagasy" },
-  { code: "ml",     label: "മലയാളം",             english: "Malayalam" },
-  { code: "mt",     label: "Malti",             english: "Maltese" },
-  { code: "mi",     label: "Māori",             english: "Maori" },
-  { code: "mr",     label: "मराठी",              english: "Marathi" },
-  { code: "mni-Mtei", label: "ꯃꯤꯇꯩ ꯂꯣꯟ",       english: "Meiteilon (Manipuri)" },
-  { code: "lus",    label: "Mizo ṭawng",        english: "Mizo" },
-  { code: "mn",     label: "Монгол",            english: "Mongolian" },
-  { code: "my",     label: "မြန်မာ",               english: "Myanmar (Burmese)" },
-  { code: "ne",     label: "नेपाली",             english: "Nepali" },
-  { code: "no",     label: "Norsk",             english: "Norwegian" },
-  { code: "or",     label: "ଓଡ଼ିଆ",              english: "Odia (Oriya)" },
-  { code: "om",     label: "Afaan Oromoo",      english: "Oromo" },
-  { code: "ps",     label: "پښتو",              english: "Pashto" },
-  { code: "fa",     label: "فارسی",             english: "Persian" },
-  { code: "pa",     label: "ਪੰਜਾਬੀ",             english: "Punjabi" },
-  { code: "qu",     label: "Runasimi",          english: "Quechua" },
-  { code: "ro",     label: "Română",            english: "Romanian" },
-  { code: "sm",     label: "Gagana Samoa",      english: "Samoan" },
-  { code: "sa",     label: "संस्कृतम्",           english: "Sanskrit" },
-  { code: "gd",     label: "Gàidhlig",          english: "Scots Gaelic" },
-  { code: "nso",    label: "Sesotho sa Leboa",  english: "Sepedi" },
-  { code: "sr",     label: "Српски",            english: "Serbian" },
-  { code: "st",     label: "Sesotho",           english: "Sesotho" },
-  { code: "sn",     label: "ChiShona",          english: "Shona" },
-  { code: "sd",     label: "سنڌي",              english: "Sindhi" },
-  { code: "si",     label: "සිංහල",              english: "Sinhala" },
-  { code: "sk",     label: "Slovenčina",        english: "Slovak" },
-  { code: "sl",     label: "Slovenščina",       english: "Slovenian" },
-  { code: "so",     label: "Soomaali",          english: "Somali" },
-  { code: "su",     label: "Basa Sunda",        english: "Sundanese" },
-  { code: "sv",     label: "Svenska",           english: "Swedish" },
-  { code: "tg",     label: "Тоҷикӣ",            english: "Tajik" },
-  { code: "ta",     label: "தமிழ்",              english: "Tamil" },
-  { code: "tt",     label: "Татарча",           english: "Tatar" },
-  { code: "te",     label: "తెలుగు",             english: "Telugu" },
-  { code: "ti",     label: "ትግርኛ",               english: "Tigrinya" },
-  { code: "ts",     label: "Xitsonga",          english: "Tsonga" },
-  { code: "tk",     label: "Türkmen",           english: "Turkmen" },
-  { code: "ak",     label: "Twi",               english: "Twi" },
-  { code: "uk",     label: "Українська",        english: "Ukrainian" },
-  { code: "ur",     label: "اردو",              english: "Urdu" },
-  { code: "ug",     label: "ئۇيغۇرچە",          english: "Uyghur" },
-  { code: "uz",     label: "Oʻzbek",            english: "Uzbek" },
-  { code: "cy",     label: "Cymraeg",           english: "Welsh" },
-  { code: "xh",     label: "IsiXhosa",          english: "Xhosa" },
-  { code: "yi",     label: "ייִדיש",             english: "Yiddish" },
-  { code: "yo",     label: "Yorùbá",            english: "Yoruba" },
-  { code: "zu",     label: "IsiZulu",           english: "Zulu" },
+  { code: "en",     flag: "🇬🇧", label: "English",           english: "English",           starred: true },
+  { code: "es",     flag: "🇪🇸", label: "Español",           english: "Spanish",           starred: true },
+  { code: "fr",     flag: "🇫🇷", label: "Français",          english: "French",            starred: true },
+  { code: "de",     flag: "🇩🇪", label: "Deutsch",           english: "German",            starred: true },
+  { code: "pt",     flag: "🇵🇹", label: "Português",         english: "Portuguese",        starred: true },
+  { code: "it",     flag: "🇮🇹", label: "Italiano",          english: "Italian",           starred: true },
+  { code: "nl",     flag: "🇳🇱", label: "Nederlands",        english: "Dutch",             starred: true },
+  { code: "ru",     flag: "🇷🇺", label: "Русский",           english: "Russian",           starred: true },
+  { code: "zh-CN",  flag: "🇨🇳", label: "中文 (简体)",        english: "Chinese (Simplified)", starred: true },
+  { code: "zh-TW",  flag: "🇹🇼", label: "中文 (繁體)",        english: "Chinese (Traditional)" },
+  { code: "ja",     flag: "🇯🇵", label: "日本語",             english: "Japanese",          starred: true },
+  { code: "ko",     flag: "🇰🇷", label: "한국어",             english: "Korean",            starred: true },
+  { code: "ar",     flag: "🇸🇦", label: "العربية",           english: "Arabic",            starred: true },
+  { code: "hi",     flag: "🇮🇳", label: "हिन्दी",             english: "Hindi",             starred: true },
+  { code: "bn",     flag: "🇧🇩", label: "বাংলা",              english: "Bengali",           starred: true },
+  { code: "tr",     flag: "🇹🇷", label: "Türkçe",            english: "Turkish" },
+  { code: "pl",     flag: "🇵🇱", label: "Polski",            english: "Polish" },
+  { code: "vi",     flag: "🇻🇳", label: "Tiếng Việt",        english: "Vietnamese" },
+  { code: "th",     flag: "🇹🇭", label: "ไทย",                english: "Thai" },
+  { code: "id",     flag: "🇮🇩", label: "Bahasa Indonesia",  english: "Indonesian" },
+  { code: "ms",     flag: "🇲🇾", label: "Bahasa Melayu",     english: "Malay" },
+  { code: "fil",    flag: "🇵🇭", label: "Filipino",          english: "Filipino" },
+  { code: "sw",     flag: "🇹🇿", label: "Kiswahili",         english: "Swahili" },
+  { code: "am",     flag: "🇪🇹", label: "አማርኛ",               english: "Amharic" },
+  { code: "af",     flag: "🇿🇦", label: "Afrikaans",         english: "Afrikaans" },
+  { code: "sq",     flag: "🇦🇱", label: "Shqip",             english: "Albanian" },
+  { code: "hy",     flag: "🇦🇲", label: "Հայերեն",           english: "Armenian" },
+  { code: "as",     flag: "🇮🇳", label: "অসমীয়া",             english: "Assamese" },
+  { code: "ay",     flag: "🇧🇴", label: "Aymar",             english: "Aymara" },
+  { code: "az",     flag: "🇦🇿", label: "Azərbaycan",        english: "Azerbaijani" },
+  { code: "bm",     flag: "🇲🇱", label: "Bamanankan",        english: "Bambara" },
+  { code: "eu",     flag: "🇪🇸", label: "Euskara",           english: "Basque" },
+  { code: "be",     flag: "🇧🇾", label: "Беларуская",        english: "Belarusian" },
+  { code: "bho",    flag: "🇮🇳", label: "भोजपुरी",            english: "Bhojpuri" },
+  { code: "bs",     flag: "🇧🇦", label: "Bosanski",          english: "Bosnian" },
+  { code: "bg",     flag: "🇧🇬", label: "Български",         english: "Bulgarian" },
+  { code: "ca",     flag: "🇪🇸", label: "Català",            english: "Catalan" },
+  { code: "ceb",    flag: "🇵🇭", label: "Cebuano",           english: "Cebuano" },
+  { code: "ny",     flag: "🇲🇼", label: "Chichewa",          english: "Chichewa" },
+  { code: "co",     flag: "🇫🇷", label: "Corsu",             english: "Corsican" },
+  { code: "hr",     flag: "🇭🇷", label: "Hrvatski",          english: "Croatian" },
+  { code: "cs",     flag: "🇨🇿", label: "Čeština",           english: "Czech" },
+  { code: "da",     flag: "🇩🇰", label: "Dansk",             english: "Danish" },
+  { code: "dv",     flag: "🇲🇻", label: "ދިވެހި",              english: "Dhivehi" },
+  { code: "doi",    flag: "🇮🇳", label: "डोगरी",              english: "Dogri" },
+  { code: "eo",     flag: "🌐", label: "Esperanto",         english: "Esperanto" },
+  { code: "et",     flag: "🇪🇪", label: "Eesti",             english: "Estonian" },
+  { code: "ee",     flag: "🇬🇭", label: "Eʋegbe",            english: "Ewe" },
+  { code: "fi",     flag: "🇫🇮", label: "Suomi",             english: "Finnish" },
+  { code: "fy",     flag: "🇳🇱", label: "Frysk",             english: "Frisian" },
+  { code: "gl",     flag: "🇪🇸", label: "Galego",            english: "Galician" },
+  { code: "ka",     flag: "🇬🇪", label: "ქართული",           english: "Georgian" },
+  { code: "el",     flag: "🇬🇷", label: "Ελληνικά",          english: "Greek" },
+  { code: "gn",     flag: "🇵🇾", label: "Avañe'ẽ",           english: "Guarani" },
+  { code: "gu",     flag: "🇮🇳", label: "ગુજરાતી",            english: "Gujarati" },
+  { code: "ht",     flag: "🇭🇹", label: "Kreyòl ayisyen",    english: "Haitian Creole" },
+  { code: "ha",     flag: "🇳🇬", label: "Hausa",             english: "Hausa" },
+  { code: "haw",    flag: "🇺🇸", label: "ʻŌlelo Hawaiʻi",    english: "Hawaiian" },
+  { code: "iw",     flag: "🇮🇱", label: "עברית",             english: "Hebrew" },
+  { code: "hmn",    flag: "🇨🇳", label: "Hmoob",             english: "Hmong" },
+  { code: "hu",     flag: "🇭🇺", label: "Magyar",            english: "Hungarian" },
+  { code: "is",     flag: "🇮🇸", label: "Íslenska",          english: "Icelandic" },
+  { code: "ig",     flag: "🇳🇬", label: "Igbo",              english: "Igbo" },
+  { code: "ilo",    flag: "🇵🇭", label: "Ilokano",           english: "Ilocano" },
+  { code: "ga",     flag: "🇮🇪", label: "Gaeilge",           english: "Irish" },
+  { code: "jw",     flag: "🇮🇩", label: "Basa Jawa",         english: "Javanese" },
+  { code: "kn",     flag: "🇮🇳", label: "ಕನ್ನಡ",              english: "Kannada" },
+  { code: "kk",     flag: "🇰🇿", label: "Қазақ",             english: "Kazakh" },
+  { code: "km",     flag: "🇰🇭", label: "ខ្មែរ",               english: "Khmer" },
+  { code: "rw",     flag: "🇷🇼", label: "Kinyarwanda",       english: "Kinyarwanda" },
+  { code: "gom",    flag: "🇮🇳", label: "कोंकणी",             english: "Konkani" },
+  { code: "kri",    flag: "🇸🇱", label: "Krio",              english: "Krio" },
+  { code: "ku",     flag: "🇹🇷", label: "Kurdî",             english: "Kurdish (Kurmanji)" },
+  { code: "ckb",    flag: "🇮🇶", label: "کوردی",             english: "Kurdish (Sorani)" },
+  { code: "ky",     flag: "🇰🇬", label: "Кыргызча",          english: "Kyrgyz" },
+  { code: "lo",     flag: "🇱🇦", label: "ລາວ",                english: "Lao" },
+  { code: "la",     flag: "🇻🇦", label: "Latina",            english: "Latin" },
+  { code: "lv",     flag: "🇱🇻", label: "Latviešu",          english: "Latvian" },
+  { code: "ln",     flag: "🇨🇩", label: "Lingála",           english: "Lingala" },
+  { code: "lt",     flag: "🇱🇹", label: "Lietuvių",          english: "Lithuanian" },
+  { code: "lg",     flag: "🇺🇬", label: "Luganda",           english: "Luganda" },
+  { code: "lb",     flag: "🇱🇺", label: "Lëtzebuergesch",    english: "Luxembourgish" },
+  { code: "mk",     flag: "🇲🇰", label: "Македонски",        english: "Macedonian" },
+  { code: "mai",    flag: "🇮🇳", label: "मैथिली",              english: "Maithili" },
+  { code: "mg",     flag: "🇲🇬", label: "Malagasy",          english: "Malagasy" },
+  { code: "ml",     flag: "🇮🇳", label: "മലയാളം",             english: "Malayalam" },
+  { code: "mt",     flag: "🇲🇹", label: "Malti",             english: "Maltese" },
+  { code: "mi",     flag: "🇳🇿", label: "Māori",             english: "Maori" },
+  { code: "mr",     flag: "🇮🇳", label: "मराठी",              english: "Marathi" },
+  { code: "mni-Mtei", flag: "🇮🇳", label: "ꯃꯤꯇꯩ ꯂꯣꯟ",       english: "Meiteilon (Manipuri)" },
+  { code: "lus",    flag: "🇮🇳", label: "Mizo ṭawng",        english: "Mizo" },
+  { code: "mn",     flag: "🇲🇳", label: "Монгол",            english: "Mongolian" },
+  { code: "my",     flag: "🇲🇲", label: "မြန်မာ",               english: "Myanmar (Burmese)" },
+  { code: "ne",     flag: "🇳🇵", label: "नेपाली",             english: "Nepali" },
+  { code: "no",     flag: "🇳🇴", label: "Norsk",             english: "Norwegian" },
+  { code: "or",     flag: "🇮🇳", label: "ଓଡ଼ିଆ",              english: "Odia (Oriya)" },
+  { code: "om",     flag: "🇪🇹", label: "Afaan Oromoo",      english: "Oromo" },
+  { code: "ps",     flag: "🇦🇫", label: "پښتو",              english: "Pashto" },
+  { code: "fa",     flag: "🇮🇷", label: "فارسی",             english: "Persian" },
+  { code: "pa",     flag: "🇮🇳", label: "ਪੰਜਾਬੀ",             english: "Punjabi" },
+  { code: "qu",     flag: "🇵🇪", label: "Runasimi",          english: "Quechua" },
+  { code: "ro",     flag: "🇷🇴", label: "Română",            english: "Romanian" },
+  { code: "sm",     flag: "🇼🇸", label: "Gagana Samoa",      english: "Samoan" },
+  { code: "sa",     flag: "🇮🇳", label: "संस्कृतम्",           english: "Sanskrit" },
+  { code: "gd",     flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", label: "Gàidhlig",          english: "Scots Gaelic" },
+  { code: "nso",    flag: "🇿🇦", label: "Sesotho sa Leboa",  english: "Sepedi" },
+  { code: "sr",     flag: "🇷🇸", label: "Српски",            english: "Serbian" },
+  { code: "st",     flag: "🇱🇸", label: "Sesotho",           english: "Sesotho" },
+  { code: "sn",     flag: "🇿🇼", label: "ChiShona",          english: "Shona" },
+  { code: "sd",     flag: "🇵🇰", label: "سنڌي",              english: "Sindhi" },
+  { code: "si",     flag: "🇱🇰", label: "සිංහල",              english: "Sinhala" },
+  { code: "sk",     flag: "🇸🇰", label: "Slovenčina",        english: "Slovak" },
+  { code: "sl",     flag: "🇸🇮", label: "Slovenščina",       english: "Slovenian" },
+  { code: "so",     flag: "🇸🇴", label: "Soomaali",          english: "Somali" },
+  { code: "su",     flag: "🇮🇩", label: "Basa Sunda",        english: "Sundanese" },
+  { code: "sv",     flag: "🇸🇪", label: "Svenska",           english: "Swedish" },
+  { code: "tg",     flag: "🇹🇯", label: "Тоҷикӣ",            english: "Tajik" },
+  { code: "ta",     flag: "🇮🇳", label: "தமிழ்",              english: "Tamil" },
+  { code: "tt",     flag: "🇷🇺", label: "Татарча",           english: "Tatar" },
+  { code: "te",     flag: "🇮🇳", label: "తెలుగు",             english: "Telugu" },
+  { code: "ti",     flag: "🇪🇷", label: "ትግርኛ",               english: "Tigrinya" },
+  { code: "ts",     flag: "🇿🇦", label: "Xitsonga",          english: "Tsonga" },
+  { code: "tk",     flag: "🇹🇲", label: "Türkmen",           english: "Turkmen" },
+  { code: "ak",     flag: "🇬🇭", label: "Twi",               english: "Twi" },
+  { code: "uk",     flag: "🇺🇦", label: "Українська",        english: "Ukrainian" },
+  { code: "ur",     flag: "🇵🇰", label: "اردو",              english: "Urdu" },
+  { code: "ug",     flag: "🇨🇳", label: "ئۇيغۇرچە",          english: "Uyghur" },
+  { code: "uz",     flag: "🇺🇿", label: "Oʻzbek",            english: "Uzbek" },
+  { code: "cy",     flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", label: "Cymraeg",           english: "Welsh" },
+  { code: "xh",     flag: "🇿🇦", label: "IsiXhosa",          english: "Xhosa" },
+  { code: "yi",     flag: "🇮🇱", label: "ייִדיש",             english: "Yiddish" },
+  { code: "yo",     flag: "🇳🇬", label: "Yorùbá",            english: "Yoruba" },
+  { code: "zu",     flag: "🇿🇦", label: "IsiZulu",           english: "Zulu" },
 ];
 
 declare global {
@@ -386,13 +396,19 @@ export default function LanguageSwitcher() {
                       role="option"
                       aria-selected={active}
                       onClick={() => handleSelect(lang.code)}
-                      className={`flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm transition-colors ${
+                      className={`flex w-full items-center gap-3 px-4 py-2 text-left text-sm transition-colors ${
                         active
                           ? "bg-gold-500/10 text-gold-400"
                           : "text-text-secondary hover:bg-gold-500/5 hover:text-text-primary"
                       }`}
                     >
-                      <span className="flex min-w-0 flex-col">
+                      <span
+                        className="flex-shrink-0 text-base leading-none"
+                        aria-hidden="true"
+                      >
+                        {lang.flag}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate font-medium">
                           {lang.label}
                         </span>
@@ -413,16 +429,21 @@ export default function LanguageSwitcher() {
           </div>
         )}
 
-        {/* Trigger button */}
+        {/* Trigger button — flag as the primary visual, language name next
+            to it. Globe is the fallback emoji beside a text label so even
+            if flag emoji don't render (old Windows), the intent is clear. */}
         <button
           type="button"
           aria-haspopup="listbox"
           aria-expanded={open}
           aria-label="Change language"
           onClick={() => setOpen((v) => !v)}
-          className="group flex items-center gap-2 rounded-full border border-gold-500/30 bg-navy-900/90 px-4 py-2 text-sm text-gold-400 shadow-lg backdrop-blur-sm transition-all hover:border-gold-500/60 hover:bg-navy-800 hover:text-gold-300"
+          className="group flex items-center gap-2 rounded-full border border-gold-500/30 bg-navy-900/90 py-2 pl-3 pr-4 text-sm text-gold-400 shadow-lg backdrop-blur-sm transition-all hover:border-gold-500/60 hover:bg-navy-800 hover:text-gold-300"
         >
-          <Globe className="h-4 w-4 transition-transform group-hover:rotate-12" />
+          <span className="text-base leading-none" aria-hidden="true">
+            {currentLang.flag}
+          </span>
+          <Globe className="h-3.5 w-3.5 opacity-60 transition-transform group-hover:rotate-12" />
           <span>{currentLang.label}</span>
           <ChevronDown
             className={`h-3 w-3 transition-transform ${
