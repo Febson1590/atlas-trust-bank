@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
-  MoreVertical,
   CreditCard,
   Snowflake,
   CheckCircle,
@@ -38,8 +37,6 @@ interface CardActionsProps {
 export default function CardActions({ mode, accounts, card }: CardActionsProps) {
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showActionModal, setShowActionModal] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [actionType, setActionType] = useState<"status" | "limit" | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -105,8 +102,8 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
         setError(data.error || "Update failed");
         return;
       }
-      setShowActionModal(false);
       setActionType(null);
+      setNewStatus("");
       router.refresh();
     } catch {
       setError("An error occurred");
@@ -132,8 +129,8 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
         setError(data.error || "Update failed");
         return;
       }
-      setShowActionModal(false);
       setActionType(null);
+      setNewLimit("");
       router.refresh();
     } catch {
       setError("An error occurred");
@@ -241,7 +238,11 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
     );
   }
 
-  // Row actions — inline expansion (same pattern as KycActions)
+  // Row actions — direct buttons, no floating dropdown. Same reasoning
+  // as AccountActions: a `top-full` dropdown on the last cards of the
+  // page got clipped by the table's `overflow-hidden` ancestor, making
+  // the options invisible. Direct buttons are in document flow, always
+  // visible, always tappable, across all viewports.
   function cancelRowAction() {
     setActionType(null);
     setNewStatus("");
@@ -250,76 +251,61 @@ export default function CardActions({ mode, accounts, card }: CardActionsProps) 
   }
 
   return (
-    <div className="w-full sm:w-auto">
-      <div className="relative inline-block">
-        <button
-          onClick={() => setShowDropdown(!showDropdown)}
-          disabled={showActionModal || actionType !== null}
-          className="p-2 rounded-lg hover:bg-navy-800/50 text-text-muted hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Card actions"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </button>
-
-        {showDropdown && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-            <div className="absolute right-0 top-full mt-1 z-50 w-44 glass glass-border rounded-xl py-1 shadow-xl">
-              {card?.status !== "ACTIVE" && (
-                <button
-                  onClick={() => {
-                    setNewStatus("ACTIVE");
-                    setActionType("status");
-                    setShowDropdown(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-success hover:bg-navy-800/50 transition-colors"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Unfreeze
-                </button>
-              )}
-              {card?.status === "ACTIVE" && (
-                <button
-                  onClick={() => {
-                    setNewStatus("FROZEN");
-                    setActionType("status");
-                    setShowDropdown(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-blue-400 hover:bg-navy-800/50 transition-colors"
-                >
-                  <Snowflake className="h-4 w-4" />
-                  Freeze
-                </button>
-              )}
-              {card?.status !== "CANCELLED" && (
-                <button
-                  onClick={() => {
-                    setNewStatus("CANCELLED");
-                    setActionType("status");
-                    setShowDropdown(false);
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-navy-800/50 transition-colors"
-                >
-                  <Ban className="h-4 w-4" />
-                  Cancel
-                </button>
-              )}
-              <div className="border-t border-border-default my-1" />
-              <button
-                onClick={() => {
-                  setNewLimit(card?.dailyLimit?.toString() || "5000");
-                  setActionType("limit");
-                  setShowDropdown(false);
-                }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-navy-800/50 transition-colors"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Limit
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+    <div className="w-full">
+      {!actionType && (
+        <div className="flex flex-wrap gap-2">
+          {card?.status !== "ACTIVE" && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewStatus("ACTIVE");
+                setActionType("status");
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors"
+            >
+              <CheckCircle className="h-3.5 w-3.5" />
+              Unfreeze
+            </button>
+          )}
+          {card?.status === "ACTIVE" && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewStatus("FROZEN");
+                setActionType("status");
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-colors"
+            >
+              <Snowflake className="h-3.5 w-3.5" />
+              Freeze
+            </button>
+          )}
+          {card?.status !== "CANCELLED" && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewStatus("CANCELLED");
+                setActionType("status");
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-error/10 text-error border border-error/20 hover:bg-error/20 transition-colors"
+            >
+              <Ban className="h-3.5 w-3.5" />
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setNewLimit(card?.dailyLimit?.toString() || "5000");
+              setActionType("limit");
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-gold-500/40 hover:text-gold-400 transition-colors"
+          >
+            <Edit className="h-3.5 w-3.5" />
+            Edit Limit
+          </button>
+        </div>
+      )}
 
       {/* Inline confirmation panel — same pattern as KycActions */}
       {actionType && card && (

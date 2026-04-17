@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
-  MoreVertical,
   CreditCard,
   Ban,
   CheckCircle,
@@ -13,6 +12,7 @@ import {
   ArrowDownCircle,
   X,
   Loader2,
+  Moon,
 } from "lucide-react";
 
 interface User {
@@ -58,7 +58,6 @@ export default function AccountActions({
 }: AccountActionsProps) {
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [actionType, setActionType] = useState<
     "CREDIT" | "DEBIT" | "STATUS" | null
   >(null);
@@ -119,7 +118,6 @@ export default function AccountActions({
     setNewStatus(statusValue || "");
     setCdForm({ amount: "", description: "" });
     setError("");
-    setShowDropdown(false);
   }
 
   async function handleCreditDebit(e: React.FormEvent) {
@@ -303,81 +301,84 @@ export default function AccountActions({
     );
   }
 
-  // Row actions — dropdown + inline confirmation panel
+  // Row actions — direct buttons, no floating dropdown. The previous
+  // dropdown (positioned `absolute top-full`) was getting clipped by
+  // the accounts table's ancestor `overflow-hidden` on rows near the
+  // bottom of the page — user would click ⋮ and see nothing. Direct
+  // buttons in the card render in the normal document flow, always
+  // visible, always tappable.
   return (
-    <div className="w-full sm:w-auto">
-      <div className="relative inline-block">
-        <button
-          onClick={() => setShowDropdown(!showDropdown)}
-          disabled={actionType !== null}
-          className="p-2 rounded-lg hover:bg-navy-800/50 text-text-muted hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Account actions"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </button>
+    <div className="w-full">
+      {/* Action buttons — stacked full-width on mobile, inline on desktop.
+          Status buttons only appear for statuses the account isn't already
+          in (can't set an already-frozen account to frozen). */}
+      {!actionType && (
+        <div className="space-y-2">
+          {/* Primary row: Credit + Debit */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => pickRowAction("CREDIT")}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors"
+            >
+              <ArrowUpCircle className="h-4 w-4" />
+              Credit
+            </button>
+            <button
+              type="button"
+              onClick={() => pickRowAction("DEBIT")}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-sm font-medium bg-error/10 text-error border border-error/20 hover:bg-error/20 transition-colors"
+            >
+              <ArrowDownCircle className="h-4 w-4" />
+              Debit
+            </button>
+          </div>
 
-        {showDropdown && (
-          <>
-            <div
-              className="fixed inset-0 z-40"
-              onClick={() => setShowDropdown(false)}
-            />
-            <div className="absolute right-0 top-full mt-1 z-50 w-48 glass glass-border rounded-xl py-1 shadow-xl">
+          {/* Status row: only options that aren't the current status */}
+          <div className="flex flex-wrap gap-2">
+            {account?.status !== "ACTIVE" && (
               <button
-                onClick={() => pickRowAction("CREDIT")}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-success hover:bg-navy-800/50 transition-colors"
+                type="button"
+                onClick={() => pickRowAction("STATUS", "ACTIVE")}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-success/40 hover:text-success transition-colors"
               >
-                <ArrowUpCircle className="h-4 w-4" />
-                Credit Account
+                <CheckCircle className="h-3.5 w-3.5" />
+                Set Active
               </button>
+            )}
+            {account?.status !== "FROZEN" && (
               <button
-                onClick={() => pickRowAction("DEBIT")}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-error hover:bg-navy-800/50 transition-colors"
+                type="button"
+                onClick={() => pickRowAction("STATUS", "FROZEN")}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-blue-500/40 hover:text-blue-400 transition-colors"
               >
-                <ArrowDownCircle className="h-4 w-4" />
-                Debit Account
+                <Snowflake className="h-3.5 w-3.5" />
+                Freeze
               </button>
-              <div className="border-t border-border-default my-1" />
-              {account?.status !== "ACTIVE" && (
-                <button
-                  onClick={() => pickRowAction("STATUS", "ACTIVE")}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:bg-navy-800/50 transition-colors"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Set Active
-                </button>
-              )}
-              {account?.status !== "FROZEN" && (
-                <button
-                  onClick={() => pickRowAction("STATUS", "FROZEN")}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-blue-400 hover:bg-navy-800/50 transition-colors"
-                >
-                  <Snowflake className="h-4 w-4" />
-                  Freeze Account
-                </button>
-              )}
-              {account?.status !== "RESTRICTED" && (
-                <button
-                  onClick={() => pickRowAction("STATUS", "RESTRICTED")}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-warning hover:bg-navy-800/50 transition-colors"
-                >
-                  <Ban className="h-4 w-4" />
-                  Restrict Account
-                </button>
-              )}
-              {account?.status !== "DORMANT" && (
-                <button
-                  onClick={() => pickRowAction("STATUS", "DORMANT")}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-warning hover:bg-navy-800/50 transition-colors"
-                >
-                  <Ban className="h-4 w-4" />
-                  Set Dormant
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+            )}
+            {account?.status !== "RESTRICTED" && (
+              <button
+                type="button"
+                onClick={() => pickRowAction("STATUS", "RESTRICTED")}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-warning/40 hover:text-warning transition-colors"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                Restrict
+              </button>
+            )}
+            {account?.status !== "DORMANT" && (
+              <button
+                type="button"
+                onClick={() => pickRowAction("STATUS", "DORMANT")}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-warning/40 hover:text-warning transition-colors"
+              >
+                <Moon className="h-3.5 w-3.5" />
+                Set Dormant
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Inline confirmation panel */}
       {actionType && account && (
