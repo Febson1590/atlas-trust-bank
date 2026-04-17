@@ -43,14 +43,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Atlas Trust Bank" }],
   creator: "Atlas Trust Bank",
   publisher: "Atlas Trust Bank",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/logo.png", type: "image/png" },
-    ],
-    apple: "/logo.png",
-    shortcut: "/favicon.ico",
-  },
+  // Icons + social preview images are auto-wired by Next.js 16 via the
+  // `app/icon.png`, `app/apple-icon.png`, `app/opengraph-image.png`, and
+  // `app/twitter-image.png` magic files. Declaring them here would double
+  // up (Next.js emits the proper <link rel="icon"> + OG/Twitter tags on
+  // its own with correct dimensions and fingerprints).
   openGraph: {
     title: "Atlas Trust Bank — Global Banking Excellence",
     description:
@@ -59,21 +56,12 @@ export const metadata: Metadata = {
     siteName: "Atlas Trust Bank",
     type: "website",
     locale: "en_US",
-    images: [
-      {
-        url: "/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "Atlas Trust Bank",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Atlas Trust Bank — Global Banking Excellence",
     description:
       "Trusted financial services, connecting wealth globally. Premium banking, investments, and wealth management.",
-    images: ["/logo.png"],
   },
   robots: {
     index: true,
