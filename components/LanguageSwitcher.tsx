@@ -40,11 +40,11 @@ type Language = {
 };
 
 // Flag choices explained: one language ↔ many countries, so we pick the
-// country MOST associated with the language. English → 🇬🇧 (origin) rather
-// than 🇺🇸 (preference, not universal). Portuguese → 🇵🇹 for the same reason.
-// Languages without a single country (Latin, Esperanto) get 🌐.
+// country MOST associated with the language. English → 🇺🇸 (client
+// preference). Portuguese → 🇵🇹 (origin). Languages without a single
+// country (Latin, Esperanto) get 🌐.
 const LANGUAGES: Language[] = [
-  { code: "en",     flag: "🇬🇧", label: "English",           english: "English",           starred: true },
+  { code: "en",     flag: "🇺🇸", label: "English",           english: "English",           starred: true },
   { code: "es",     flag: "🇪🇸", label: "Español",           english: "Spanish",           starred: true },
   { code: "fr",     flag: "🇫🇷", label: "Français",          english: "French",            starred: true },
   { code: "de",     flag: "🇩🇪", label: "Deutsch",           english: "German",            starred: true },
