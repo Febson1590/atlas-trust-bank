@@ -44,6 +44,26 @@ body {
   color: var(--color-text-primary);
 }
 
+/* ─── Google Translate — hide default UI ──────────────────
+   We use our own brand-styled dropdown (see LanguageSwitcher.tsx).
+   Google's script tries to inject a banner at the top of <body> and
+   push content down with an inline `top:40px` on <body>. Suppress all
+   of it so the site looks unchanged when translation is active. */
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf { display: none !important; }
+body { top: 0 !important; }
+body > .skiptranslate { display: none !important; }
+.goog-tooltip,
+.goog-tooltip:hover { display: none !important; }
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+/* Google adds a `notranslate` font on the whole page mid-translation —
+   neutralize it so our brand font keeps rendering. */
+font[style*="vertical-align: inherit"] { font: inherit !important; }
+
 /* ─── Scrollbar ───────────────────────────────────────── */
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import TawkWidget from "@/components/TawkWidget";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import "./globals.css";
 
 const inter = Inter({
@@ -104,6 +105,10 @@ export default function RootLayout({
         {/* Tawk.to livechat widget — visible on public/marketing/auth pages,
             hidden on /dashboard and /admin (users there have in-app support). */}
         <TawkWidget />
+        {/* Google-Translate-powered language switcher. Appears on every page
+            (marketing, auth, dashboard, admin). Bottom-left so it never
+            overlaps the Tawk bubble (bottom-right). */}
+        <LanguageSwitcher />
       </body>
     </html>
   );
