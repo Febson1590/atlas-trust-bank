@@ -63,7 +63,11 @@ export default async function DashboardPage() {
   // This gives the chart the same number the user sees in the "Total
   // Balance" card, tracked over time. Face values are summed (mixing
   // currencies matches the Total Balance card behavior).
-  const chartData: { date: string; balance: number }[] = [];
+  //
+  // We emit `iso` alongside `date` so the client component can filter
+  // to 7/30/60/120/360-day windows without re-parsing the formatted
+  // label (which is locale-dependent and not a reliable sort key).
+  const chartData: { date: string; iso: string; balance: number }[] = [];
 
   if (accountIds.length > 0) {
     const allChartTxs = await prisma.transaction.findMany({
@@ -94,10 +98,15 @@ export default async function DashboardPage() {
         if (seenDates.has(dateStr)) {
           chartData[chartData.length - 1].balance =
             Math.round(total * 100) / 100;
+          // Bump the ISO to the latest transaction's timestamp so the
+          // point lands correctly in any range-filter comparison.
+          chartData[chartData.length - 1].iso =
+            tx.createdAt.toISOString();
         } else {
           seenDates.add(dateStr);
           chartData.push({
             date: dateStr,
+            iso: tx.createdAt.toISOString(),
             balance: Math.round(total * 100) / 100,
           });
         }
@@ -289,7 +298,7 @@ export default async function DashboardPage() {
           Balance History
         </h3>
         <div className="rounded-xl bg-navy-800 border border-border-subtle p-4 sm:p-5">
-          <BalanceChart data={chartData} />
+          <BalanceChart data={chartData} currentBalance={totalBalance} />
         </div>
       </div>
 
