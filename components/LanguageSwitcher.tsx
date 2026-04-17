@@ -341,8 +341,10 @@ export default function LanguageSwitcher() {
         ref={rootRef}
         // `notranslate` keeps our own UI labels (language names) untouched —
         // we don't want Google translating "Español" into whatever the current
-        // target language is.
-        className="notranslate fixed bottom-6 left-6 z-[60]"
+        // target language is. `language-switcher-fixed` (in globals.css) pins
+        // the element with !important + GPU compositing so mobile Safari's
+        // momentum-scroll can't drift it off its bottom-left anchor.
+        className="notranslate language-switcher-fixed"
         translate="no"
       >
         {/* Dropdown panel */}
