@@ -110,6 +110,22 @@ font[style*="vertical-align: inherit"] { font: inherit !important; }
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* ─── Mobile Performance — reduce blur on low-powered devices ── */
+@media (max-width: 768px) {
+  .glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .glass-nav {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .card-premium {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 .gold-gradient {
   background: linear-gradient(135deg, #c5a55a 0%, #d4b96e 50%, #a88a3e 100%);
 }
@@ -309,9 +325,11 @@ textarea {
   appearance: none;
 }
 
-/* Prevent scroll jump when mobile keyboard opens */
-html, body {
+/* Prevent horizontal overflow, ensure vertical scroll always works */
+html {
   overflow-x: hidden;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ─── Input Styles ────────────────────────────────────── */
