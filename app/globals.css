@@ -284,6 +284,36 @@ font[style*="vertical-align: inherit"] { font: inherit !important; }
   animation: shake 0.5s ease-in-out;
 }
 
+/* ─── iOS Safari Auto-Zoom Prevention ────────────────── */
+/* iOS Safari zooms into inputs with font-size < 16px.
+   Force 16px on all form controls to prevent this. */
+
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
+
+/* Prevent iOS text size inflation */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Reset native appearance for consistent mobile rendering */
+input,
+select,
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Prevent scroll jump when mobile keyboard opens */
+html, body {
+  overflow-x: hidden;
+}
+
 /* ─── Input Styles ────────────────────────────────────── */
 
 input:-webkit-autofill,
