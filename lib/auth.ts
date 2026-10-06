@@ -236,6 +236,20 @@ export async function checkRateLimit(
   action: keyof typeof RATE_LIMITS,
   identifier: string
 ): Promise<{ allowed: boolean; remaining: number; retryAfter?: number }> {
+  try {
+    return await applyRateLimit(action, identifier);
+  } catch (error) {
+    // Rate limiting is a safeguard, not a gate: if Redis is unreachable,
+    // let the request through rather than failing every login.
+    console.error(`[rate-limit] ${action} check failed, allowing:`, error);
+    return { allowed: true, remaining: RATE_LIMITS[action].max };
+  }
+}
+
+async function applyRateLimit(
+  action: keyof typeof RATE_LIMITS,
+  identifier: string
+): Promise<{ allowed: boolean; remaining: number; retryAfter?: number }> {
   const config = RATE_LIMITS[action];
   const key = RK.rateLimit(action, identifier);
   const raw = await redis.get<string>(key);

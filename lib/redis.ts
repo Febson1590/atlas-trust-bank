@@ -5,9 +5,18 @@ const globalForRedis = globalThis as unknown as {
 };
 
 function createRedis() {
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (!url || !token) {
+    // Without these every login/session call fails. Log loudly instead of
+    // silently pointing at a placeholder host.
+    console.error(
+      "[redis] UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are not set"
+    );
+  }
   return new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL || "https://placeholder.upstash.io",
-    token: process.env.UPSTASH_REDIS_REST_TOKEN || "placeholder",
+    url: url || "https://placeholder.upstash.io",
+    token: token || "placeholder",
   });
 }
 
