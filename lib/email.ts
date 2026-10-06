@@ -119,7 +119,13 @@ export async function sendOTPEmail(
   purpose: string = "verification"
 ): Promise<boolean> {
   const purposeText =
-    purpose === "login" ? "sign-in" : purpose === "transfer" ? "transfer" : "email verification";
+    purpose === "login"
+      ? "sign-in"
+      : purpose === "transfer"
+      ? "transfer"
+      : purpose === "email-change"
+      ? "email change"
+      : "email verification";
 
   const html = baseTemplate(`
     <h2 style="margin:0 0 12px;color:#0A1628;font-size:20px;font-weight:700;">Your Code</h2>

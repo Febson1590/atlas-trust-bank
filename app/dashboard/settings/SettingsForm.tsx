@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
+import ChangeEmail from "./ChangeEmail";
 
 interface Profile {
   id: string;
@@ -436,21 +437,19 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
                 Account Information
               </h3>
               <p className="text-xs text-text-muted">
-                These details cannot be changed here
+                Your email is also your sign-in
               </p>
             </div>
           </div>
         </div>
 
         <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-border-subtle/30">
-            <div className="flex items-center gap-3">
+          <div className="flex items-start justify-between gap-4 py-3 border-b border-border-subtle/30">
+            <div className="flex items-center gap-3 shrink-0 pt-1.5">
               <Mail className="h-4 w-4 text-text-muted" />
               <span className="text-xs text-text-muted">Email Address</span>
             </div>
-            <span className="text-sm font-medium text-text-primary">
-              {profile.email}
-            </span>
+            <ChangeEmail currentEmail={profile.email} />
           </div>
 
           <div className="flex items-center justify-between py-3 border-b border-border-subtle/30">
