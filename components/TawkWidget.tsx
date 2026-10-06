@@ -29,7 +29,12 @@ declare global {
     Tawk_API?: {
       hideWidget?: () => void;
       showWidget?: () => void;
+      minimize?: () => void;
       onLoad?: () => void;
+      onChatMaximized?: () => void;
+      onChatMessageVisitor?: () => void;
+      onChatMessageAgent?: () => void;
+      onChatMessageSystem?: () => void;
       [key: string]: unknown;
     };
     Tawk_LoadStart?: Date;
@@ -53,6 +58,24 @@ export default function TawkWidget() {
 
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
+
+    // Keep the chat window closed unless the visitor opens it. Tawk's
+    // automated triggers/greetings otherwise pop the window open on their
+    // own. A real click on the bubble lands inside Tawk's iframe, so focus
+    // moves to that iframe; an automated open leaves focus on the page.
+    // Once the visitor has sent a message we stop interfering entirely.
+    const api = window.Tawk_API;
+    let visitorEngaged = false;
+    api.onChatMessageVisitor = () => {
+      visitorEngaged = true;
+    };
+    api.onChatMaximized = () => {
+      setTimeout(() => {
+        const openedByClick =
+          document.activeElement instanceof HTMLIFrameElement;
+        if (!visitorEngaged && !openedByClick) api.minimize?.();
+      }, 0);
+    };
 
     const script = document.createElement("script");
     script.id = "tawk-script";
@@ -82,7 +105,11 @@ export default function TawkWidget() {
     if (typeof window.Tawk_API.hideWidget === "function") {
       apply();
     } else {
-      window.Tawk_API.onLoad = apply;
+      window.Tawk_API.onLoad = () => {
+        apply();
+        // Always start as the closed bubble.
+        window.Tawk_API?.minimize?.();
+      };
     }
   }, [shouldHide]);
 
