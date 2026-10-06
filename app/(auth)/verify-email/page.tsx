@@ -82,6 +82,14 @@ function VerifyEmailContent() {
     inputRefs.current[focusIndex]?.focus();
   };
 
+  // Clear the digits after a failed attempt. Without this the auto-submit
+  // effect sees a full code again as soon as isSubmitting flips back to
+  // false and resubmits the same wrong code in an endless loop.
+  const resetOtpInputs = useCallback(() => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setTimeout(() => inputRefs.current[0]?.focus(), 0);
+  }, []);
+
   const submitOtp = useCallback(async (code: string) => {
     setServerError("");
     setIsSubmitting(true);
@@ -97,6 +105,7 @@ function VerifyEmailContent() {
 
       if (!res.ok) {
         setServerError(result.error || "Invalid verification code");
+        resetOtpInputs();
         setIsSubmitting(false);
         return;
       }
@@ -104,9 +113,10 @@ function VerifyEmailContent() {
       router.push("/dashboard");
     } catch {
       setServerError("Something went wrong. Please try again.");
+      resetOtpInputs();
       setIsSubmitting(false);
     }
-  }, [email, router]);
+  }, [email, router, resetOtpInputs]);
 
   // Auto-submit when all digits filled
   useEffect(() => {

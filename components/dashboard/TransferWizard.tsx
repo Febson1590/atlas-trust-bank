@@ -491,6 +491,9 @@ export default function TransferWizard({
         setCurrentStep(4);
       } catch {
         setServerError("Something went wrong. Please try again.");
+        // Clear the OTP so the auto-submit effect doesn't immediately
+        // resubmit the same code in a loop.
+        if (otpCode) setOtp(Array(OTP_LENGTH).fill(""));
         setIsVerifying(false);
       }
     },

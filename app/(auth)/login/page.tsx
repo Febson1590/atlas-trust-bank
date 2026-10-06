@@ -139,6 +139,14 @@ export default function LoginPage() {
     inputRefs.current[focusIndex]?.focus();
   };
 
+  // Clear the digits after a failed attempt. Without this the auto-submit
+  // effect sees a full code again as soon as isVerifying flips back to
+  // false and resubmits the same wrong code in an endless loop.
+  const resetOtpInputs = useCallback(() => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    setTimeout(() => inputRefs.current[0]?.focus(), 0);
+  }, []);
+
   const submitOtp = useCallback(
     async (code: string) => {
       setServerError("");
@@ -155,6 +163,7 @@ export default function LoginPage() {
 
         if (!res.ok) {
           setServerError(result.error || "Invalid verification code");
+          resetOtpInputs();
           setIsVerifying(false);
           return;
         }
@@ -167,10 +176,11 @@ export default function LoginPage() {
         }
       } catch {
         setServerError("Something went wrong. Please try again.");
+        resetOtpInputs();
         setIsVerifying(false);
       }
     },
-    [otpEmail, router]
+    [otpEmail, router, resetOtpInputs]
   );
 
   // Auto-submit when all OTP digits filled
