@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getClientIP } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuspensionReason } from "@/lib/suspensionReasons";
 import { AccountStatus } from "@/generated/prisma";
 
 // ─── GET: Fetch single user with all related data ───────────
@@ -208,7 +209,15 @@ export async function PUT(
     const changes: Record<string, { from: string; to: string }> = {};
 
     if (status && ["ACTIVE", "SUSPENDED", "FROZEN"].includes(status)) {
+      if (status === "SUSPENDED" && !isSuspensionReason(body.suspendReason)) {
+        return NextResponse.json(
+          { error: "A valid suspension reason is required" },
+          { status: 400 }
+        );
+      }
       updateData.status = status;
+      updateData.suspendReason =
+        status === "SUSPENDED" ? body.suspendReason : null;
       changes.status = { from: targetUser.status, to: status };
     }
 

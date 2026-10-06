@@ -101,6 +101,7 @@ model User {
   password      String
   role          UserRole   @default(USER)
   status        UserStatus @default(ACTIVE)
+  suspendReason String?    // key from lib/suspensionReasons.ts; set only while SUSPENDED
   emailVerified Boolean    @default(false)
   kycStatus     KycStatus  @default(NOT_STARTED)
   phone         String?

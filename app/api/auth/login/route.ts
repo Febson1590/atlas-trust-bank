@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
 import { sendOTPEmail } from "@/lib/email";
+import { suspensionNotice } from "@/lib/suspensionReasons";
 
 export async function POST(request: Request) {
   try {
@@ -54,11 +55,13 @@ export async function POST(request: Request) {
 
     // Check user status
     if (user.status === "SUSPENDED") {
+      const notice = suspensionNotice(user.suspendReason);
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Your account has been suspended. Please contact support for assistance.",
+          error: notice.message,
+          suspended: true,
+          ...notice,
         },
         { status: 403 }
       );

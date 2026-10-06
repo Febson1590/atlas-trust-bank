@@ -14,15 +14,16 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Ban,
   Snowflake,
 } from "lucide-react";
-import { getSession } from "@/lib/auth";
+import { getSession, destroyAllUserSessions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate, formatDateTime, timeAgo, getInitials, cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import UserActions from "./UserActions";
+import SuspendUserButton from "./SuspendUserButton";
+import { isSuspensionReason, SUSPENSION_REASONS } from "@/lib/suspensionReasons";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -56,6 +57,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
       email: true,
       role: true,
       status: true,
+      suspendReason: true,
       kycStatus: true,
       phone: true,
       address: true,
@@ -152,6 +154,56 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
   );
   const initials = getInitials(user.firstName, user.lastName);
 
+  // ── Suspend (admin must pick a reason; shown to the user at sign-in) ──
+  async function suspendUser(formData: FormData) {
+    "use server";
+    const reason = formData.get("reason");
+    if (!isSuspensionReason(reason)) return;
+
+    const sessionData = await getSession();
+    if (!sessionData) return;
+
+    const adminUser = await prisma.user.findUnique({
+      where: { id: sessionData.userId },
+      select: { role: true },
+    });
+    if (!adminUser || adminUser.role !== "ADMIN") return;
+
+    if (id === sessionData.userId) return;
+
+    const target = await prisma.user.findUnique({
+      where: { id },
+      select: { status: true, email: true },
+    });
+    if (!target) return;
+
+    await prisma.user.update({
+      where: { id },
+      data: { status: "SUSPENDED", suspendReason: reason },
+    });
+
+    // Sign the user out everywhere so the suspension takes effect now.
+    await destroyAllUserSessions(id);
+
+    await prisma.auditLog.create({
+      data: {
+        adminId: sessionData.userId,
+        action: "UPDATE_USER_STATUS",
+        targetType: "USER",
+        targetId: id,
+        details: {
+          previousStatus: target.status,
+          newStatus: "SUSPENDED",
+          suspendReason: reason,
+          userEmail: target.email,
+        },
+      },
+    });
+
+    const { redirect: redir } = await import("next/navigation");
+    redir(`/admin/users/${id}`);
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* ── Top bar ──────────────────────────────────────────── */}
@@ -199,6 +251,15 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
               </span>
               <StatusBadge status={user.status} />
             </div>
+
+            {user.status === "SUSPENDED" && (
+              <p className="mt-2 text-sm text-warning">
+                <span className="font-medium">Suspension reason:</span>{" "}
+                {isSuspensionReason(user.suspendReason)
+                  ? SUSPENSION_REASONS[user.suspendReason].label
+                  : "Not specified"}
+              </p>
+            )}
 
             <div className="space-y-1.5 mt-3">
               <div className="flex items-center gap-2 text-sm text-text-secondary">
@@ -271,7 +332,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 
                   await prisma.user.update({
                     where: { id },
-                    data: { status: "ACTIVE" },
+                    data: { status: "ACTIVE", suspendReason: null },
                   });
 
                   await prisma.auditLog.create({
@@ -300,56 +361,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
           )}
 
           {user.status !== "SUSPENDED" && (
-            <form>
-              <button
-                type="submit"
-                formAction={async () => {
-                  "use server";
-                  const sessionData = await getSession();
-                  if (!sessionData) return;
-
-                  const adminUser = await prisma.user.findUnique({
-                    where: { id: sessionData.userId },
-                    select: { role: true },
-                  });
-                  if (!adminUser || adminUser.role !== "ADMIN") return;
-
-                  if (id === sessionData.userId) return;
-
-                  const target = await prisma.user.findUnique({
-                    where: { id },
-                    select: { status: true, email: true },
-                  });
-                  if (!target) return;
-
-                  await prisma.user.update({
-                    where: { id },
-                    data: { status: "SUSPENDED" },
-                  });
-
-                  await prisma.auditLog.create({
-                    data: {
-                      adminId: sessionData.userId,
-                      action: "UPDATE_USER_STATUS",
-                      targetType: "USER",
-                      targetId: id,
-                      details: {
-                        previousStatus: target.status,
-                        newStatus: "SUSPENDED",
-                        userEmail: target.email,
-                      },
-                    },
-                  });
-
-                  const { redirect: redir } = await import("next/navigation");
-                  redir(`/admin/users/${id}`);
-                }}
-                className="flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/20 px-4 py-2.5 text-sm font-medium text-warning transition-all hover:bg-warning/20"
-              >
-                <Ban className="h-4 w-4" />
-                Suspend User
-              </button>
-            </form>
+            <SuspendUserButton action={suspendUser} />
           )}
 
           {user.status !== "FROZEN" && (
@@ -377,7 +389,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 
                   await prisma.user.update({
                     where: { id },
-                    data: { status: "FROZEN" },
+                    data: { status: "FROZEN", suspendReason: null },
                   });
 
                   await prisma.auditLog.create({

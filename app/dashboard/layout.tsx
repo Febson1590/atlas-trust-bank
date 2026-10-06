@@ -32,6 +32,7 @@ export default async function DashboardLayout({
       email: true,
       avatarUrl: true,
       status: true,
+      suspendReason: true,
     },
   });
 
@@ -41,7 +42,9 @@ export default async function DashboardLayout({
 
   // Handle restricted account states
   if (user.status === "SUSPENDED") {
-    redirect("/login?error=suspended");
+    redirect(
+      `/login?error=suspended&reason=${encodeURIComponent(user.suspendReason ?? "other")}`
+    );
   }
 
   if (user.status === "FROZEN") {

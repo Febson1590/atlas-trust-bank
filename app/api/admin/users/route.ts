@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession, getClientIP } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isSuspensionReason } from "@/lib/suspensionReasons";
 
 // ─── GET: Fetch all users with pagination, search, filters ──
 export async function GET(request: NextRequest) {
@@ -127,7 +128,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, status } = body;
+    const { userId, status, suspendReason } = body;
 
     if (!userId || !status) {
       return NextResponse.json(
@@ -139,6 +140,13 @@ export async function PUT(request: NextRequest) {
     if (!["ACTIVE", "SUSPENDED", "FROZEN"].includes(status)) {
       return NextResponse.json(
         { error: "Invalid status. Must be ACTIVE, SUSPENDED, or FROZEN" },
+        { status: 400 }
+      );
+    }
+
+    if (status === "SUSPENDED" && !isSuspensionReason(suspendReason)) {
+      return NextResponse.json(
+        { error: "A valid suspension reason is required" },
         { status: 400 }
       );
     }
@@ -164,7 +172,10 @@ export async function PUT(request: NextRequest) {
     // Update user status
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { status },
+      data: {
+        status,
+        suspendReason: status === "SUSPENDED" ? suspendReason : null,
+      },
       select: {
         id: true,
         firstName: true,

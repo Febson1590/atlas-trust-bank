@@ -14,8 +14,10 @@ import {
   Loader2,
   ShieldCheck,
   RotateCcw,
+  Ban,
 } from "lucide-react";
 import { loginSchema, type LoginInput } from "@/lib/validations";
+import { suspensionNotice, SUPPORT_EMAIL } from "@/lib/suspensionReasons";
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
@@ -35,6 +37,20 @@ export default function LoginPage() {
   const [savedCredentials, setSavedCredentials] = useState<LoginInput | null>(null);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Suspension notice (from the login API, or from being bounced out of the
+  // dashboard via /login?error=suspended&reason=...)
+  const [suspension, setSuspension] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "suspended") {
+      setSuspension(suspensionNotice(params.get("reason")));
+    }
+  }, []);
 
   const {
     register,
@@ -72,6 +88,11 @@ export default function LoginPage() {
       });
 
       const result = await res.json();
+
+      if (res.status === 403 && result.suspended) {
+        setSuspension({ title: result.title, message: result.message });
+        return;
+      }
 
       if (!res.ok) {
         setServerError(result.error || "Invalid email or password");
@@ -161,6 +182,13 @@ export default function LoginPage() {
 
         const result = await res.json();
 
+        if (res.status === 403 && result.suspended) {
+          setSuspension({ title: result.title, message: result.message });
+          setOtpStep(false);
+          setIsVerifying(false);
+          return;
+        }
+
         if (!res.ok) {
           setServerError(result.error || "Invalid verification code");
           resetOtpInputs();
@@ -235,6 +263,48 @@ export default function LoginPage() {
         return start + "*".repeat(Math.min(middle.length, 5)) + end;
       })
     : "";
+
+  // ─── Suspended Account UI ──────────────────────────────
+  if (suspension) {
+    return (
+      <div className="glass glass-border rounded-2xl p-6 sm:p-8">
+        <div className="text-center mb-6">
+          <div className="mx-auto w-14 h-14 rounded-full bg-error/10 border border-error/20 flex items-center justify-center mb-4">
+            <Ban className="w-6 h-6 text-error" />
+          </div>
+          <h2 className="text-2xl font-semibold text-text-primary">
+            {suspension.title}
+          </h2>
+        </div>
+
+        <p className="text-text-secondary text-sm leading-relaxed text-center mb-6">
+          {suspension.message}
+        </p>
+
+        <div className="rounded-lg bg-navy-800 border border-border-default px-4 py-3 text-sm text-text-secondary text-center mb-6">
+          Need help? Contact our support team at{" "}
+          <a
+            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("Suspended account")}`}
+            className="text-gold-500 hover:text-gold-400 font-medium transition"
+          >
+            {SUPPORT_EMAIL}
+          </a>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setSuspension(null);
+            setServerError("");
+            window.history.replaceState(null, "", "/login");
+          }}
+          className="w-full py-3 px-6 rounded-lg border border-border-default text-text-secondary hover:text-text-primary hover:bg-navy-800/50 transition text-sm font-medium"
+        >
+          Back to Sign In
+        </button>
+      </div>
+    );
+  }
 
   // ─── OTP Step UI ───────────────────────────────────────
   if (otpStep) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyOTP, createSession, checkRateLimit } from "@/lib/auth";
 import { otpSchema } from "@/lib/validations";
+import { suspensionNotice } from "@/lib/suspensionReasons";
 
 export async function POST(request: Request) {
   try {
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
         firstName: true,
         lastName: true,
         role: true,
+        status: true,
+        suspendReason: true,
       },
     });
 
@@ -58,6 +61,24 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: "User not found" },
         { status: 404 }
+      );
+    }
+
+    if (user.status === "SUSPENDED") {
+      const notice = suspensionNotice(user.suspendReason);
+      return NextResponse.json(
+        { success: false, error: notice.message, suspended: true, ...notice },
+        { status: 403 }
+      );
+    }
+    if (user.status === "FROZEN") {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Your account has been frozen. Please contact support for assistance.",
+        },
+        { status: 403 }
       );
     }
 
