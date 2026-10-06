@@ -8,7 +8,6 @@ import {
   Phone,
   MapPin,
   Mail,
-  Calendar,
   ShieldCheck,
   Save,
   Loader2,
@@ -450,20 +449,6 @@ export default function SettingsForm({ profile }: SettingsFormProps) {
               <span className="text-xs text-text-muted">Email Address</span>
             </div>
             <ChangeEmail currentEmail={profile.email} />
-          </div>
-
-          <div className="flex items-center justify-between py-3 border-b border-border-subtle/30">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-4 w-4 text-text-muted" />
-              <span className="text-xs text-text-muted">Account Opened</span>
-            </div>
-            <span className="text-sm font-medium text-text-primary">
-              {new Date(profile.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
           </div>
 
           <div className="flex items-center justify-between py-3">
