@@ -122,7 +122,12 @@ export async function POST(request: Request) {
     // Verify user exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, firstName: true, lastName: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        accounts: { select: { status: true } },
+      },
     });
 
     if (!user) {
@@ -131,6 +136,12 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
+
+    // Dormancy is per user: if every existing account is dormant, the new
+    // one starts dormant too so it can't be used to get around it.
+    const userIsDormant =
+      user.accounts.length > 0 &&
+      user.accounts.every((a) => a.status === "DORMANT");
 
     const accountNumber = generateAccountNumber();
 
@@ -141,7 +152,7 @@ export async function POST(request: Request) {
         type: type as AllowedType,
         label: label || `${type.charAt(0)}${type.slice(1).toLowerCase()} Account`,
         currency: currency || "USD",
-        status: "ACTIVE",
+        status: userIsDormant ? "DORMANT" : "ACTIVE",
         balance: new Prisma.Decimal(0),
       },
     });
@@ -213,6 +224,17 @@ export async function PUT(request: Request) {
       }
 
       const { accountId, status } = result.data;
+
+      // Dormancy is set for the whole user from the user page, not per account.
+      if (status === "DORMANT") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Dormant is set for the whole user from the user's page.",
+          },
+          { status: 400 }
+        );
+      }
 
       const account = await prisma.account.update({
         where: { id: accountId },

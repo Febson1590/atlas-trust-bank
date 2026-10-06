@@ -12,7 +12,6 @@ import {
   ArrowDownCircle,
   X,
   Loader2,
-  Moon,
 } from "lucide-react";
 
 interface User {
@@ -378,16 +377,6 @@ export default function AccountActions({
               >
                 <Ban className="h-3.5 w-3.5" />
                 Restrict
-              </button>
-            )}
-            {account?.status !== "DORMANT" && (
-              <button
-                type="button"
-                onClick={() => pickRowAction("STATUS", "DORMANT")}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-navy-800/50 text-text-secondary border border-border-default hover:border-warning/40 hover:text-warning transition-colors"
-              >
-                <Moon className="h-3.5 w-3.5" />
-                Set Dormant
               </button>
             )}
           </div>

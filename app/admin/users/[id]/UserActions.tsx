@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   MoreVertical,
-  Power,
-  PowerOff,
   Trash2,
   Loader2,
   AlertTriangle,
@@ -14,13 +12,11 @@ import {
 interface UserActionsProps {
   userId: string;
   userName: string;
-  hasAccounts: boolean;
-  allAccountsDormant: boolean;
 }
 
 /**
- * Admin actions for a single user: set accounts dormant, reactivate them,
- * or delete the user entirely.
+ * Admin actions menu for a single user: delete the user entirely.
+ * (Dormant / suspend / freeze live in the Admin Actions panel on the page.)
  *
  * Previously this used a `fixed inset-0` confirmation modal. Same mobile
  * bug we hit on the KYC + Transfers pages — on iPhone Safari the Confirm
@@ -32,13 +28,11 @@ interface UserActionsProps {
 export default function UserActions({
   userId,
   userName,
-  hasAccounts,
-  allAccountsDormant,
 }: UserActionsProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<
-    "dormant" | "activate" | "delete" | null
+    "delete" | null
   >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -48,7 +42,7 @@ export default function UserActions({
     setError("");
   }
 
-  function pick(next: "dormant" | "activate" | "delete") {
+  function pick(next: "delete") {
     setConfirmAction(next);
     setMenuOpen(false);
     setError("");
@@ -73,22 +67,6 @@ export default function UserActions({
         router.push("/admin/users");
         return;
       }
-
-      const newStatus = confirmAction === "dormant" ? "DORMANT" : "ACTIVE";
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountStatus: newStatus }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Action failed");
-        setLoading(false);
-        return;
-      }
-
-      setConfirmAction(null);
-      router.refresh();
     } catch {
       setError("Something went wrong");
     } finally {
@@ -97,26 +75,6 @@ export default function UserActions({
   }
 
   const actionConfig = {
-    dormant: {
-      title: "Set Accounts to Dormant",
-      desc: `This will mark all of ${userName}'s accounts as dormant. They can still log in but won't be able to send money or make transactions.`,
-      icon: PowerOff,
-      panel: "bg-warning/5 border-warning/20",
-      header: "text-warning",
-      btnClass:
-        "bg-warning/20 text-warning border border-warning/30 hover:bg-warning/30",
-      btnText: "Set Dormant",
-    },
-    activate: {
-      title: "Activate Accounts",
-      desc: `This will reactivate all of ${userName}'s accounts. They will be able to send money and make transactions again.`,
-      icon: Power,
-      panel: "bg-success/5 border-success/20",
-      header: "text-success",
-      btnClass:
-        "bg-success/20 text-success border border-success/30 hover:bg-success/30",
-      btnText: "Activate",
-    },
     delete: {
       title: "Delete User Permanently",
       desc: `This will permanently delete ${userName}'s account and ALL associated data (accounts, transactions, cards, KYC, tickets). This action cannot be undone.`,
@@ -151,26 +109,6 @@ export default function UserActions({
               onClick={() => setMenuOpen(false)}
             />
             <div className="absolute right-0 top-full mt-2 z-40 w-48 rounded-lg bg-navy-800 border border-border-default shadow-xl overflow-hidden animate-fade-in">
-              {hasAccounts && !allAccountsDormant && (
-                <button
-                  type="button"
-                  onClick={() => pick("dormant")}
-                  className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-warning hover:bg-navy-700 transition-colors"
-                >
-                  <PowerOff className="h-4 w-4" />
-                  Set Dormant
-                </button>
-              )}
-              {hasAccounts && allAccountsDormant && (
-                <button
-                  type="button"
-                  onClick={() => pick("activate")}
-                  className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-success hover:bg-navy-700 transition-colors"
-                >
-                  <Power className="h-4 w-4" />
-                  Activate Accounts
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => pick("delete")}

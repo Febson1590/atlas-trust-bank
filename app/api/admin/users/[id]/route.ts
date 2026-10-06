@@ -320,7 +320,7 @@ export async function PATCH(
     await prisma.auditLog.create({
       data: {
         adminId: session.userId,
-        action: accountStatus === "DORMANT" ? "SUSPEND_USER" : "ACTIVATE_USER",
+        action: accountStatus === "DORMANT" ? "SET_USER_DORMANT" : "REMOVE_USER_DORMANT",
         targetType: "USER",
         targetId: id,
         details: {

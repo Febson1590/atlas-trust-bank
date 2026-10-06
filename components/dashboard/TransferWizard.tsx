@@ -421,6 +421,14 @@ export default function TransferWizard({
         const result = await res.json();
 
         if (!res.ok) {
+          // Suspended by an admin mid-session — show the suspension notice.
+          if (result.error === "ACCOUNT_SUSPENDED") {
+            window.location.href = `/login?error=suspended&reason=${encodeURIComponent(
+              result.reason || "other"
+            )}`;
+            return;
+          }
+
           // Dormant / blocked account. We intentionally show a realistic
           // 3.5s "processing" animation BEFORE revealing the failure —
           // product feedback: an immediate "this transfer can't go

@@ -16,13 +16,14 @@ import {
   XCircle,
   Snowflake,
 } from "lucide-react";
-import { getSession, destroyAllUserSessions } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate, formatDateTime, timeAgo, getInitials, cn } from "@/lib/utils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import UserActions from "./UserActions";
 import SuspendUserButton from "./SuspendUserButton";
+import DormantUserButton from "./DormantUserButton";
 import { isSuspensionReason, SUSPENSION_REASONS } from "@/lib/suspensionReasons";
 import type { Metadata } from "next";
 
@@ -153,6 +154,9 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
     0
   );
   const initials = getInitials(user.firstName, user.lastName);
+  const isDormant =
+    user.accounts.length > 0 &&
+    user.accounts.every((a) => a.status === "DORMANT");
 
   // ── Suspend (admin must pick a reason; shown to the user at sign-in) ──
   async function suspendUser(formData: FormData) {
@@ -182,8 +186,9 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
       data: { status: "SUSPENDED", suspendReason: reason },
     });
 
-    // Sign the user out everywhere so the suspension takes effect now.
-    await destroyAllUserSessions(id);
+    // Sessions are left alone on purpose: the user's next page load or
+    // action bounces them to the "Account Suspended" notice instead of a
+    // silent sign-out.
 
     await prisma.auditLog.create({
       data: {
@@ -219,8 +224,6 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
           <UserActions
             userId={user.id}
             userName={`${user.firstName} ${user.lastName}`}
-            hasAccounts={user.accounts.length > 0}
-            allAccountsDormant={user.accounts.length > 0 && user.accounts.every((a) => a.status === "DORMANT")}
           />
         )}
       </div>
@@ -250,6 +253,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
                 {user.role}
               </span>
               <StatusBadge status={user.status} />
+              {isDormant && <StatusBadge status="DORMANT" />}
             </div>
 
             {user.status === "SUSPENDED" && (
@@ -362,6 +366,14 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 
           {user.status !== "SUSPENDED" && (
             <SuspendUserButton action={suspendUser} />
+          )}
+
+          {user.role !== "ADMIN" && user.accounts.length > 0 && (
+            <DormantUserButton
+              userId={user.id}
+              userName={`${user.firstName} ${user.lastName}`}
+              isDormant={isDormant}
+            />
           )}
 
           {user.status !== "FROZEN" && (

@@ -33,6 +33,8 @@ export async function POST(request: Request) {
         firstName: true,
         kycStatus: true,
         transferPin: true,
+        status: true,
+        suspendReason: true,
       },
     });
 
@@ -40,6 +42,19 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: "User not found" },
         { status: 404 }
+      );
+    }
+
+    // Suspended mid-session: the wizard sends them to the suspension notice.
+    if (user.status === "SUSPENDED") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "ACCOUNT_SUSPENDED",
+          suspended: true,
+          reason: user.suspendReason ?? "other",
+        },
+        { status: 403 }
       );
     }
 
