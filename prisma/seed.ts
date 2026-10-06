@@ -7,19 +7,29 @@ import bcrypt from "bcryptjs";
 const sql = neon(process.env.DATABASE_URL!);
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@atlastrust.com";
+  // Login looks users up by lowercased email, so store it the same way.
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@atlastrust.com")
+    .trim()
+    .toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123456";
 
   console.log(`Checking for existing admin: ${adminEmail}`);
 
-  // Check if admin exists
-  const existing = await sql`SELECT id FROM "User" WHERE email = ${adminEmail}`;
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
+
+  // If the admin exists, re-sync password/role/status so changing
+  // ADMIN_PASSWORD in .env and re-running the seed actually takes effect.
+  const existing = await sql`SELECT id FROM "User" WHERE LOWER(email) = ${adminEmail}`;
   if (existing.length > 0) {
-    console.log(`Admin user already exists: ${adminEmail}`);
+    await sql`
+      UPDATE "User"
+      SET email = ${adminEmail}, password = ${hashedPassword}, role = 'ADMIN',
+          status = 'ACTIVE', "emailVerified" = true, "updatedAt" = NOW()
+      WHERE id = ${existing[0].id}
+    `;
+    console.log(`Admin user updated: ${adminEmail}`);
     return;
   }
-
-  const hashedPassword = await bcrypt.hash(adminPassword, 12);
   const id = crypto.randomUUID().replace(/-/g, "").substring(0, 25);
 
   await sql`
